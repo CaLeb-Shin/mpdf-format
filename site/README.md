@@ -1,4 +1,6 @@
-# MPDF 사이트 (1주차: 메이커 + 뷰어)
+# MPDF 사이트
+
+운영 주소: https://mpdf.pages.dev (Cloudflare Pages 프로젝트 `mpdf`, R2 버킷 `mpdf-files`, 90일 후 자동 삭제 규칙 적용)
 
 정적 파일뿐입니다. 서버 코드 없음. 파일은 브라우저 안에서만 처리됩니다.
 
@@ -14,8 +16,7 @@
 로컬 실행 (링크 기능 포함, 로컬 R2 흉내): `npm install` 후 `npm run dev` → `http://127.0.0.1:8788/`
 (샘플: `/?file=samples/score.pdf`, 뷰어: `/v/?file=../samples/mixed.mpdf`). 함수 단위 테스트: `npm test`.
 
-배포: Cloudflare Pages 프로젝트를 이 폴더(`site/`)로 만들고 `npm run deploy`. R2 버킷 `mpdf-files`를 만들고
-보관 기간 규칙(예: 90일 후 삭제)을 걸어 둡니다 (`wrangler.toml` 주석 참고). 빌드 명령 없음.
+배포: 이 폴더에서 `npm run deploy` (wrangler 로그인 필요). 빌드 명령 없음. 함수의 R2 바인딩은 `wrangler.toml`에 있습니다.
 
 링크 정책: 유튜브·URL 트랙만 링크가 됩니다. 음원 파일이 든 파일은 서버가 거부하고(저작권·용량), 메이커가 "PDF로 저장"을 안내합니다.
 

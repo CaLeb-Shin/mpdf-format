@@ -48,7 +48,7 @@ Sample files are in [samples/](samples/) (regenerate with `python3 samples/make_
 
 ## The website
 
-[site/](site/) is the maker + viewer web app (static files, no server): drop a PDF, paste YouTube links or add audio,
+Live at **https://mpdf.pages.dev**. [site/](site/) is the maker + viewer web app (static files, no server): drop a PDF, paste YouTube links or add audio,
 assign tracks to pages, save as `.pdf`. Its viewer shows the PDF exactly like a plain viewer with a collapsible
 floating player. See [site/README.md](site/README.md).
 
