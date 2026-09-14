@@ -1,0 +1,11 @@
+{
+  "name": "mpdf",
+  "version": "1.0.0",
+  "description": "MPDF reference implementation: attach a playlist (YouTube / audio / URL) to a PDF as an embedded mpdf.json, and read it back.",
+  "type": "module",
+  "main": "mpdf.js",
+  "exports": "./mpdf.js",
+  "scripts": { "test": "node test.mjs" },
+  "dependencies": { "pdf-lib": "^1.17.1" },
+  "license": "MIT"
+}

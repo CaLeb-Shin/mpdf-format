@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mpdf.dev/schema/mpdf-1.0.json",
+  "title": "MPDF manifest (mpdf.json) v1.0",
+  "type": "object",
+  "required": ["mpdf", "tracks"],
+  "properties": {
+    "mpdf": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+    "title": { "type": "string" },
+    "tracks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "src"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
+          "src": { "type": "string", "pattern": "^(youtube:[A-Za-z0-9_-]{6,}|file:.+|https://.+)$" },
+          "title": { "type": "string" },
+          "artist": { "type": "string" },
+          "start": { "type": "number", "minimum": 0 },
+          "end": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "cues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["page", "track"],
+        "properties": {
+          "page": { "type": "integer", "minimum": 1 },
+          "track": { "type": "string" },
+          "at": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "options": {
+      "type": "object",
+      "properties": {
+        "autoplay": { "type": "boolean", "default": false },
+        "followPage": { "type": "boolean", "default": true },
+        "loop": { "type": "boolean", "default": false }
+      }
+    }
+  }
+}

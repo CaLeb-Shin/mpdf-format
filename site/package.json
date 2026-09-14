@@ -1,0 +1,12 @@
+{
+  "name": "mpdf-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev . --r2=MPDF_FILES --port 8788",
+    "deploy": "wrangler pages deploy .",
+    "test": "node functions/test.mjs"
+  },
+  "dependencies": { "pdf-lib": "^1.17.1" },
+  "devDependencies": { "wrangler": "^4" }
+}

@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #f4f5f7; color: #15181d; font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #1f5fd6; text-decoration: none; } a:hover { color: #164aa8; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+    h1, h2, h3, p { margin: 0; }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 2720px; background: #f4f5f7; display: flex; flex-direction: column;">
+
+  <!-- top bar -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 80px; border-bottom: 1px solid #dfe2e8; background: #ffffff;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">MPDF</span>
+      <span class="mono" style="font-size: 12px; color: #6b7280; padding: 3px 8px; border: 1px solid #dfe2e8; border-radius: 4px;">spec 1.0</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 28px; font-size: 14px; font-weight: 500; color: #3f4650;">
+      <span>뷰어</span><span>가이드</span><span>스펙</span><span>개발자</span>
+    </div>
+  </div>
+
+  <!-- hero: the tool is the hero -->
+  <div style="padding: 72px 80px 40px 80px; display: flex; flex-direction: column; gap: 36px; align-items: center;">
+    <div style="display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; max-width: 820px;">
+      <h1 style="font-size: 52px; line-height: 1.15; font-weight: 700; letter-spacing: -0.025em; text-wrap: pretty;">PDF에 음악을 붙이는<br>가장 짧은 길.</h1>
+      <p style="font-size: 18px; line-height: 1.6; color: #4b5563; text-wrap: pretty;">PDF를 놓고 유튜브 링크를 붙여넣으면 끝. 링크로 보내면 누구나 앱 없이 악보를 보며 듣고, 파일로 받으면 어떤 PDF 뷰어에서도 열립니다.</p>
+    </div>
+
+    <div style="width: 1120px; background: #ffffff; border: 1px solid #dfe2e8; border-radius: 10px; box-shadow: 0 1px 2px rgba(21,24,29,.04), 0 24px 48px -32px rgba(21,24,29,.25); display: flex; flex-direction: column;">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0;">
+        <div style="padding: 28px; border-right: 1px solid #dfe2e8; display: flex; flex-direction: column; gap: 14px;">
+          <div class="mono" style="font-size: 12px; color: #6b7280;">01 · PDF</div>
+          <div style="flex-grow: 1; min-height: 250px; border: 1.5px dashed #b8bfca; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: #f9fafb;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1f5fd6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m6 10 6-6 6 6"/><path d="M4 20h16"/></svg>
+            <div style="font-size: 16px; font-weight: 600;">PDF를 여기에 놓으세요</div>
+            <div style="font-size: 13px; color: #6b7280;">또는 클릭해서 선택 · 최대 [용량 제한]</div>
+          </div>
+        </div>
+        <div style="padding: 28px; display: flex; flex-direction: column; gap: 14px;">
+          <div class="mono" style="font-size: 12px; color: #6b7280;">02 · 트랙</div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #dfe2e8; border-radius: 8px; background: #ffffff;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e0301e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10 9 5 3-5 3z" fill="#e0301e" stroke="none"/></svg>
+              <span style="font-size: 14px; flex-grow: 1;">은혜 아멘 (공식 라이브)</span>
+              <span class="mono" style="font-size: 12px; color: #6b7280;">p.1</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #dfe2e8; border-radius: 8px; background: #ffffff;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15181d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              <span style="font-size: 14px; flex-grow: 1;">주품에_반주.m4a</span>
+              <span class="mono" style="font-size: 12px; color: #6b7280;">p.3</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid #1f5fd6; border-radius: 8px; background: #ffffff;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+              <span style="font-size: 14px; color: #9aa3b0; flex-grow: 1;">유튜브 링크 붙여넣기</span>
+              <span class="mono" style="font-size: 12px; color: #1f5fd6;">Enter</span>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; font-size: 13px; color: #4b5563;">
+            <span style="padding: 7px 12px; border: 1px solid #dfe2e8; border-radius: 6px;">+ 음원 파일</span>
+            <span style="padding: 7px 12px; border: 1px solid #dfe2e8; border-radius: 6px;">페이지 지정</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px; padding: 20px 28px; border-top: 1px solid #dfe2e8; background: #f9fafb; border-radius: 0 0 10px 10px;">
+        <span style="display: inline-flex; align-items: center; gap: 8px; padding: 13px 22px; background: #1f5fd6; color: #ffffff; border-radius: 8px; font-size: 15px; font-weight: 600;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+          링크 만들기
+        </span>
+        <span style="padding: 13px 22px; border: 1px solid #b8bfca; border-radius: 8px; font-size: 15px; font-weight: 600; color: #15181d;">.mpdf 다운로드</span>
+        <span class="mono" style="font-size: 12px; color: #6b7280; margin-left: auto;">파일은 브라우저에서 처리 · 링크 생성 시에만 업로드 · [보관 기간] 후 자동 삭제</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- facts -->
+  <div style="padding: 32px 80px 72px 80px;">
+    <div style="width: 1120px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 22px 24px; background: #ffffff; border: 1px solid #dfe2e8; border-radius: 10px;">
+        <div class="mono" style="font-size: 12px; color: #6b7280;">호환</div>
+        <div style="font-size: 17px; font-weight: 600;">어떤 PDF 뷰어에서도 열림</div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.6;">MPDF는 첨부파일이 있는 표준 PDF입니다. 미지원 앱에서는 그냥 PDF.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 22px 24px; background: #ffffff; border: 1px solid #dfe2e8; border-radius: 10px;">
+        <div class="mono" style="font-size: 12px; color: #6b7280;">방해 없음</div>
+        <div style="font-size: 17px; font-weight: 600;">페이지에는 아무것도 안 그림</div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.6;">재생 목록은 첨부에만 있습니다. 워터마크도, 오버레이도 없습니다.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 22px 24px; background: #ffffff; border: 1px solid #dfe2e8; border-radius: 10px;">
+        <div class="mono" style="font-size: 12px; color: #6b7280;">오픈</div>
+        <div style="font-size: 17px; font-weight: 600;">스펙 공개 · 로열티 없음</div>
+        <div style="font-size: 14px; color: #4b5563; line-height: 1.6;">코드 MIT, 스펙 CC BY. 어떤 앱이든 첨부 하나만 읽으면 지원됩니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- how it works -->
+  <div style="padding: 0 80px 72px 80px;">
+    <div style="width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 48px;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em;">작동 방식</h2>
+        <p style="font-size: 15px; color: #4b5563; line-height: 1.6;">복잡한 건 없습니다. PDF 표준이 이미 갖고 있던 기능을 쓸 뿐입니다.</p>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-top: 1px solid #dfe2e8;">
+          <span class="mono" style="font-size: 14px; color: #1f5fd6;">01</span>
+          <div style="display: flex; flex-direction: column; gap: 6px;"><div style="font-size: 17px; font-weight: 600;">PDF 안에 mpdf.json이 첨부됩니다</div><div style="font-size: 14px; color: #4b5563; line-height: 1.6;">트랙 목록과 페이지별 큐가 들어 있는 작은 텍스트 파일. 원본 페이지는 바이트 하나 바뀌지 않습니다.</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-top: 1px solid #dfe2e8;">
+          <span class="mono" style="font-size: 14px; color: #1f5fd6;">02</span>
+          <div style="display: flex; flex-direction: column; gap: 6px;"><div style="font-size: 17px; font-weight: 600;">유튜브는 링크만, 음원 파일은 내장</div><div style="font-size: 14px; color: #4b5563; line-height: 1.6;">유튜브 트랙은 용량 0. 음원 파일을 넣으면 오프라인에서도 재생됩니다.</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-top: 1px solid #dfe2e8; border-bottom: 1px solid #dfe2e8;">
+          <span class="mono" style="font-size: 14px; color: #1f5fd6;">03</span>
+          <div style="display: flex; flex-direction: column; gap: 6px;"><div style="font-size: 17px; font-weight: 600;">뷰어가 첨부를 읽고 재생합니다</div><div style="font-size: 14px; color: #4b5563; line-height: 1.6;">웹 뷰어, 지원 앱 어디서든. 페이지를 넘기면 지정한 곡과 위치로 이동합니다.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- faq -->
+  <div style="padding: 0 80px 72px 80px;">
+    <div style="width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 48px;">
+      <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em;">자주 묻는 것</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 40px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;"><div style="font-size: 16px; font-weight: 600;">받는 사람이 앱이 없으면?</div><div style="font-size: 14px; color: #4b5563; line-height: 1.6;">링크를 열면 브라우저 뷰어에서 바로 봅니다. 설치 없음.</div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;"><div style="font-size: 16px; font-weight: 600;">파일이 서버에 올라가나요?</div><div style="font-size: 14px; color: #4b5563; line-height: 1.6;">다운로드만 하면 올라가지 않습니다. 링크를 만들 때만 저장되고 [보관 기간] 뒤 지워집니다.</div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;"><div style="font-size: 16px; font-weight: 600;">저작권 문제는요?</div><div style="font-size: 14px; color: #4b5563; line-height: 1.6;">유튜브 트랙은 유튜브 공식 플레이어로 재생됩니다. 링크 공유는 유튜브 트랙만 지원하고, 음원 파일은 다운로드로만 나갑니다.</div></div>
+        <div style="display: flex; flex-direction: column; gap: 8px;"><div style="font-size: 16px; font-weight: 600;">얼마인가요?</div><div style="font-size: 14px; color: #4b5563; line-height: 1.6;">무료입니다. 사이트는 광고로 운영됩니다. 광고 없는 버전은 [프리미엄 가격] 예정.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- developers -->
+  <div style="padding: 0 80px 72px 80px;">
+    <div style="width: 1120px; margin: 0 auto; background: #15181d; color: #f4f5f7; border-radius: 12px; padding: 44px 48px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="mono" style="font-size: 12px; color: #8fb0f2;">FOR DEVELOPERS</div>
+        <h2 style="font-size: 28px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3;">당신의 앱에 MPDF 지원 추가하기</h2>
+        <p style="font-size: 15px; color: #b8bfca; line-height: 1.6;">첨부파일 하나 읽기. 그것이 Level 1의 전부입니다. 스펙, JSON 스키마, 샘플 파일, JS·Python 레퍼런스가 모두 공개돼 있습니다.</p>
+        <div style="display: flex; gap: 12px; margin-top: 4px;">
+          <span style="padding: 10px 16px; border: 1px solid #8fb0f2; color: #ffffff; border-radius: 6px; font-size: 14px; font-weight: 600;">스펙 읽기</span>
+          <span style="padding: 10px 16px; border: 1px solid #3f4650; border-radius: 6px; font-size: 14px; font-weight: 600;">GitHub</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0; border: 1px solid #2a2f37; border-radius: 8px; overflow: hidden;">
+        <div style="display: flex; gap: 0; background: #1e2229; font-size: 12px;" class="mono">
+          <span style="padding: 10px 16px; border-bottom: 2px solid #8fb0f2; color: #ffffff;">Python</span>
+          <span style="padding: 10px 16px; color: #8a94a3;">JavaScript</span>
+          <span style="padding: 10px 16px; color: #8a94a3;">Swift</span>
+        </div>
+        <div class="mono" style="padding: 18px 20px; font-size: 13px; line-height: 1.75; color: #e6e9ee; white-space: pre; background: #15181d;">from pypdf import PdfWriter
+w = PdfWriter(clone_from="score.pdf")
+w.add_attachment("mpdf.json", manifest)
+w.add_attachment("track2.m4a", audio)
+w.write("score.mpdf")</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- closing cta -->
+  <div style="padding: 0 80px 72px 80px;">
+    <div style="width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding-top: 40px; border-top: 1px solid #dfe2e8;">
+      <h2 style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em;">지금 PDF 하나로 시작하세요.</h2>
+      <span style="display: inline-flex; align-items: center; gap: 8px; padding: 13px 22px; background: #1f5fd6; color: #ffffff; border-radius: 8px; font-size: 15px; font-weight: 600;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+        링크 만들기
+      </span>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div style="margin-top: auto; padding: 24px 80px; border-top: 1px solid #dfe2e8; background: #ffffff; display: flex; justify-content: space-between; font-size: 13px; color: #6b7280;">
+    <span>MPDF · PDF + playlist · 오픈 포맷</span>
+    <div style="display: flex; gap: 24px;"><span>가이드</span><span>스펙 1.0</span><span>신고</span><span>이용약관</span><span>개인정보</span></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

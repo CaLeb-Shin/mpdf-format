@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #0e0f13; color: #f2efe9; font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #ff7a1a; text-decoration: none; } a:hover { color: #ffa35c; }
+    .display { font-family: "Black Han Sans", "Apple SD Gothic Neo", sans-serif; font-weight: 400; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+    .staff { height: 28px; background: repeating-linear-gradient(to bottom, #0e0f13 0 1px, transparent 1px 7px); }
+    h1, h2, h3, p { margin: 0; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #34363d; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <!-- header 52 -->
+  <div style="height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #0e0f13; border-bottom: 1px solid #2c2f38; flex-shrink: 0;">
+    <div class="display" style="font-size: 18px; letter-spacing: .02em;">MPDF</div>
+    <div style="font-size: 14px; font-weight: 700; flex-grow: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">주일 콘티 9/14</div>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d9d4cb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="m6 10 6 6 6-6"/><path d="M4 20h16"/></svg>
+    <span style="padding: 7px 12px; background: #ff7a1a; color: #0e0f13; border-radius: 999px; font-size: 12px; font-weight: 700;">나도 만들기</span>
+  </div>
+
+  <!-- default ad: under the header, above the PDF -->
+  <div style="height: 62px; display: flex; align-items: center; justify-content: center; background: #0e0f13; border-bottom: 1px solid #2c2f38; flex-shrink: 0;">
+    <div style="width: 320px; height: 50px; border: 1px dashed #4a4e59; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #6f6a62;"><span class="mono" style="font-size: 11px;">광고 320×50</span></div>
+  </div>
+
+  <!-- the PDF, full width, like a plain viewer -->
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px 0 0 0; overflow: hidden;">
+    <div style="width: 370px; background: #f7f3ea; color: #0e0f13; padding: 26px 26px 20px 26px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 30px -12px rgba(0,0,0,.7);">
+      <div style="display: flex; flex-direction: column; gap: 3px;">
+        <div style="font-size: 18px; font-weight: 700;">1. 은혜 아멘</div>
+        <div style="font-size: 11px; color: #6f6a62;">G major · 72 bpm</div>
+      </div>
+      <div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff" style="width: 60%;"></div>
+      <div style="font-size: 10px; color: #6f6a62; text-align: center;">1 / 4</div>
+    </div>
+    <div style="width: 370px; background: #f7f3ea; color: #0e0f13; padding: 26px 26px 0 26px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="font-size: 18px; font-weight: 700;">2. 은혜 아멘 (2)</div>
+      <div class="staff"></div>
+    </div>
+  </div>
+
+  <!-- collapsed player pill: tap to open the sheet -->
+  <div style="position: absolute; left: 20px; right: 20px; bottom: 20px; height: 60px; background: #1a1c22; border: 1px solid #2c2f38; border-radius: 999px; box-shadow: 0 20px 40px -14px rgba(0,0,0,.9); display: flex; align-items: center; gap: 12px; padding: 0 10px 0 10px;">
+    <span style="width: 42px; height: 42px; border-radius: 999px; background: #ff7a1a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0e0f13"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></span>
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; overflow: hidden;">
+      <span style="font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">은혜 아멘</span>
+      <span class="mono" style="font-size: 11px; color: #8a857c;">p.1–2 · 1:24 / 4:10</span>
+    </div>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b9b4ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="m6 15 6-6 6 6"/></svg>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

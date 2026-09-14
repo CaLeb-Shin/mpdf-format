@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; background: #0e0f13; color: #f2efe9; font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #ff7a1a; text-decoration: none; } a:hover { color: #ffa35c; }
+    .display { font-family: "Black Han Sans", "Apple SD Gothic Neo", sans-serif; font-weight: 400; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+    .staff { height: 37px; background: repeating-linear-gradient(to bottom, #0e0f13 0 1px, transparent 1px 9px); }
+    h1, h2, h3, p { margin: 0; }
+  </style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #0e0f13; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <!-- header 52 -->
+  <div style="height: 52px; display: flex; align-items: center; gap: 16px; padding: 0 24px; border-bottom: 1px solid #2c2f38; flex-shrink: 0;">
+    <div class="display" style="font-size: 22px; letter-spacing: .02em;">MPDF</div>
+    <div style="width: 1px; height: 20px; background: #2c2f38;"></div>
+    <div style="font-size: 15px; font-weight: 700;">주일 콘티 9/14</div>
+    <div class="mono" style="font-size: 12px; color: #8a857c;">4쪽 · 3곡</div>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+      <span style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid #2c2f38; border-radius: 999px; font-size: 13px; color: #d9d4cb;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12"/><path d="m6 10 6 6 6-6"/><path d="M4 20h16"/></svg>
+        PDF로 저장
+      </span>
+      <span style="padding: 8px 16px; background: #ff7a1a; color: #0e0f13; border-radius: 999px; font-size: 13px; font-weight: 700;">나도 만들기</span>
+    </div>
+  </div>
+
+  <!-- default ad strip: site chrome, above the PDF -->
+  <div style="height: 106px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #2c2f38; flex-shrink: 0;">
+    <div style="width: 728px; height: 90px; border: 1px dashed #4a4e59; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 12px; color: #6f6a62;">
+      <span class="mono" style="font-size: 12px;">광고 728×90</span><span style="font-size: 12px;">기본 자리 · PDF 위가 아니라 사이트 상단</span>
+    </div>
+  </div>
+
+  <!-- the PDF, exactly like a plain viewer: continuous pages on neutral gray, nothing else -->
+  <div style="flex-grow: 1; background: #34363d; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 24px 0 0 0; overflow: hidden;">
+    <div style="width: 640px; background: #f7f3ea; color: #0e0f13; padding: 46px 46px 36px 46px; display: flex; flex-direction: column; gap: 22px; box-shadow: 0 14px 40px -16px rgba(0,0,0,.7);">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 24px; font-weight: 700;">1. 은혜 아멘</div>
+        <div style="font-size: 12px; color: #6f6a62;">G major · 72 bpm</div>
+      </div>
+      <div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff"></div><div class="staff" style="width: 60%;"></div>
+      <div style="font-size: 11px; color: #6f6a62; text-align: center; margin-top: 6px;">1 / 4</div>
+    </div>
+    <div style="width: 640px; background: #f7f3ea; color: #0e0f13; padding: 46px 46px 0 46px; display: flex; flex-direction: column; gap: 22px;">
+      <div style="font-size: 24px; font-weight: 700;">2. 은혜 아멘 (2)</div>
+      <div class="staff"></div>
+    </div>
+  </div>
+
+  <!-- floating player popup: movable, collapses to a pill; the reader can put it anywhere -->
+  <div style="position: absolute; right: 28px; bottom: 28px; width: 340px; background: #1a1c22; border: 1px solid #2c2f38; border-radius: 16px; box-shadow: 0 30px 60px -20px rgba(0,0,0,.9); display: flex; flex-direction: column; overflow: hidden;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #2c2f38;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="#6f6a62"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+      <span class="mono" style="font-size: 11px; letter-spacing: .1em; color: #8a857c; flex-grow: 1;">플레이어 · 끌어서 이동</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9b4ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div style="height: 190px; background: #000; display: flex; align-items: center; justify-content: center; position: relative;">
+      <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: linear-gradient(135deg, #2a2622, #4a3a33);"></div>
+      <svg width="56" height="40" viewBox="0 0 56 40" style="position: relative;"><rect width="56" height="40" rx="10" fill="#e0301e"/><path d="M22 12v16l14-8z" fill="#fff"/></svg>
+      <span class="mono" style="position: absolute; left: 12px; top: 10px; font-size: 10px; color: rgba(242,239,233,.6);">유튜브 공식 플레이어 · 유튜브 트랙일 때만</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 12px 16px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 10px; height: 10px; border-radius: 999px; background: #ff7a1a;"></span>
+        <span style="font-size: 15px; font-weight: 700; flex-grow: 1;">은혜 아멘</span>
+        <span class="mono" style="font-size: 12px; color: #8a857c;">p.1–2 · 1:24 / 4:10</span>
+      </div>
+      <div style="height: 4px; background: #2c2f38; border-radius: 999px; position: relative;"><div style="position: absolute; left: 0; top: 0; bottom: 0; width: 34%; background: #ff7a1a; border-radius: 999px;"></div></div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 18px; padding-top: 2px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#d9d4cb"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+        <span style="width: 44px; height: 44px; border-radius: 999px; background: #ff7a1a; display: inline-flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#0e0f13"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></span>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#d9d4cb"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; border-top: 1px solid #2c2f38;">
+      <div style="display: grid; grid-template-columns: 14px 44px minmax(0, 1fr) 40px; gap: 10px; align-items: center; padding: 10px 16px; background: rgba(255,122,26,.12);">
+        <span style="width: 10px; height: 10px; border-radius: 999px; background: #ff7a1a;"></span><span class="mono" style="font-size: 12px; color: #ff7a1a;">1–2</span><span style="font-size: 13px; font-weight: 700;">은혜 아멘</span><span class="mono" style="font-size: 11px; color: #8a857c; text-align: right;">4:10</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 14px 44px minmax(0, 1fr) 40px; gap: 10px; align-items: center; padding: 10px 16px; border-top: 1px solid #2c2f38;">
+        <span style="width: 10px; height: 10px; border-radius: 999px; background: #2fc4b2;"></span><span class="mono" style="font-size: 12px; color: #b9b4ab;">3</span><span style="font-size: 13px;">주 품에 <span class="mono" style="font-size: 11px; color: #8a857c;">0:32부터</span></span><span class="mono" style="font-size: 11px; color: #8a857c; text-align: right;">3:48</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 14px 44px minmax(0, 1fr) 40px; gap: 10px; align-items: center; padding: 10px 16px; border-top: 1px solid #2c2f38;">
+        <span style="width: 10px; height: 10px; border-radius: 999px; background: #b48cff;"></span><span class="mono" style="font-size: 12px; color: #b9b4ab;">4</span><span style="font-size: 13px;">주의 이름 높이며</span><span class="mono" style="font-size: 11px; color: #8a857c; text-align: right;">5:02</span>
+      </div>
+    </div>
+    <div style="margin: 0 16px 14px 16px; height: 100px; border: 1px dashed #4a4e59; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; color: #6f6a62;">
+      <span class="mono" style="font-size: 11px;">광고 300×100</span><span style="font-size: 11px;">팝업 안 · 페이지 밖</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

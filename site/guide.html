@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>가이드 · MPDF</title>
+  <meta name="description" content="MPDF 만들기, 보내기, 열기. 유튜브 링크 붙이는 법, 페이지별 곡 지정, 파일이 깨지는 경우, 다른 앱에서 여는 법.">
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="wrap nav"><a class="brand" href="./">MPDF</a><nav><a href="v/">뷰어</a><a href="guide.html">가이드</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<main class="wrap doc">
+  <h1>가이드</h1>
+  <p>MPDF는 <strong>음악이 붙은 PDF</strong>입니다. 파일은 그냥 PDF라서 어디서든 열리고, MPDF를 아는 뷰어에서는 악보를 보는 동안 음악이 나옵니다. 이 글은 만들고, 보내고, 여는 법 전부입니다.</p>
+
+  <h2>1. 만들기</h2>
+  <ol>
+    <li><strong>PDF를 놓습니다.</strong> 첫 화면의 상자에 끌어다 놓거나 클릭해서 고릅니다. 카톡에서 받은 PDF도 됩니다. 페이지는 한 글자도 바뀌지 않습니다.</li>
+    <li><strong>유튜브 링크를 붙여 넣습니다.</strong> 주소창의 링크를 그대로 붙이고 Enter. <code>youtu.be/…</code>, <code>youtube.com/watch?v=…</code>, 쇼츠 링크 모두 됩니다. 곡마다 하나씩 넣고, 제목을 눌러 곡 이름으로 바꿔 두면 받는 사람이 알아보기 쉽습니다.</li>
+    <li><strong>음원 파일도 넣을 수 있습니다.</strong> "+ 음원 파일"로 m4a·mp3·wav를 고르면 파일 안에 들어갑니다. 인터넷 없이도 재생되지만 파일이 커지고(1분에 약 1MB), 링크로는 공유할 수 없습니다(아래 3 참고).</li>
+    <li><strong>페이지마다 곡을 고릅니다.</strong> 페이지 카드 아래에서 곡을 고르면 "1–2 · 은혜 아멘, 3 · 주 품에"처럼 구간이 생깁니다. 고르지 않은 페이지는 앞 곡이 그대로 이어집니다. 곡의 특정 지점부터 틀고 싶으면 "시작"에 <code>0:32</code>처럼 적습니다.</li>
+    <li><strong>제목을 적고 저장하거나 링크를 만듭니다.</strong></li>
+  </ol>
+
+  <h2>2. 보내기: 링크</h2>
+  <p>"링크 만들기"를 누르면 <code>/v/…</code> 주소가 나옵니다. 카톡·밴드·메일에 붙여 넣으면 제목과 함께 미리보기 카드가 뜨고, 누르면 앱 설치 없이 브라우저에서 바로 악보를 보며 듣습니다.</p>
+  <ul>
+    <li>링크는 유튜브·URL 트랙만 됩니다. 이 사이트는 음원 파일을 서버에 두지 않습니다.</li>
+    <li>링크를 아는 사람은 누구나 열 수 있고, [보관 기간] 후 자동으로 지워집니다. 지우고 싶으면 <a href="report.html">삭제 요청</a>을 보내세요.</li>
+  </ul>
+
+  <h2>3. 보내기: 파일</h2>
+  <p>"PDF로 저장"으로 내려받아 카톡·메일·드라이브로 보냅니다. 음원 파일이 들어 있거나, 링크 없이 오래 보관하고 싶을 때는 이 방법입니다.</p>
+  <ul>
+    <li>파일 이름은 <code>.pdf</code>가 기본입니다. 모든 앱이 열 수 있는 이름이고, MPDF 뷰어는 이름이 아니라 파일 안의 정보로 알아봅니다. <code>.mpdf</code>는 그 확장자를 등록한 앱에서 열 때만 씁니다.</li>
+    <li><strong>파일을 그대로 보내세요.</strong> "PDF로 인쇄", 스크린샷, 일부 압축·편집 앱으로 다시 저장하면 첨부가 지워져 음악 정보가 사라집니다. 페이지는 남습니다.</li>
+  </ul>
+
+  <h2>4. 열기</h2>
+  <ul>
+    <li><strong>링크를 받았다면</strong> 누르기만 하면 됩니다. 아래 알약을 누르면 재생되고, 펼치면 곡 목록과 유튜브 플레이어가 보입니다. 페이지를 넘기면 정해 둔 곡으로 바뀝니다.</li>
+    <li><strong>파일을 받았다면</strong> <a href="v/">뷰어</a>에 파일을 놓으세요. 파일은 브라우저 안에서만 열립니다.</li>
+    <li><strong>다른 PDF 앱에서 열면</strong> 그냥 PDF입니다. 음악만 없습니다. MPDF를 지원하는 앱 목록: [준비 중]</li>
+  </ul>
+
+  <h2>5. 저작권</h2>
+  <p>유튜브 트랙은 유튜브의 공식 플레이어로 재생되며, 소리만 뽑거나 숨겨서 틀지 않습니다. 직접 넣는 음원 파일과 PDF의 권리는 만드는 분에게 있어야 합니다. 침해 신고가 들어온 링크는 지웁니다.</p>
+
+  <h2>6. 앱 개발자라면</h2>
+  <p>PDF를 여는 앱이라면 첨부파일 <code>mpdf.json</code> 하나만 읽으면 MPDF를 지원합니다. 스펙은 세 쪽, JS·Python 레퍼런스는 80줄, 라이선스는 MIT입니다. <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙 읽기</a> · <a href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></p>
+</main>
+<footer class="wrap"><span>MPDF · 음악이 같이 재생되는 PDF</span><nav><a href="guide.html">가이드</a><a href="terms.html">이용약관</a><a href="report.html">신고</a></nav></footer>
+</body>
+</html>

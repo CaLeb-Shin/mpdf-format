@@ -1,0 +1,10 @@
+name = "mpdf"
+compatibility_date = "2025-06-01"
+pages_build_output_dir = "."
+
+# Files shared by link. Set a lifecycle rule on the bucket to delete objects after 90 days
+# (dashboard: R2 > mpdf-files > Settings > Object lifecycle rules), or run:
+#   wrangler r2 bucket lifecycle add mpdf-files --expire-days 90
+[[r2_buckets]]
+binding = "MPDF_FILES"
+bucket_name = "mpdf-files"

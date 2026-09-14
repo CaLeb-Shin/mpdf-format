@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MPDF Viewer (reference)</title>
+<style>
+  :root { --bar: 56px; --bg: #f3f4f6; --ink: #222; --navy: #1f3a5f; --accent: #e8632b; }
+  html, body { margin: 0; height: 100%; font: 14px system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--bg); }
+  #app { display: flex; flex-direction: column; height: 100%; }
+  /* Page area: the viewer never draws anything on top of the pages. */
+  #pages { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  #pages canvas { max-width: 100%; height: auto; box-shadow: 0 2px 8px rgba(0,0,0,.15); background: white; }
+  #drop { text-align: center; padding: 60px 20px; color: #555; max-width: 520px; }
+  #drop input { display: block; margin: 16px auto; }
+  /* Player bar: outside the page area, at most 56px (SPEC §3). */
+  #bar { height: var(--bar); display: flex; align-items: center; gap: 12px; padding: 0 16px; background: var(--navy); color: white; }
+  #bar button { background: transparent; color: white; border: 1px solid rgba(255,255,255,.5); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+  #bar button:disabled { opacity: .4; cursor: default; }
+  #title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  #tracks { display: flex; gap: 6px; overflow-x: auto; }
+  #tracks button.active { background: var(--accent); border-color: var(--accent); }
+  #page { opacity: .8; min-width: 40px; text-align: right; }
+  /* YouTube: the official player must stay visible (YouTube ToS). 320x200 is above the 200x200 minimum. */
+  #yt { position: fixed; right: 16px; bottom: calc(var(--bar) + 16px); width: 320px; height: 200px; background: black; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="pages">
+    <div id="drop">
+      <h2>MPDF Viewer</h2>
+      <p>Reference implementation. Reads the <code>mpdf.json</code> attachment, plays tracks, follows page cues. Plain PDFs open too, just without music.</p>
+      <input type="file" id="file" accept=".mpdf,.pdf,application/pdf">
+      <p>or drop a file anywhere on this page</p>
+    </div>
+  </div>
+  <div id="bar">
+    <button id="play" disabled>&#9654;</button>
+    <div id="title">No file</div>
+    <div id="tracks"></div>
+    <div id="page"></div>
+  </div>
+</div>
+<div id="yt"><div id="ytplayer"></div></div>
+<audio id="audio"></audio>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script type="module">
+import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
+
+const $ = (s) => document.querySelector(s)
+const audio = $('#audio')
+const state = { manifest: null, files: {}, tracks: [], current: null, playing: false, page: 0, yt: null, ytReady: false }
+const blobUrls = {}
+const MIME = { m4a: 'audio/mp4', mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg' }
+
+// ---- opening files -------------------------------------------------------
+$('#file').addEventListener('change', (e) => e.target.files[0] && open(e.target.files[0]))
+document.addEventListener('dragover', (e) => e.preventDefault())
+document.addEventListener('drop', (e) => { e.preventDefault(); e.dataTransfer.files[0] && open(e.dataTransfer.files[0]) })
+const param = new URLSearchParams(location.search).get('file')
+if (param) fetch(param).then((r) => r.arrayBuffer()).then((b) => open(new File([b], param.split('/').pop())))
+
+async function open(file) {
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise
+  await renderPages(pdf)
+  const att = (await pdf.getAttachments()) || {}          // pdf.js reads the EmbeddedFiles tree for us
+  const raw = att['mpdf.json']
+  let manifest = null
+  try { manifest = raw && JSON.parse(new TextDecoder().decode(raw.content)) } catch (e) { console.warn('bad mpdf.json', e) }
+  if (!manifest || typeof manifest.mpdf !== 'string' || !manifest.mpdf.startsWith('1.')) { setTitle(file.name + ' (plain PDF, no music)'); return }
+  state.manifest = manifest; state.files = att
+  loadManifest(manifest, file.name)
+}
+
+async function renderPages(pdf) {
+  const box = $('#pages'); box.innerHTML = ''; state.page = 0
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const vp = page.getViewport({ scale: 1.5 })
+    const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height; c.dataset.page = i
+    box.appendChild(c)
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise
+  }
+  box.onscroll = updateCurrentPage
+}
+
+// "Current page" = the page whose centre is nearest the middle of the viewport.
+function updateCurrentPage() {
+  const box = $('#pages'); const mid = box.scrollTop + box.clientHeight / 2
+  let best = 1, bestD = Infinity
+  for (const c of box.querySelectorAll('canvas')) {
+    const d = Math.abs(c.offsetTop + c.offsetHeight / 2 - mid)
+    if (d < bestD) { bestD = d; best = +c.dataset.page }
+  }
+  $('#page').textContent = 'p.' + best
+  if (best !== state.page) { state.page = best; onPageChange(best) }
+}
+
+// ---- manifest -> player ----------------------------------------------------
+const setTitle = (t) => { $('#title').textContent = t }
+const cueFor = (page) => (state.manifest.cues || []).find((c) => c.page === page)
+
+function loadManifest(m, fileName) {
+  state.tracks = m.tracks.filter((t) => /^(youtube:|file:|https:)/.test(t.src || ''))   // unknown schemes are ignored (SPEC §2.4)
+  setTitle(m.title || fileName)
+  const wrap = $('#tracks'); wrap.innerHTML = ''
+  for (const t of state.tracks) {
+    const b = document.createElement('button'); b.textContent = t.title || t.id
+    b.onclick = () => select(t, t.start || 0, state.playing); wrap.appendChild(b)
+  }
+  $('#play').disabled = state.tracks.length === 0
+  state.page = 1; $('#page').textContent = 'p.1'
+  const first = cueFor(1) || { track: state.tracks[0] && state.tracks[0].id, at: 0 }
+  const t = state.tracks.find((x) => x.id === first.track)
+  if (t) select(t, first.at || 0, false)                   // cue up, never autoplay (SPEC §2.5)
+}
+
+function onPageChange(page) {
+  if (!state.manifest || (state.manifest.options || {}).followPage === false) return
+  const cue = cueFor(page); if (!cue) return
+  const t = state.tracks.find((x) => x.id === cue.track)
+  if (t) select(t, cue.at || 0, state.playing)             // keep playing if we were playing
+}
+
+function select(track, at, play) {
+  state.current = track
+  const buttons = [...$('#tracks').children]; state.tracks.forEach((t, i) => buttons[i].classList.toggle('active', t === track))
+  const isYt = track.src.startsWith('youtube:')
+  $('#yt').style.display = isYt ? 'block' : 'none'
+  if (isYt) { audio.pause(); ytLoad(track.src.slice(8), at, play); return }
+  if (state.yt && state.ytReady) state.yt.pauseVideo()
+  const url = track.src.startsWith('file:') ? blobUrl(track.src.slice(5)) : track.src
+  if (audio.src === url) { audio.currentTime = at; play ? audio.play() : audio.pause(); return }
+  audio.onloadedmetadata = () => { audio.currentTime = at; if (play) audio.play() }
+  audio.src = url
+}
+
+function blobUrl(name) {
+  const f = state.files[name]; if (!f) return ''
+  return blobUrls[name] || (blobUrls[name] = URL.createObjectURL(new Blob([f.content], { type: MIME[name.split('.').pop().toLowerCase()] || '' })))
+}
+
+// ---- play / pause ----------------------------------------------------------
+const showPlaying = (p) => { state.playing = p; $('#play').innerHTML = p ? '&#10074;&#10074;' : '&#9654;' }
+audio.onplay = () => showPlaying(true); audio.onpause = () => showPlaying(false)
+$('#play').onclick = () => {
+  const t = state.current; if (!t) return
+  if (t.src.startsWith('youtube:')) { if (state.ytReady) state.playing ? state.yt.pauseVideo() : state.yt.playVideo(); return }
+  audio.paused ? audio.play() : audio.pause()
+}
+
+// ---- YouTube (official IFrame player, always visible) ----------------------
+let pendingYt = null
+function ytLoad(id, at, play) { pendingYt = { id, at, play }; if (state.ytReady) flushYt() }
+function flushYt() {
+  if (!pendingYt) return
+  const { id, at, play } = pendingYt; pendingYt = null
+  play ? state.yt.loadVideoById({ videoId: id, startSeconds: at }) : state.yt.cueVideoById({ videoId: id, startSeconds: at })
+}
+window.onYouTubeIframeAPIReady = () => {
+  state.yt = new YT.Player('ytplayer', { width: 320, height: 200, playerVars: { playsinline: 1 },
+    events: { onReady: () => { state.ytReady = true; flushYt() },
+              onStateChange: (e) => showPlaying(e.data === YT.PlayerState.PLAYING) } })
+}
+if (window.YT && window.YT.Player) window.onYouTubeIframeAPIReady()   // API script may already have loaded
+</script>
+</body>
+</html>
