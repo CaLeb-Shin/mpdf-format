@@ -209,3 +209,4 @@ footer nav { display: flex; gap: 20px; } footer nav a { color: var(--faint); }
 .addfile { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px dashed var(--line-2); border-radius: 10px; cursor: pointer; }
 .addfile:hover { border-color: var(--accent); }
 .addfile .txt { flex-grow: 1; min-width: 0; } .addfile strong { display: block; font-size: 14px; } .addfile small { display: block; color: var(--faint); font-size: 12px; line-height: 1.5; }
+.addfile .btn { white-space: nowrap; }
