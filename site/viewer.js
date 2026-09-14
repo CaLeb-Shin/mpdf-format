@@ -1,7 +1,7 @@
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
 import { readMpdf, fmtTime, rangesOf, TRACK_COLORS, mimeOf } from './mpdf-browser.js'
 import { mountAds } from './ads.js'
-import { t, applyDom } from './i18n.js'
+import { t as tr, applyDom } from './i18n.js'
 const ROOT = new URL('.', import.meta.url).pathname.replace(/\/$/, '')
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
 applyDom(); mountAds()
@@ -21,22 +21,22 @@ document.addEventListener('drop', (e) => { e.preventDefault(); e.dataTransfer.fi
 const idMatch = location.pathname.match(/\/v\/([A-Za-z0-9]{8,16})$/)
 const src = idMatch ? `${ROOT}/f/${idMatch[1]}` : new URLSearchParams(location.search).get('file')
 if (src) fetch(src).then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer() }).then((b) => open(new File([b], (document.title.replace(/ · MPDF$/, '') || 'mpdf') + '.pdf')))
-  .catch((e) => { $('#title').textContent = String(e.message) === '404' ? t('v.expired') : t('v.fail'); $('#drop').classList.add('hidden') })
-if (idMatch) { const b = $('#sharebtn'); b.classList.remove('hidden'); b.onclick = async () => { try { await navigator.clipboard.writeText(location.href); b.textContent = t('v.copied') } catch { prompt('URL', location.href) } } }
+  .catch((e) => { $('#title').textContent = String(e.message) === '404' ? tr('v.expired') : tr('v.fail'); $('#drop').classList.add('hidden') })
+if (idMatch) { const b = $('#sharebtn'); b.classList.remove('hidden'); b.onclick = async () => { try { await navigator.clipboard.writeText(location.href); b.textContent = tr('v.copied') } catch { prompt('URL', location.href) } } }
 
 async function open(file) {
   state.bytes = new Uint8Array(await file.arrayBuffer()); state.name = file.name.replace(/\.(pdf|mpdf)$/i, '')
   let pdf
-  try { pdf = await pdfjsLib.getDocument({ data: state.bytes.slice() }).promise } catch { $('#title').textContent = t('pdf.unreadable'); return }
+  try { pdf = await pdfjsLib.getDocument({ data: state.bytes.slice() }).promise } catch { $('#title').textContent = tr('pdf.unreadable'); return }
   state.pageCount = pdf.numPages
   $('#dl').classList.remove('hidden')
   const r = await readMpdf(pdf)                       // show the player first, render pages after
-  if (!r) { $('#title').textContent = state.name; $('#meta').textContent = t('v.noMusic', { n: pdf.numPages }); player.classList.add('hidden'); await renderPages(pdf); state.page = 1; return }
+  if (!r) { $('#title').textContent = state.name; $('#meta').textContent = tr('v.noMusic', { n: pdf.numPages }); player.classList.add('hidden'); await renderPages(pdf); state.page = 1; return }
   state.manifest = r.manifest; state.files = r.files
   state.tracks = r.manifest.tracks.filter((t) => /^(youtube:|file:|https:)/.test(t.src || '')).map((t, i) => ({ ...t, color: TRACK_COLORS[i % TRACK_COLORS.length] }))
   state.ranges = rangesOf((r.manifest.cues || []).filter((c) => state.tracks.some((t) => t.id === c.track)), pdf.numPages)
   $('#title').textContent = r.manifest.title || state.name
-  $('#meta').textContent = t('v.meta', { n: pdf.numPages, m: state.tracks.length })
+  $('#meta').textContent = tr('v.meta', { n: pdf.numPages, m: state.tracks.length })
   renderList(); player.classList.remove('hidden')
   state.page = 1
   const first = state.ranges.find((x) => x.from === 1) || { track: state.tracks[0] && state.tracks[0].id, at: 0 }
@@ -77,7 +77,7 @@ function renderList() {
   for (const t of state.tracks) {
     const b = document.createElement('button'); b.dataset.id = t.id
     const at = state.ranges.find((r) => r.track === t.id && r.at)
-    b.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:999px;background:${t.color}"></span><span class="rng">${rangeLabel(t)}</span><span class="nm">${esc(t.title || t.id)} ${at ? `<small>${t('v.from', { t: fmtTime(at.at) })}</small>` : ''}</span><span class="dur" data-dur="${t.id}"></span>`
+    b.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:999px;background:${t.color}"></span><span class="rng">${rangeLabel(t)}</span><span class="nm">${esc(t.title || t.id)} ${at ? `<small>${tr('v.from', { t: fmtTime(at.at) })}</small>` : ''}</span><span class="dur" data-dur="${t.id}"></span>`
     b.onclick = () => select(t, (state.ranges.find((r) => r.track === t.id) || {}).at || t.start || 0, state.playing)
     list.appendChild(b)
   }
@@ -100,7 +100,7 @@ function select(track, at, play) {
 function blobUrl(name) { const f = state.files[name]; if (!f) return ''; return blobUrls[name] || (blobUrls[name] = URL.createObjectURL(new Blob([f], { type: mimeOf(name) }))) }
 function setDur(id, d) { const el = document.querySelector(`[data-dur="${id}"]`); if (el && isFinite(d)) el.textContent = fmtTime(d) }
 function setProgress(t, d) { $('#time').textContent = d ? `${fmtTime(t)} / ${fmtTime(d)}` : fmtTime(t); $('#fill').style.width = d ? (100 * t / d) + '%' : '0%' }
-function showPlaying(p) { state.playing = p; $('#play').innerHTML = p ? PAUSE : PLAY; $('#miniplay').innerHTML = p ? PAUSE : PLAY; $('#play').setAttribute('aria-label', p ? t('v.pause') : t('v.play')) }
+function showPlaying(p) { state.playing = p; $('#play').innerHTML = p ? PAUSE : PLAY; $('#miniplay').innerHTML = p ? PAUSE : PLAY; $('#play').setAttribute('aria-label', p ? tr('v.pause') : tr('v.play')) }
 audio.onplay = () => showPlaying(true); audio.onpause = () => showPlaying(false)
 audio.ontimeupdate = () => setProgress(audio.currentTime, audio.duration)
 audio.onended = () => { if ((state.manifest.options || {}).loop) { audio.currentTime = 0; audio.play() } }
