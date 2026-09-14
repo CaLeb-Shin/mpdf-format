@@ -1,24 +1,29 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en" data-ko="ko/report.html">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>신고 · 삭제 요청 · MPDF</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+  <title>Report / removal · MPDF</title>
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/report.html">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/report.html">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/report.html">
+  <link rel="canonical" href="https://mpdf.pages.dev/report.html">
   <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<header class="wrap nav"><a class="brand" href="./">MPDF</a><nav><a href="v/">뷰어</a><a href="guide.html">가이드</a></nav></header>
+<header class="wrap nav"><a class="brand" href="./">MPDF</a><nav><a href="ko/report.html" hreflang="ko" lang="ko">한국어</a><a href="v/">Viewer</a><a href="guide.html">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
 <main class="wrap doc">
-  <h1>신고 · 삭제 요청</h1>
-  <p>권리를 침해하는 파일이 링크로 공유되고 있거나, 본인이 만든 링크를 지우고 싶다면 아래 내용을 메일로 보내 주세요. 확인 후 링크를 삭제합니다.</p>
+  <h1>Report / removal</h1>
+  <p>If a shared link infringes your rights, or you want a link you created taken down, send us the details below by email. We remove the link once verified.</p>
   <ul>
-    <li>링크 주소 (예: <code>https://[도메인]/v/abc123XYZ0</code>)</li>
-    <li>사유 (저작권 침해 / 본인 파일 삭제 / 기타)</li>
-    <li>권리 침해 신고라면 권리자임을 확인할 수 있는 내용</li>
+    <li>The link (e.g. <code>https://mpdf.pages.dev/v/abc123XYZ0</code>)</li>
+    <li>The reason (copyright infringement / my own file / other)</li>
+    <li>For infringement claims, something that shows you hold the rights</li>
   </ul>
-  <p><a class="btn" href="mailto:[신고 이메일]?subject=MPDF%20%EC%8B%A0%EA%B3%A0">메일 보내기</a></p>
+  <p><a class="btn" href="mailto:[report email]?subject=MPDF%20report">Send email</a></p>
 </main>
-<footer class="wrap"><span>MPDF</span><nav><a href="terms.html">이용약관</a><a href="report.html">신고</a></nav></footer>
+<footer class="wrap"><span>MPDF · a PDF that plays music</span><nav><a href="guide.html">Guide</a><a href="terms.html">Terms</a><a href="report.html">Report</a></nav></footer>
+<script type="module">import { offerKorean } from "./i18n.js"; offerKorean()</script>
 </body>
 </html>

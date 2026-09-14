@@ -210,3 +210,5 @@ footer nav { display: flex; gap: 20px; } footer nav a { color: var(--faint); }
 .addfile:hover { border-color: var(--accent); }
 .addfile .txt { flex-grow: 1; min-width: 0; } .addfile strong { display: block; font-size: 14px; } .addfile small { display: block; color: var(--faint); font-size: 12px; line-height: 1.5; }
 .addfile .btn { white-space: nowrap; }
+.langbar { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+.langbar a { font-weight: 700; } .langbar button { background: none; border: 0; color: var(--faint); font-size: 18px; line-height: 1; padding: 4px 8px; }

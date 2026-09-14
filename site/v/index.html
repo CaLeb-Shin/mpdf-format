@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en" data-auto-lang="1">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MPDF 뷰어</title>
+  <title>MPDF Viewer</title>
   <!--og-->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -15,21 +15,21 @@
   <header class="vw-head">
     <a class="brand" href="../">MPDF</a>
     <span class="sep"></span>
-    <span class="title" id="title">뷰어</span>
+    <span class="title" id="title" data-i18n="v.title">Viewer</span>
     <span class="meta" id="meta"></span>
     <div class="right">
-      <button class="btn ghost small hidden" id="sharebtn">링크 복사</button>
-      <button class="btn ghost small hidden" id="dl">PDF로 저장</button>
-      <a class="btn small" href="../">나도 만들기</a>
+      <button class="btn ghost small hidden" id="sharebtn" data-i18n="v.copy">Copy link</button>
+      <button class="btn ghost small hidden" id="dl" data-i18n="v.save">Save PDF</button>
+      <a class="btn small" href="../" data-i18n="v.make">Make your own</a>
     </div>
   </header>
-  <div class="vw-ad"><div class="ad-slot" data-ad="viewerTop" data-size="728x90" data-label="광고"></div></div>
+  <div class="vw-ad"><div class="ad-slot" data-ad="viewerTop" data-size="728x90" data-label="ad" data-i18n-label="v.ad"></div></div>
   <div class="vw-pages" id="pages">
     <div class="vw-drop" id="drop">
-      <h2>MPDF 뷰어</h2>
-      <p>받은 .pdf나 .mpdf 파일을 여기에 놓으세요. 음악이 붙어 있으면 아래 알약에서 재생됩니다. 그냥 PDF도 열립니다.</p>
-      <label class="btn">파일 열기<input type="file" id="file" accept="application/pdf,.pdf,.mpdf"></label>
-      <small style="color: var(--faint);">파일은 브라우저 안에서만 열립니다.</small>
+      <h2 data-i18n="v.drop.h">MPDF Viewer</h2>
+      <p data-i18n="v.drop.p">Drop a .pdf or .mpdf you received. If it carries music, it plays from the pill below. Plain PDFs open too.</p>
+      <label class="btn"><span data-i18n="v.drop.btn">Open file</span><input type="file" id="file" accept="application/pdf,.pdf,.mpdf"></label>
+      <small style="color: var(--faint);" data-i18n="v.drop.note">Files never leave your browser.</small>
     </div>
   </div>
 </div>
@@ -37,23 +37,23 @@
 <div class="player hidden collapsed" id="player">
   <div class="player-head" id="phead">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="#6f6a62"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
-    <span class="lbl">플레이어 · 끌어서 이동</span>
-    <button id="collapse" aria-label="접기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+    <span class="lbl" data-i18n="v.player">Player · drag to move</span>
+    <button id="collapse" aria-label="Collapse" data-i18n-aria="v.collapse"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
   </div>
   <div class="yt" id="yt"><div id="ytplayer"></div></div>
   <div class="now">
-    <button class="mini play" id="miniplay" aria-label="재생"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
+    <button class="mini play" id="miniplay" aria-label="Play" data-i18n-aria="v.play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
     <div class="line"><span class="dot" id="dot"></span><span class="name" id="name">—</span><span class="time" id="time"></span></div>
     <div class="bar" id="bar"><i id="fill"></i></div>
     <div class="ctl">
-      <button id="prev" aria-label="이전 곡"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
-      <button class="play" id="play" aria-label="재생"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
-      <button id="next" aria-label="다음 곡"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <button id="prev" aria-label="Previous track" data-i18n-aria="v.prev"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button class="play" id="play" aria-label="Play" data-i18n-aria="v.play"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
+      <button id="next" aria-label="Next track" data-i18n-aria="v.next"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
     </div>
-    <button class="mini exp" id="expand" aria-label="펼치기"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
+    <button class="mini exp" id="expand" aria-label="Expand" data-i18n-aria="v.expand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
   </div>
   <div class="list" id="list"></div>
-  <div class="ad-slot" data-ad="house" data-size="300x100" data-label="후원 배너 자리"></div>
+  <div class="ad-slot" data-ad="house" data-size="300x100" data-label="sponsor" data-i18n-label="v.house"></div>
 </div>
 <audio id="audio" preload="metadata"></audio>
 <script src="https://www.youtube.com/iframe_api"></script>

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MPDF — 음악이 같이 재생되는 PDF</title>
+  <meta name="description" content="PDF에 유튜브 링크나 음원을 붙여 MPDF로 만드세요. 어떤 PDF 뷰어에서도 그냥 열리고, MPDF 뷰어에서는 악보를 보는 동안 음악이 나옵니다.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/">
+  <link rel="canonical" href="https://mpdf.pages.dev/ko/">
+  <meta property="og:title" content="MPDF — 음악이 같이 재생되는 PDF">
+  <meta property="og:description" content="PDF에 유튜브 링크를 붙여 보내면, 받는 사람 모두 악보를 보면서 듣습니다.">
+  <meta property="og:image" content="https://mpdf.pages.dev/og-ko.png">
+  <meta property="og:url" content="https://mpdf.pages.dev/ko/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="../favicon.svg">
+  <link rel="stylesheet" href="../site.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+<body>
+<header class="wrap nav">
+  <a class="brand" href="../">MPDF</a>
+  <nav><a href="../" hreflang="en">English</a>
+    <a href="../v/">뷰어</a>
+    <a href="guide.html">가이드</a>
+    <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a>
+    <a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="glow"></div>
+    <div class="hero-head">
+      <h1>악보가<br><em>울린다.</em></h1>
+      <p class="lede">PDF를 놓고 유튜브 링크를 붙이면 끝. 받는 사람 모두가 악보를 보면서 듣습니다. 앱 없이도, PDF는 그대로.</p>
+    </div>
+
+    <div class="tool" id="tool">
+      <div class="tool-grid">
+        <div class="tool-col">
+          <div class="step-label">01 · PDF</div>
+          <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF 선택">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ff7a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m6 10 6-6 6 6"/><path d="M4 20h16"/></svg>
+            <strong>PDF를 여기에 놓으세요</strong>
+            <small>또는 클릭해서 선택 · 페이지는 한 글자도 바뀌지 않습니다</small>
+            <small><a href="?file=../samples/score.pdf" onclick="event.stopPropagation()">샘플 악보로 해보기</a></small>
+          </div>
+          <input type="file" id="pdf-input" accept="application/pdf,.pdf,.mpdf" hidden>
+        </div>
+        <div class="tool-col">
+          <div class="step-label">02 · 트랙</div>
+          <div class="tracks" id="tracks"></div>
+          <div class="addrow">
+            <input id="yt-url" type="url" placeholder="유튜브 링크 붙여넣기" autocomplete="off" inputmode="url">
+            <button class="btn small" id="yt-add">추가</button>
+          </div>
+          <label class="addfile" for="audio-input">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff7a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            <span class="txt"><strong>음원 파일 넣기</strong><small>카톡으로 받은 반주·녹음 파일(m4a · mp3 · wav)을 고르세요. PDF 안에 들어가 인터넷 없이도 재생됩니다.</small></span>
+            <span class="btn ghost small">파일 선택</span>
+            <input type="file" id="audio-input" accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg" multiple hidden>
+          </label>
+        </div>
+      </div>
+
+      <div class="assign hidden" id="assign">
+        <div class="assign-head">
+          <div class="step-label">03 · 페이지 지정</div>
+          <p>페이지마다 곡을 고르세요. 고르지 않은 페이지는 앞 곡이 그대로 이어집니다.</p>
+        </div>
+        <div class="pages" id="pages"></div>
+        <div class="ranges" id="ranges"></div>
+      </div>
+
+      <div class="tool-foot">
+        <div class="title"><label for="title" class="step-label">제목</label><input id="title" placeholder="예: 피아노 교재 2권"></div>
+        <button class="btn" id="link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>링크 만들기</button>
+        <button class="btn ghost" id="save-pdf">PDF로 저장</button>
+        <button class="btn ghost" id="save-mpdf">.mpdf로 저장</button>
+        <div class="linkbox hidden" id="linkbox">
+          <input id="linkurl" readonly aria-label="공유 링크">
+          <button class="btn small" id="copy">복사</button>
+          <button class="btn ghost small" id="share">공유</button>
+          <a class="btn ghost small" id="openlink" href="#" target="_blank" rel="noopener">열어 보기</a>
+        </div>
+        <div class="status" id="status">파일은 브라우저 안에서 처리됩니다. "링크 만들기"를 누른 파일만 서버에 올라갑니다.</div>
+      </div>
+    </div>
+  </section>
+  <div class="ad-landing"><div class="ad-slot" data-ad="landing" data-size="728x90" data-label="광고"></div></div>
+</main>
+
+<div class="ticker"><div><span>레슨 교재</span><i>·</i><span>합창단 파트보</span><i>·</i><span>찬양팀 콘티</span><i>·</i><span>오케스트라 악보</span><i>·</i><span>밴드 세트리스트</span><i>·</i><span>레슨 교재</span><i>·</i><span>합창단 파트보</span><i>·</i><span>찬양팀 콘티</span></div></div>
+
+<main class="wrap">
+  <section class="steps">
+    <div><div class="num">1</div><h3>PDF 놓기</h3><p>악보, 콘티, 교재. 갖고 있는 그대로. 페이지는 한 글자도 바뀌지 않습니다.</p></div>
+    <div><div class="num">2</div><h3>유튜브 또는 음원 넣기</h3><p>곡마다 유튜브 링크 하나, 또는 카톡으로 받은 반주·녹음 파일(m4a · mp3)을 그대로. 페이지별로 곡을 정하면 넘길 때 바뀝니다.</p></div>
+    <div><div class="num">3</div><h3>보내기</h3><p>PDF로 저장해 카톡에 올리면 누구나 열립니다. MPDF 뷰어에서 열면 음악까지 나옵니다.</p></div>
+  </section>
+
+  <section class="why">
+    <div><h2>어디서나 열린다</h2><p>MPDF는 첨부파일이 든 표준 PDF입니다. 미리보기, Acrobat, 크롬, 아이패드 악보 앱. 모르는 앱에서는 그냥 PDF로 열립니다.</p></div>
+    <div><h2>PDF는 그대로</h2><p>페이지 위에는 아무것도 그리지 않습니다. 플레이어는 접었다 펼 수 있는 팝업 하나. 워터마크 없음, 오버레이 없음.</p></div>
+    <div><h2>누구나 만든다</h2><p>설치도 로그인도 없이 1분. 개발자라면 코드 다섯 줄. 스펙은 공개, 로열티는 없습니다.</p></div>
+  </section>
+
+  <section class="faq" id="faq">
+    <h2>자주 묻는 것</h2>
+    <dl>
+      <dt>받는 사람이 앱이 없으면?</dt><dd>"링크 만들기"로 만든 링크를 보내면 브라우저에서 바로 보고 듣습니다. 파일로 받았다면 이 사이트의 <a href="../v/">뷰어</a>에 놓으면 됩니다.</dd>
+      <dt>내 PDF가 바뀌나요?</dt><dd>아니요. PDF 표준의 첨부파일 기능에 재생 목록 하나를 넣을 뿐입니다. 어디서 열어도 원래 PDF 그대로입니다.</dd>
+      <dt>파일 이름은 왜 .pdf인가요?</dt><dd>오늘 모든 앱이 여는 이름이기 때문입니다. MPDF 뷰어는 이름이 아니라 첨부로 알아봅니다. .mpdf는 지원 앱용 선택지입니다.</dd>
+      <dt>음악 정보가 사라지는 경우가 있나요?</dt><dd>"PDF로 인쇄", 스크린샷, 일부 압축·편집 앱으로 다시 저장하면 첨부가 지워집니다. 파일을 그대로 보내면 문제없습니다.</dd>
+      <dt>저작권은요?</dt><dd>유튜브 트랙은 유튜브 공식 플레이어로 재생됩니다. 이 사이트는 음원을 저장하지 않으므로, 음원 파일이 든 파일은 링크가 아니라 PDF로 저장해 보내야 합니다. 직접 넣는 음원 파일의 권리는 만드는 분의 책임입니다.</dd>
+    </dl>
+  </section>
+
+  <section class="dev">
+    <div>
+      <h2>오픈 포맷.<br>로열티 없음.</h2>
+      <p>당신의 앱이 PDF를 연다면, 첨부파일 하나만 더 읽으면 MPDF를 지원합니다. 스펙 세 쪽, 레퍼런스 80줄, MIT.</p>
+      <a class="btn ghost" href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙 읽기</a>
+    </div>
+    <pre><small>뷰어가 할 일 전부</small>read("mpdf.json")
+play(tracks[cue.page])</pre>
+  </section>
+
+  <section class="cta">
+    <h2>첫 곡을<br>붙여 보자.</h2>
+    <a class="btn" href="#tool">지금 만들기</a>
+  </section>
+  <footer>
+    <span>MPDF · 음악이 같이 재생되는 PDF</span>
+    <nav><a href="guide.html">가이드</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙 1.0</a><a href="report.html">신고</a><a href="terms.html">이용약관</a></nav>
+  </footer>
+</main>
+<script type="module" src="../maker.js"></script>
+</body>
+</html>
