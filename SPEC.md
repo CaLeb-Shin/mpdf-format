@@ -38,10 +38,10 @@ UTF-8 JSON, no BOM. Unknown fields MUST be ignored by consumers (forward compati
 ```json
 {
   "mpdf": "1.0",
-  "title": "Sunday Setlist 9/14",
+  "title": "Piano Book 2",
   "tracks": [
-    { "id": "t1", "title": "Amazing Grace", "src": "youtube:dQw4w9WgXcQ" },
-    { "id": "t2", "title": "Holy Holy",     "src": "file:track2.m4a" },
+    { "id": "t1", "title": "Canon in D", "src": "youtube:dQw4w9WgXcQ" },
+    { "id": "t2", "title": "Arirang",     "src": "file:track2.m4a" },
     { "id": "t3", "src": "https://cdn.example.com/song.mp3" }
   ],
   "cues": [

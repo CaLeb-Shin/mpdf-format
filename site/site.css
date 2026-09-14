@@ -205,3 +205,7 @@ footer nav { display: flex; gap: 20px; } footer nav a { color: var(--faint); }
 .doc strong { color: var(--ink); }
 .doc code { font-family: var(--mono); font-size: 14px; background: var(--panel); padding: 2px 6px; border-radius: 4px; color: var(--ink-2); }
 .doc .draft { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+
+.addfile { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px dashed var(--line-2); border-radius: 10px; cursor: pointer; }
+.addfile:hover { border-color: var(--accent); }
+.addfile .txt { flex-grow: 1; min-width: 0; } .addfile strong { display: block; font-size: 14px; } .addfile small { display: block; color: var(--faint); font-size: 12px; line-height: 1.5; }

@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "python"))
 import mpdf
 
-SONGS = ["Amazing Grace", "Holy, Holy, Holy", "How Great Thou Art", "It Is Well"]
+SONGS = ["Canon in D", "Arirang", "Fur Elise", "Gymnopedie No.1"]
 
 def make_score(path):
     c = canvas.Canvas(path, pagesize=A4); w, h = A4

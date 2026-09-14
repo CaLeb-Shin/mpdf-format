@@ -21,10 +21,10 @@ setlist.mpdf   (= a valid PDF; rename to .pdf and it still opens everywhere)
 ```json
 {
   "mpdf": "1.0",
-  "title": "Sunday Setlist",
+  "title": "Piano Book 2",
   "tracks": [
-    { "id": "t1", "title": "Amazing Grace", "src": "youtube:dQw4w9WgXcQ" },
-    { "id": "t2", "title": "Holy Holy",     "src": "file:track2.m4a" }
+    { "id": "t1", "title": "Canon in D", "src": "youtube:dQw4w9WgXcQ" },
+    { "id": "t2", "title": "Arirang",     "src": "file:track2.m4a" }
   ],
   "cues": [ { "page": 1, "track": "t1" }, { "page": 4, "track": "t2", "at": 32.5 } ]
 }
@@ -37,7 +37,7 @@ Full specification: [SPEC.md](SPEC.md). JSON Schema: [schema/mpdf.schema.json](s
 ```bash
 python3 -m pip install pypdf
 python3 python/mpdf.py make score.pdf -o score.mpdf \
-    --youtube dQw4w9WgXcQ="Amazing Grace" --audio backing.m4a="Backing" \
+    --youtube dQw4w9WgXcQ="Canon in D" --audio backing.m4a="Backing" \
     --cue 1:t1 --cue 4:t2:32.5
 python3 python/mpdf.py info score.mpdf
 ```

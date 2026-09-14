@@ -49,10 +49,12 @@
             <input id="yt-url" type="url" placeholder="유튜브 링크 붙여넣기" autocomplete="off" inputmode="url">
             <button class="btn small" id="yt-add">추가</button>
           </div>
-          <div class="chips">
-            <label class="chip" for="audio-input">+ 음원 파일 (m4a · mp3 · wav)</label>
+          <label class="addfile" for="audio-input">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff7a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            <span class="txt"><strong>음원 파일 넣기</strong><small>카톡으로 받은 반주·녹음 파일(m4a · mp3 · wav)을 고르세요. PDF 안에 들어가 인터넷 없이도 재생됩니다.</small></span>
+            <span class="btn ghost small">파일 선택</span>
             <input type="file" id="audio-input" accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg" multiple hidden>
-          </div>
+          </label>
         </div>
       </div>
 
@@ -66,7 +68,7 @@
       </div>
 
       <div class="tool-foot">
-        <div class="title"><label for="title" class="step-label">제목</label><input id="title" placeholder="주일 콘티 9/14"></div>
+        <div class="title"><label for="title" class="step-label">제목</label><input id="title" placeholder="예: 피아노 교재 2권"></div>
         <button class="btn" id="link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>링크 만들기</button>
         <button class="btn ghost" id="save-pdf">PDF로 저장</button>
         <button class="btn ghost" id="save-mpdf">.mpdf로 저장</button>
@@ -83,12 +85,12 @@
   <div class="ad-landing"><div class="ad-slot" data-ad="landing" data-size="728x90" data-label="광고"></div></div>
 </main>
 
-<div class="ticker"><div><span>찬양팀 콘티</span><i>·</i><span>합창단 파트보</span><i>·</i><span>레슨 교재</span><i>·</i><span>오케스트라 악보</span><i>·</i><span>밴드 세트리스트</span><i>·</i><span>찬양팀 콘티</span><i>·</i><span>합창단 파트보</span><i>·</i><span>레슨 교재</span></div></div>
+<div class="ticker"><div><span>레슨 교재</span><i>·</i><span>합창단 파트보</span><i>·</i><span>찬양팀 콘티</span><i>·</i><span>오케스트라 악보</span><i>·</i><span>밴드 세트리스트</span><i>·</i><span>레슨 교재</span><i>·</i><span>합창단 파트보</span><i>·</i><span>찬양팀 콘티</span></div></div>
 
 <main class="wrap">
   <section class="steps">
     <div><div class="num">1</div><h3>PDF 놓기</h3><p>악보, 콘티, 교재. 갖고 있는 그대로. 페이지는 한 글자도 바뀌지 않습니다.</p></div>
-    <div><div class="num">2</div><h3>유튜브 붙이기</h3><p>곡마다 링크 하나. 카톡으로 받은 음원 파일도 됩니다. 페이지별로 곡을 정하면 넘길 때 바뀝니다.</p></div>
+    <div><div class="num">2</div><h3>유튜브 또는 음원 넣기</h3><p>곡마다 유튜브 링크 하나, 또는 카톡으로 받은 반주·녹음 파일(m4a · mp3)을 그대로. 페이지별로 곡을 정하면 넘길 때 바뀝니다.</p></div>
     <div><div class="num">3</div><h3>보내기</h3><p>PDF로 저장해 카톡에 올리면 누구나 열립니다. MPDF 뷰어에서 열면 음악까지 나옵니다.</p></div>
   </section>
 
