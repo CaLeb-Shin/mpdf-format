@@ -15,3 +15,6 @@ export async function onRequestGet({ params, env, request }) {
     'etag': obj.httpEtag || '',
   } })
 }
+
+// HEAD (link scanners, some chat apps) gets the same headers
+export const onRequestHead = onRequestGet

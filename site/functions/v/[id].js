@@ -21,3 +21,5 @@ export async function onRequestGet({ params, env, request }) {
   html = html.replace('<title>MPDF 뷰어</title>', `<title>${esc(title)} · MPDF</title>`).replace('<!--og-->', og)
   return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=300' } })
 }
+
+export const onRequestHead = onRequestGet
