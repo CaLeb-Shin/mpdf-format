@@ -3,7 +3,7 @@ import { isId } from '../_lib.js'
 
 export async function onRequestGet({ params, env, request }) {
   const id = String(params.id).replace(/\.pdf$/i, '')
-  if (!isId(id)) return new Response('Not found', { status: 404 })
+  if (!isId(id) || !env.MPDF_FILES) return new Response('Not found', { status: 404 })
   const obj = await env.MPDF_FILES.get(id + '.pdf')
   if (!obj) return new Response('Not found', { status: 404 })
   const title = ((obj.customMetadata && obj.customMetadata.title) || 'mpdf').replace(/[\\/:*?"<>|]/g, '_')

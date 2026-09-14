@@ -4,6 +4,7 @@
 import { newId, inspect, json, MAX_BYTES } from '../_lib.js'
 
 export async function onRequestPost({ request, env }) {
+  if (!env.MPDF_FILES) return json({ error: 'link_disabled' }, 503)
   const declared = +(request.headers.get('content-length') || 0)
   if (declared > MAX_BYTES) return json({ error: 'too_large' }, 413)
   const bytes = new Uint8Array(await request.arrayBuffer())

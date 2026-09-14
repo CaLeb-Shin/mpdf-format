@@ -4,7 +4,7 @@ import { isId, esc } from '../_lib.js'
 export async function onRequestGet({ params, env, request }) {
   const id = String(params.id)
   const staticPage = () => env.ASSETS.fetch(new URL('/v/', request.url))
-  if (!isId(id)) return staticPage()
+  if (!isId(id) || !env.MPDF_FILES) return staticPage()
   const [head, page] = await Promise.all([env.MPDF_FILES.head(id + '.pdf'), staticPage()])
   let html = await page.text()
   if (!head) return new Response(html.replace('<!--og-->', '<meta name="robots" content="noindex">'), { status: 404, headers: { 'content-type': 'text/html; charset=utf-8' } })

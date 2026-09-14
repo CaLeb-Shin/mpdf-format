@@ -149,7 +149,7 @@ async function save(ext) {
 $('#save-pdf').onclick = () => save('pdf')
 $('#save-mpdf').onclick = () => save('mpdf')
 const BASE = location.pathname.replace(/\/(index\.html)?$/, '')
-const ERR = { too_large: '파일이 너무 큽니다 (최대 20MB)', not_pdf: 'PDF가 아닙니다', unreadable: 'PDF를 읽을 수 없습니다', not_mpdf: '트랙 정보가 없습니다', embedded_audio: '음원 파일이 들어 있는 파일은 링크로 공유할 수 없습니다' }
+const ERR = { link_disabled: '링크 기능이 아직 켜지지 않았습니다. 지금은 PDF로 저장해 보내 주세요', too_large: '파일이 너무 큽니다 (최대 20MB)', not_pdf: 'PDF가 아닙니다', unreadable: 'PDF를 읽을 수 없습니다', not_mpdf: '트랙 정보가 없습니다', embedded_audio: '음원 파일이 들어 있는 파일은 링크로 공유할 수 없습니다' }
 $('#link').onclick = async () => {
   if (!state.bytes) return setStatus('PDF를 먼저 넣어 주세요', true)
   if (!state.tracks.length) return setStatus('트랙을 하나 이상 넣어 주세요', true)
