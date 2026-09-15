@@ -1,10 +1,11 @@
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
 import { readMpdf, fmtTime, rangesOf, TRACK_COLORS, mimeOf } from './mpdf-browser.js'
 import { mountAds } from './ads.js'
-import { t as tr, applyDom } from './i18n.js'
+import { t as tr, applyDom, mountLangButton } from './i18n.js'
 const ROOT = new URL('.', import.meta.url).pathname.replace(/\/$/, '')
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
-applyDom(); mountAds()
+mountLangButton(); mountAds()
+document.addEventListener('langchange', () => { if (state.manifest) { $('#meta').textContent = tr('v.meta', { n: state.pageCount, m: state.tracks.length }); renderList(); for (const b of $('#list').children) b.classList.toggle('active', state.current && b.dataset.id === state.current.id) } })
 
 const $ = (s) => document.querySelector(s)
 const audio = $('#audio'), player = $('#player'), pagesEl = $('#pages')

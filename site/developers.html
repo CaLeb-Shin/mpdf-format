@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" data-ko="ko/developers">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add MPDF to your app · MPDF</title>
+  <meta name="description" content="Everything an app needs to play MPDF files: what the file contains, the four steps, and copy-ready code for JavaScript, Python and Swift.">
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/developers">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/developers">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/developers">
+  <link rel="canonical" href="https://mpdf.pages.dev/developers">
+  <meta property="og:title" content="Add MPDF to your app">
+  <meta property="og:description" content="Everything an app needs to play MPDF files: what the file contains, the four steps, and copy-ready code for JavaScript, Python and Swift.">
+  <meta property="og:image" content="https://mpdf.pages.dev/og.png">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="wrap nav"><a class="brand" href="">MPDF</a><nav><a href="ko/developers" hreflang="ko" lang="ko">한국어</a><a href="v/">Viewer</a><a href="guide">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<main class="wrap doc" style="max-width: 860px;">
+  <h1>Add MPDF to your app</h1>
+
+  <p>If your app opens PDFs, it already opens MPDF files. To also play the music, read one attachment and follow a few rules. Nothing in the pages changes, so your rendering code stays as it is.</p>
+
+  <h2>What's in the file</h2>
+  <p>A normal PDF with an embedded file named <code>mpdf.json</code> (and, optionally, audio files). The manifest lists tracks and page cues:</p>
+  <div class="code">
+    <div class="code-head"><span>mpdf.json</span><span class="mono" style="color: var(--faint);">JSON</span><button class="btn ghost small copy-btn" type="button">Copy</button></div>
+    <pre><code>{
+  "mpdf": "1.0",
+  "title": "Piano Book 2",
+  "tracks": [
+    { "id": "t1", "title": "Canon in D", "src": "youtube:dQw4w9WgXcQ" },
+    { "id": "t2", "title": "Arirang",    "src": "file:track2.m4a" }
+  ],
+  "cues": [ { "page": 1, "track": "t1" }, { "page": 4, "track": "t2", "at": 32.5 } ]
+}</code></pre>
+  </div>
+
+  <h2>The four steps</h2>
+  <ol>
+    <li><strong>Find the attachment</strong> named <code>mpdf.json</code>. No attachment means a plain PDF; do nothing.</li>
+    <li><strong>Parse it</strong> and show the tracks. Ignore fields and <code>src</code> schemes you don't know.</li>
+    <li><strong>Play</strong>: <code>youtube:ID</code> through the official YouTube player (kept visible), <code>file:name</code> from the embedded file of that name, <code>https:</code> as a URL.</li>
+    <li><strong>On page change</strong>, if a cue exists for the new page, switch to its track at <code>at</code> seconds; otherwise keep playing.</li>
+  </ol>
+  <p>Rules that keep the format trustworthy: never draw over the page; the player is docked outside the page or is a movable, collapsible panel; no autoplay before a user gesture. Details in the <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">spec</a> (three pages, CC BY).</p>
+
+  <h2>Reading the manifest</h2>
+  <div class="code">
+    <div class="code-head"><span>JavaScript</span><span class="mono" style="color: var(--faint);">pdf.js</span><button class="btn ghost small copy-btn" type="button">Copy</button></div>
+    <pre><code>// Browser or Node, with pdf.js (any version that has getAttachments)
+const pdf = await pdfjsLib.getDocument({ data: bytes }).promise
+const att = (await pdf.getAttachments()) || {}
+const raw = att['mpdf.json']                       // no attachment -&gt; a plain PDF, nothing to do
+if (raw) {
+  const manifest = JSON.parse(new TextDecoder().decode(raw.content))
+  // manifest.tracks: [{ id, title, src }]   src = "youtube:ID" | "file:name" | "https://..."
+  // manifest.cues:   [{ page, track, at }]  when page becomes current, play track from `at` seconds
+  // embedded audio:  att[name].content       for src "file:name"
+}</code></pre>
+  </div>
+  <div class="code">
+    <div class="code-head"><span>Python</span><span class="mono" style="color: var(--faint);">pypdf</span><button class="btn ghost small copy-btn" type="button">Copy</button></div>
+    <pre><code># Python 3.8+, pip install pypdf
+from pypdf import PdfReader
+import json
+
+reader = PdfReader("score.pdf")
+att = reader.attachments                           # {name: [bytes]}
+if "mpdf.json" in att:
+    manifest = json.loads(att["mpdf.json"][0])
+    tracks = {t["id"]: t for t in manifest["tracks"]}
+    for cue in manifest.get("cues", []):
+        print(cue["page"], tracks[cue["track"]]["src"], cue.get("at", 0))</code></pre>
+  </div>
+  <div class="code">
+    <div class="code-head"><span>Swift</span><span class="mono" style="color: var(--faint);">PDFKit</span><button class="btn ghost small copy-btn" type="button">Copy</button></div>
+    <pre><code>// iOS / macOS with PDFKit (reference; walks the flat /Names form of the EmbeddedFiles tree)
+import PDFKit
+
+func mpdfManifest(_ doc: PDFDocument) -&gt; [String: Any]? {
+    guard let cg = doc.documentRef, let catalog = cg.catalog else { return nil }
+    var names: CGPDFDictionaryRef?, ef: CGPDFDictionaryRef?, arr: CGPDFArrayRef?
+    guard CGPDFDictionaryGetDictionary(catalog, "Names", &amp;names), let names,
+          CGPDFDictionaryGetDictionary(names, "EmbeddedFiles", &amp;ef), let ef,
+          CGPDFDictionaryGetArray(ef, "Names", &amp;arr), let arr else { return nil }
+    for i in stride(from: 0, to: CGPDFArrayGetCount(arr), by: 2) {
+        var key: CGPDFStringRef?, spec: CGPDFDictionaryRef?, efd: CGPDFDictionaryRef?, stream: CGPDFStreamRef?
+        guard CGPDFArrayGetString(arr, i, &amp;key), let key,
+              (CGPDFStringCopyTextString(key) as String?) == "mpdf.json",
+              CGPDFArrayGetDictionary(arr, i + 1, &amp;spec), let spec,
+              CGPDFDictionaryGetDictionary(spec, "EF", &amp;efd), let efd,
+              CGPDFDictionaryGetStream(efd, "F", &amp;stream), let stream else { continue }
+        var fmt = CGPDFDataFormat.raw
+        guard let data = CGPDFStreamCopyData(stream, &amp;fmt) as Data? else { return nil }
+        return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    }
+    return nil
+}</code></pre>
+  </div>
+
+  <h2>Producing a file</h2>
+  <div class="code">
+    <div class="code-head"><span>Python</span><span class="mono" style="color: var(--faint);">pypdf</span><button class="btn ghost small copy-btn" type="button">Copy</button></div>
+    <pre><code># Producing one: attach the manifest (and any audio) to a normal PDF
+from pypdf import PdfWriter
+w = PdfWriter(clone_from="score.pdf")
+w.add_attachment("mpdf.json", manifest_bytes)
+w.add_attachment("track2.m4a", audio_bytes)   # optional
+w.write("score.pdf")                            # still a PDF; name it .pdf</code></pre>
+  </div>
+  <p>The <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/js/mpdf.js" rel="noopener">JavaScript</a> and <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/python/mpdf.py" rel="noopener">Python</a> reference libraries (about 80 lines each, MIT) do both directions with validation, and <a href="https://github.com/CaLeb-Shin/mpdf-format/tree/main/samples" rel="noopener">sample files</a> exercise every case. Conformance: <strong>Level 0</strong> opens the PDF (you already do), <strong>Level 1</strong> plays the tracks, <strong>Level 2</strong> follows page cues and registers the <code>.mpdf</code> extension.</p>
+  <p>Questions or a viewer to list on this site: open an issue on <a href="https://github.com/CaLeb-Shin/mpdf-format/issues" rel="noopener">GitHub</a>.</p>
+
+</main>
+<footer class="wrap"><span>MPDF</span><nav><a href="guide">Guide</a><a href="terms">Terms</a><a href="report">Report</a></nav></footer>
+<script type="module">
+  for (const b of document.querySelectorAll('.copy-btn')) b.onclick = async () => { const code = b.closest('.code').querySelector('code').textContent; try { await navigator.clipboard.writeText(code); b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1500) } catch {} }
+  import { offerKorean } from "./i18n.js"; offerKorean()
+</script>
+</body>
+</html>

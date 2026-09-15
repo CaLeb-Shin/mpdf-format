@@ -1,14 +1,16 @@
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
 import { createMpdf, readMpdf, parseYouTube, parseTime, fmtTime, rangesOf, TRACK_COLORS } from './mpdf-browser.js'
 import { mountAds } from './ads.js'
-import { t, offerKorean } from './i18n.js'
+import { t, offerKorean, mountLangButton } from './i18n.js'
 const ROOT = new URL('.', import.meta.url).pathname.replace(/\/$/, '')
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
-mountAds(); offerKorean()
+mountAds(); mountLangButton(); offerKorean()
 
 const $ = (s) => document.querySelector(s)
 const state = { name: '', bytes: null, pages: 0, thumbs: [], tracks: [], files: {}, cues: {}, seq: 0, existing: false }
 const setStatus = (msg, err = false) => { const el = $('#status'); el.textContent = msg; el.classList.toggle('err', err) }
+setStatus(t('status.idle'))
+document.addEventListener('langchange', () => { setStatus(t('status.idle')); renderAll() })
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
 
 // ---- 01 PDF -----------------------------------------------------------------
@@ -85,14 +87,35 @@ function removeTrack(id) {
   renderAll()
 }
 const T = t
+// "1–2,4" for a track, from its cues
+function rangeText(id) { const rs = rangesOf(cueList(), state.pages).filter((r) => r.track === id); return rs.map((r) => (r.from === r.to ? r.from : r.from + '–' + r.to)).join(',') }
+// Type "all", "3" or "3-5" next to a track: it starts on `from`; if `to` ends before the last page, the track that
+// used to play there resumes on the next page, so the range really ends where the user said.
+function assignPages(id, text) {
+  if (!state.pages) return true
+  const s = String(text).trim().toLowerCase().replace(/[–~]/g, '-')
+  let from, to
+  if (s === '' ) { for (const p of Object.keys(state.cues)) if (state.cues[p].track === id) delete state.cues[p]; renderAll(); return true }
+  if (s === 'all' || s === '*' || s === '전체') { from = 1; to = state.pages }
+  else { const mm = s.match(/^(\d+)\s*(?:-\s*(\d+))?$/); if (!mm) return false; from = +mm[1]; to = mm[2] ? +mm[2] : state.pages }
+  if (from < 1 || to < from || from > state.pages) return false
+  to = Math.min(to, state.pages)
+  const before = trackForPage(from), after = trackForPage(Math.min(to + 1, state.pages))
+  for (const p of Object.keys(state.cues)) { const n = +p; if (state.cues[p].track === id || (n > from && n <= to)) delete state.cues[p] }
+  const keepAt = (state.cues[from] || {}).at || 0
+  state.cues[from] = { track: id, at: keepAt }
+  if (to < state.pages && !state.cues[to + 1]) { const back = after && after.id !== id ? after : (before && before.id !== id ? before : null); if (back) state.cues[to + 1] = { track: back.id, at: 0 } }
+  renderAll(); return true
+}
 function renderTracks() {
   const box = $('#tracks'); box.innerHTML = ''
   if (!state.tracks.length) { box.innerHTML = `<div class="step-label" style="padding: 6px 0;">${t('tracks.none')}</div>`; return }
   for (const t of state.tracks) {
     const row = document.createElement('div'); row.className = 'track'
     const src = t.src.startsWith('youtube:') ? T('src.youtube', { id: t.src.slice(8) }) : t.src.startsWith('file:') ? T('src.file', { name: t.src.slice(5) }) : t.src
-    row.innerHTML = `<span class="dot" style="background:${t.color}"></span><input value="${esc(t.title || '')}" placeholder="${T('track.title')}" aria-label="${T('track.title')}"><span class="src">${esc(src)}</span><button class="x" aria-label="${T('track.remove')}">×</button>`
+    row.innerHTML = `<span class="dot" style="background:${t.color}"></span><input value="${esc(t.title || '')}" placeholder="${T('track.title')}" aria-label="${T('track.title')}"><span class="src">${esc(src)}</span><input class="pg" value="${esc(rangeText(t.id))}" placeholder="${T('pages.placeholder')}" title="${T('pages.title')}" aria-label="${T('pages.title')}"><button class="x" aria-label="${T('track.remove')}">×</button>`
     row.querySelector('input').oninput = (e) => { t.title = e.target.value; renderRanges() }
+    row.querySelector('.pg').onchange = (e) => { if (!assignPages(t.id, e.target.value)) { setStatus(T('pages.invalid'), true); e.target.value = rangeText(t.id) } }
     row.querySelector('.x').onclick = () => removeTrack(t.id)
     box.appendChild(row)
   }
@@ -102,8 +125,9 @@ function renderTracks() {
 const cueList = () => Object.entries(state.cues).map(([p, c]) => ({ page: +p, track: c.track, at: c.at || 0 }))
 function trackForPage(page) { const r = rangesOf(cueList(), state.pages).find((r) => page >= r.from && page <= r.to); return r && state.tracks.find((t) => t.id === r.track) }
 function renderPages() {
-  const wrap = $('#assign'); const show = state.pages && state.tracks.length
+  const wrap = $('#assign'); const show = state.pages > 0
   wrap.classList.toggle('hidden', !show); if (!show) return
+  wrap.querySelector('.assign-head p').style.opacity = state.tracks.length ? '' : '.7'
   const grid = $('#pages'); grid.innerHTML = ''
   for (let p = 1; p <= state.pages; p++) {
     const cue = state.cues[p]; const eff = trackForPage(p)

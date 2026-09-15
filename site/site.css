@@ -212,3 +212,19 @@ footer nav { display: flex; gap: 20px; } footer nav a { color: var(--faint); }
 .addfile .btn { white-space: nowrap; }
 .langbar { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 14px; color: var(--muted); }
 .langbar a { font-weight: 700; } .langbar button { background: none; border: 0; color: var(--faint); font-size: 18px; line-height: 1; padding: 4px 8px; }
+
+/* language: one page carries both texts; <html lang> picks one */
+html[lang="en"] [data-l="ko"], html[lang="ko"] [data-l="en"] { display: none !important; }
+.lang { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ink); font-size: 13px; font-weight: 500; min-height: 36px; }
+.lang:hover { border-color: var(--line-2); }
+.lang .flag { width: 22px; height: 15px; border-radius: 2px; display: block; }
+.track { grid-template-columns: 22px minmax(0, 1fr) auto 84px 28px; }
+.track .pg { width: 84px; font-family: var(--mono); font-size: 12px; text-align: center; padding: 6px 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
+.tool-col .hint { color: var(--faint); font-size: 12px; line-height: 1.5; }
+.tool-col .hint code { font-family: var(--mono); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+@media (max-width: 900px) { .nav nav .lang { display: inline-flex; } .track { grid-template-columns: 22px minmax(0, 1fr) 84px 28px; } .track .src { display: none; } }
+
+.code { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 12px 0 20px; background: var(--panel); }
+.code-head { display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 14px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+.code-head .copy-btn { margin-left: auto; }
+.code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--ink-2); }
