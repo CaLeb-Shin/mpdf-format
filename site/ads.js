@@ -6,9 +6,9 @@
 //   house      the slot inside the floating player  -> never a network ad (AdFit/AdSense forbid ads in
 //              floating/fixed elements); use it for a self-sold sponsor banner or leave it empty.
 export const ADS = {
-  provider: '',                                   // 'adfit' | 'adsense' | '' (placeholders only)
+  provider: 'adsense',                            // 'adfit' | 'adsense' | '' (placeholders only)
   adfit:   { landing: '', landingMobile: '', viewerTop: '', viewerTopMobile: '' },
-  adsense: { client: '', landing: '', viewerTop: '' },   // client = 'ca-pub-XXXXXXXXXXXXXXXX'
+  adsense: { client: 'ca-pub-4493654380629025', landing: '', viewerTop: '' },   // unit ids come after approval
   house:   { html: '' },                          // e.g. '<a href="..."><img src="..." alt=""></a>'
 }
 const isMobile = () => matchMedia('(max-width: 720px)').matches
