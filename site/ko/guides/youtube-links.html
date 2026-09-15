@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>유튜브 링크가 안 될 때 확인할 것 · MPDF</title>
+  <meta name="description" content="MPDF의 유튜브 트랙이 소리 없이 멈춰 있을 때 원인이 되는 몇 가지와 각각의 해결 방법.">
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/guides/youtube-links.html">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/guides/youtube-links.html">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/guides/youtube-links.html">
+  <link rel="canonical" href="https://mpdf.pages.dev/ko/guides/youtube-links.html">
+  <meta property="og:title" content="유튜브 링크가 안 될 때 확인할 것">
+  <meta property="og:description" content="MPDF의 유튜브 트랙이 소리 없이 멈춰 있을 때 원인이 되는 몇 가지와 각각의 해결 방법.">
+  <meta property="og:image" content="https://mpdf.pages.dev/og-ko.png">
+  <meta property="og:type" content="article">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
+  <link rel="icon" href="../../favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+<header class="wrap nav"><a class="brand" href="../../ko/">MPDF</a><nav><a href="../../guides/youtube-links.html" hreflang="en" lang="en">English</a><a href="../../v/">뷰어</a><a href="../guide.html">가이드</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<main class="wrap doc">
+  <div class="draft" style="color: var(--faint);">가이드 · 2026-09-15</div>
+  <h1>유튜브 링크가 안 될 때 확인할 것</h1>
+
+  <p>유튜브 트랙은 유튜브 공식 플레이어로 재생되기 때문에, 소리가 안 나면 원인은 거의 아래 중 하나입니다. 위에서부터 확인해 보세요.</p>
+
+  <h2>1. 재생목록이나 채널 링크를 넣었다</h2>
+  <p>메이커는 영상 링크만 받습니다. <code>youtube.com/watch?v=…</code>, <code>youtu.be/…</code>, 쇼츠. 영상을 직접 열어 그 주소를 복사하세요. 재생목록 링크는 "유튜브 링크가 아닙니다"로 거부됩니다.</p>
+
+  <h2>2. 플레이어 안에 "동영상을 재생할 수 없음"이 뜬다</h2>
+  <p>업로더가 퍼가기를 막았거나, 비공개·삭제된 영상이거나, 우리나라에서 차단된 영상입니다. 우리 쪽에서 풀 수 없습니다. 같은 곡의 다른 업로드를 찾으세요. 공식 채널은 대개 퍼가기를 허용합니다.</p>
+
+  <h2>3. 열었는데 아무 일도 안 일어난다</h2>
+  <p>정상입니다. 브라우저는 사용자가 무언가를 누르기 전에는 소리를 내지 못하게 하므로, 첫 페이지 곡은 준비만 됩니다. 알약(또는 재생 버튼)을 한 번 누르면 그 뒤로는 페이지를 넘길 때 곡이 알아서 바뀝니다.</p>
+
+  <h2>4. 플레이어를 숨기고 싶다</h2>
+  <p>유튜브 약관은 재생 중인 플레이어가 화면에 보이도록 요구합니다. 그래서 MPDF 뷰어는 숨기지 않고 팝업 안에 둡니다. 팝업을 알약으로 접으면 영상도 같이 작아지고 소리는 계속 납니다.</p>
+
+  <h2>5. 연령 제한 영상</h2>
+  <p>유튜브 로그인이 필요해서 퍼간 상태로는 대부분 재생되지 않습니다. 다른 업로드를 고르세요.</p>
+
+  <h2>6. 파일이 그냥 PDF로 열리고 플레이어가 없다</h2>
+  <p>재생 목록은 PDF 안에 첨부파일로 들어 있습니다. 파일이 "PDF로 인쇄", 스크린샷, 일부 압축·편집 앱을 거쳤다면 첨부가 지워지고 페이지만 남습니다. 보낸 사람에게 원본 파일이나 링크를 다시 받으세요.</p>
+
+  <h2>7. 웹 뷰어에서는 되는데 다른 앱에서는 안 된다</h2>
+  <p>그 앱이 아직 MPDF를 지원하지 않는 것입니다. 보통 PDF로 열리는데, 그게 이 형식이 약속하는 바입니다. <a href="../v/">웹 뷰어</a>에서 열거나, 앱 개발자에게 <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a>을 알려 주세요. 지원 추가는 작은 일입니다.</p>
+
+  <h2>8. 휴대폰에서 소리가 안 난다</h2>
+  <p>볼륨을 확인하고, 아이폰이면 무음 스위치를 확인하세요. 다른 기기에 연결된 블루투스 스피커도 단골 원인입니다.</p>
+
+  <p style="margin-top: 40px;"><a class="btn" href="../../ko/#tool">지금 만들기</a></p>
+</main>
+<footer class="wrap"><span>MPDF · 음악이 같이 재생되는 PDF</span><nav><a href="../guide.html">가이드</a><a href="../terms.html">이용약관</a><a href="../report.html">신고</a></nav></footer>
+
+</body>
+</html>

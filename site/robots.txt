@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /f/
 Disallow: /api/
+Sitemap: https://mpdf.pages.dev/sitemap.xml

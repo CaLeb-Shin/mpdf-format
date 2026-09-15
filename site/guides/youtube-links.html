@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-ko="../ko/guides/youtube-links.html">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>When a YouTube link doesn't play · MPDF</title>
+  <meta name="description" content="A checklist for the few reasons a YouTube track in an MPDF stays silent, and what to do about each.">
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/guides/youtube-links.html">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/guides/youtube-links.html">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/guides/youtube-links.html">
+  <link rel="canonical" href="https://mpdf.pages.dev/guides/youtube-links.html">
+  <meta property="og:title" content="When a YouTube link doesn't play">
+  <meta property="og:description" content="A checklist for the few reasons a YouTube track in an MPDF stays silent, and what to do about each.">
+  <meta property="og:image" content="https://mpdf.pages.dev/og.png">
+  <meta property="og:type" content="article">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
+  <link rel="icon" href="../favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<header class="wrap nav"><a class="brand" href="../">MPDF</a><nav><a href="../ko/guides/youtube-links.html" hreflang="ko" lang="ko">한국어</a><a href="../v/">Viewer</a><a href="../guide.html">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<main class="wrap doc">
+  <div class="draft" style="color: var(--faint);">GUIDE · 2026-09-15</div>
+  <h1>When a YouTube link doesn't play</h1>
+
+  <p>YouTube tracks play through YouTube's own embedded player, so when one stays silent the cause is almost always one of the items below. Work down the list.</p>
+
+  <h2>1. The link was a playlist or a channel</h2>
+  <p>The maker accepts video links only: <code>youtube.com/watch?v=…</code>, <code>youtu.be/…</code> and Shorts. Open the video itself and copy that address. A playlist link is refused with “That's not a YouTube link”.</p>
+
+  <h2>2. “Video unavailable” inside the player</h2>
+  <p>The uploader has turned off embedding, or the video is private, deleted, or blocked in your country. Nothing on our side can override that. Search for another upload of the same piece; official channels usually allow embedding.</p>
+
+  <h2>3. Nothing happened when the page opened</h2>
+  <p>That is by design. Browsers do not allow sound before you tap something, so the first page's track is only cued. Tap the pill (or the play button) once; after that, page turns switch tracks on their own.</p>
+
+  <h2>4. The player is visible and you'd like it hidden</h2>
+  <p>YouTube's terms require the player to stay on screen while it plays, so MPDF viewers keep it inside the popup rather than hiding it. Collapse the popup to a pill and the video shrinks with it; the audio keeps going.</p>
+
+  <h2>5. Age-restricted videos</h2>
+  <p>These require a signed-in YouTube session and often refuse to play embedded. Choose a different upload.</p>
+
+  <h2>6. The file opens as a plain PDF with no player</h2>
+  <p>The playlist rides inside the PDF as an attachment. If the file was passed through “Print to PDF”, a screenshot, or some compressor or markup tools, the attachment was dropped and only the pages survived. Ask the sender for the original file, or for a link.</p>
+
+  <h2>7. It plays in the web viewer but not in another app</h2>
+  <p>That app doesn't support MPDF yet: it opens the file as a normal PDF, which is exactly what the format promises. Open the file in the <a href="../v/">web viewer</a>, or point the app's developer to the <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">spec</a>; adding support is a small job.</p>
+
+  <h2>8. Sound on a phone</h2>
+  <p>Check the volume, and on iPhone try the ring/silent switch. Bluetooth speakers connected to another device are a classic.</p>
+
+  <p style="margin-top: 40px;"><a class="btn" href="../#tool">Make one now</a></p>
+</main>
+<footer class="wrap"><span>MPDF · a PDF that plays music</span><nav><a href="../guide.html">Guide</a><a href="../terms.html">Terms</a><a href="../report.html">Report</a></nav></footer>
+<script type="module">import { offerKorean } from "../i18n.js"; offerKorean()</script>
+</body>
+</html>
