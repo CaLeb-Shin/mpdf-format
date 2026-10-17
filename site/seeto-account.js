@@ -41,7 +41,7 @@ const MESSAGES = {
     'auth/invalid-oauth-client-id': 'Apple 웹 로그인 연결 설정을 확인해야 합니다. 다른 로그인 방식을 이용해 주세요.',
     'auth/invalid-credential': '로그인 인증을 완료하지 못했어요. 다시 로그인하거나 다른 방식을 이용해 주세요.',
     'auth/popup-blocked': '브라우저에서 로그인 팝업을 허용한 뒤 다시 눌러 주세요.',
-    'auth/popup-closed-by-user': '로그인 창이 닫혔습니다. 필요할 때 다시 로그인할 수 있어요.',
+    'auth/popup-closed-by-user': '로그인을 완료하기 전에 창 연결이 끊겼습니다. 다시 연결해 주세요.',
     'auth/cancelled-popup-request': '다른 로그인 요청이 시작되었습니다. 열린 로그인 창을 확인해 주세요.',
     'auth/account-exists-with-different-credential': '이 이메일은 다른 로그인 방식으로 등록되어 있습니다. SEETO에서 사용하던 방식으로 로그인해 주세요.',
     'auth/network-request-failed': '로그인 서버에 연결할 수 없습니다. 인터넷 연결을 확인해 주세요.',
@@ -71,7 +71,7 @@ const MESSAGES = {
     'auth/invalid-oauth-client-id': 'Apple web sign-in needs configuration. Try another sign-in method.',
     'auth/invalid-credential': 'Sign-in could not be completed. Try again or use another sign-in method.',
     'auth/popup-blocked': 'Allow sign-in popups in your browser, then try again.',
-    'auth/popup-closed-by-user': 'The sign-in window was closed. You can sign in again when you are ready.',
+    'auth/popup-closed-by-user': 'The sign-in window connection ended before sign-in completed. Please reconnect.',
     'auth/cancelled-popup-request': 'Another sign-in request started. Check the open sign-in window.',
     'auth/account-exists-with-different-credential': 'This email uses another sign-in method. Use the same method you use in SEETO.',
     'auth/network-request-failed': 'Unable to reach the sign-in server. Check your internet connection.',
@@ -96,6 +96,13 @@ export function accountErrorMessage(error, lang = 'en') {
 
 function validUID(value) {
   return typeof value === 'string' && value.length > 0 && new TextEncoder().encode(value).length <= 128
+}
+
+function logAuthFailure(error) {
+  // Never log the error object: OAuth failures can contain credentials or URLs.
+  const code = typeof error?.code === 'string' && /^auth\/[a-z0-9-]{1,80}$/.test(error.code)
+    ? error.code : 'auth/unknown'
+  console.warn('SEETO account connection failed:', code)
 }
 
 function validPublication(value) {
@@ -211,6 +218,7 @@ export function createSeetoAccount({ lang = document.documentElement.lang.starts
     } catch (error) {
       authChanging = false
       updateUser(auth.currentUser)
+      logAuthFailure(error)
       throw fail(typeof error?.code === 'string' ? error.code : 'verification-unavailable')
     }
   }
@@ -223,7 +231,7 @@ export function createSeetoAccount({ lang = document.documentElement.lang.starts
     user = null
     notify()
     try { await sdk.signOut(auth); authChanging = false; updateUser(null) }
-    catch { authChanging = false; updateUser(auth.currentUser); throw fail('verification-unavailable') }
+    catch (error) { authChanging = false; updateUser(auth.currentUser); logAuthFailure(error); throw fail('verification-unavailable') }
   }
   async function verify(bytes, publication) {
     if (publication?.sharedReadOnly === true) throw fail('shared-read-only')

@@ -1,0 +1,4 @@
+# Keep Google/Firebase sign-in popups connected to the maker window.
+# Other origins opening the maker remain isolated.
+/make/*
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
