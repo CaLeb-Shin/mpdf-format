@@ -16,8 +16,14 @@ const state = {
   openGeneration: 0, selectionGeneration: 0, urls: new Map(), papers: [], rendered: new Set(), rendering: new Map(),
   loopA: null, loopB: null, loopEnabled: false, pitch: 0, pitchRequest: 0, hash: null, localMarkers: [], placing: null,
   markersVisible: true, yt: null, ytPromise: null, ytCancel: null, ytDeferred: null, ytReady: false, ytWantPlay: false, ytSeekUntil: 0,
-  seeking: false, lastPersist: 0, remoteAbort: null, pageFollowSuppressed: false,
+  seeking: false, scrubPosition: null, lastPersist: 0, remoteAbort: null, pageFollowSuppressed: false,
 }
+const skipOptions = [3, 5, 10], skipStorageKey = 'mpdf:seekSeconds'
+try {
+  const saved = Number(localStorage.getItem(skipStorageKey))
+  if (skipOptions.includes(saved)) $('#skip').value = String(saved)
+} catch {}
+function skipInterval() { const value = Number($('#skip').value); return skipOptions.includes(value) ? value : 5 }
 const positive = value => Number.isFinite(value) && value >= 0
 const startOf = track => positive(track?.start) ? track.start : 0
 const isYouTube = () => state.current?.track.src.startsWith('youtube:')
@@ -42,13 +48,14 @@ function applyLanguage() {
     prev: ['이전 음원', 'Previous track'], next: ['다음 음원', 'Next track'], back: ['뒤로 이동', 'Skip back'], forward: ['앞으로 이동', 'Skip forward'],
     'loop-clear': ['반복 구간 지우기', 'Clear loop'], 'pitch-down': ['반음 내리기', 'Lower one semitone'], 'pitch-up': ['반음 올리기', 'Raise one semitone'],
     pitch: ['키 조절, 반음 단위', 'Pitch, in semitones'], 'reset-position': ['재생창 위치 초기화', 'Reset player position'],
+    'mini-seek': ['MPDF 재생 위치', 'MPDF playback position'], 'mini-close': ['재생을 멈추고 재생창 닫기', 'Stop playback and close player'],
   }
   for (const [id, texts] of Object.entries(aria)) $(`#${id}`).setAttribute('aria-label', say(...texts))
   $('#pages').setAttribute('aria-label', say('악보 페이지', 'Score pages'))
   $('#player').setAttribute('aria-label', say('음악 재생창', 'Music player'))
   if (state.pdf) updateMeta()
   if (state.current) $('#name').textContent = choiceLabel(state.current)
-  renderList(); renderMarkers(); renderOverlays(); updatePitchUI(); setPlaying(state.playing); updateLoopUI(); updateMarkerToggle()
+  renderList(); renderMarkers(); renderOverlays(); updatePitchUI(); setPlaying(state.playing); updateLoopUI(); updateSkipUI(); updateMarkerToggle()
 }
 document.addEventListener('langchange', applyLanguage)
 applyLanguage()
@@ -87,7 +94,7 @@ async function resetDocument() {
   const previousLoading = state.loadingTask; state.loadingTask = null
   for (const url of state.urls.values()) URL.revokeObjectURL(url)
   state.urls.clear()
-  Object.assign(state, { bytes: null, filename: '', manifest: null, publication: null, files: {}, tracks: [], choices: [], current: null, page: 1, pageCount: 0, ready: false, hash: null, localMarkers: [], placing: null, pitch: 0 })
+  Object.assign(state, { bytes: null, filename: '', manifest: null, publication: null, files: {}, tracks: [], choices: [], current: null, page: 1, pageCount: 0, ready: false, hash: null, localMarkers: [], placing: null, pitch: 0, seeking: false, scrubPosition: null })
   clearLoop(); cancelPlacement(); player.classList.add('hidden'); $('#yt').classList.add('hidden'); $('#toolbar').classList.add('hidden'); $('#dl').classList.add('hidden')
   pages.replaceChildren(); notice(); message()
   if (previous) await previous.destroy().catch(() => {})
@@ -310,7 +317,7 @@ async function selectChoice(id, requestedPosition = null, autoplay = false) {
   const previous = state.current, previousAbsolute = mediaTime(), generation = ++state.selectionGeneration
   state.ytCancel?.(); state.ytDeferred = null
   pause(); state.engine?.destroy(); state.engine = null; state.follower?.destroy(); state.follower = null
-  state.ready = false; state.atEnd = false; state.current = choice; state.pitch = 0; state.pitchRequest++; clearLoop(); cancelPlacement(); message()
+  state.ready = false; state.atEnd = false; state.current = choice; state.pitch = 0; state.pitchRequest++; state.seeking = false; state.scrubPosition = null; clearLoop(); cancelPlacement(); message()
   $('#name').textContent = choiceLabel(choice); $('#dot').style.background = choice.track.color
   $('#yt').classList.toggle('hidden', !isYouTube())
   $('#network-label').textContent = isYouTube() ? say('YouTube · 인터넷 필요', 'YouTube · online') : choice.track.src.startsWith('file:') ? say('파일에 포함된 음원', 'Embedded audio') : say('외부 음원 · 인터넷 필요', 'Linked audio · online')
@@ -370,14 +377,10 @@ function setPlaying(playing) {
   for (const id of ['play', 'miniplay']) { $(`#${id}`).textContent = playing ? 'Ⅱ' : '▶'; $(`#${id}`).setAttribute('aria-label', playing ? say('일시정지', 'Pause') : say('재생', 'Play')) }
 }
 async function play() {
-  if (!state.current || !state.ready) return
+  if (!state.current || !state.ready || player.classList.contains('hidden')) return
   message(); state.wantsPlayback = true
   if (duration() && position() >= duration() - .03) seek(state.loopEnabled ? state.loopA : 0)
   if (isYouTube()) {
-    const wasCollapsed = player.classList.contains('collapsed'), selection = state.selectionGeneration
-    setOpen(true)
-    if (wasCollapsed) await new Promise(requestAnimationFrame)
-    if (selection !== state.selectionGeneration || !state.wantsPlayback) return
     state.ytWantPlay = true; state.yt.playVideo()
     // Unlock the local follower under this click, then immediately hold it until
     // the visible official player reports that playback has really started.
@@ -402,23 +405,43 @@ function seek(relative) {
   paintProgress(target)
 }
 function paintProgress(override) {
-  const length = duration(), current = typeof override === 'number' ? override : Math.min(length || Infinity, position())
-  $('#time').textContent = `${fmtTime(current)} / ${fmtTime(length)}`
-  if (!state.seeking) { $('#seek').max = Math.max(1, length); $('#seek').value = current }
-  $('#seek').disabled = !state.ready || !length
-  $('#seek').setAttribute('aria-valuetext', `${fmtTime(current)} / ${fmtTime(length)}`)
+  const length = duration(), current = state.seeking && state.scrubPosition !== null ? state.scrubPosition : typeof override === 'number' ? override : Math.min(length || Infinity, position())
+  const time = `${fmtTime(current)} / ${fmtTime(length)}`
+  $('#time').textContent = $('#mini-time').textContent = time
+  for (const id of ['seek', 'mini-seek']) {
+    const slider = $(`#${id}`)
+    slider.max = Math.max(1, length); slider.value = current
+    slider.disabled = !state.ready || !length
+    slider.setAttribute('aria-valuetext', time)
+  }
   $('#mark-add').disabled = !state.ready || !length
   $('#play').disabled = $('#miniplay').disabled = !state.ready
+  for (const id of ['back', 'forward', 'mini-back', 'mini-forward']) $(`#${id}`).disabled = !state.ready || !length
+  $('#mini-loop-set').disabled = !state.ready || length < .5
+  $('#mini-loop-toggle').disabled = !state.ready || state.loopA === null || state.loopB === null
 }
 $('#play').onclick = $('#miniplay').onclick = toggle
 $('#prev').onclick = () => step(-1); $('#next').onclick = () => step(1)
 function step(delta) { if (!state.choices.length) return; const index = state.choices.indexOf(state.current); selectChoice(state.choices[(index + delta + state.choices.length) % state.choices.length].id, 0, state.playing) }
-$('#skip').onchange = () => { $('#back-label').textContent = `−${$('#skip').value}`; $('#forward-label').textContent = `+${$('#skip').value}` }
-$('#back').onclick = () => seek(position() - Number($('#skip').value))
-$('#forward').onclick = () => seek(position() + Number($('#skip').value))
-$('#seek').oninput = event => { state.seeking = true; $('#time').textContent = `${fmtTime(Number(event.target.value))} / ${fmtTime(duration())}` }
-$('#seek').onchange = event => { state.seeking = false; seek(Number(event.target.value)) }
-$('#seek').onblur = () => { state.seeking = false }
+function updateSkipUI() {
+  const seconds = skipInterval()
+  $('#back-label').textContent = `−${seconds}`; $('#forward-label').textContent = `+${seconds}`
+  $('#mini-back-label').textContent = $('#mini-forward-label').textContent = say(`${seconds}초`, `${seconds}s`)
+  for (const id of ['back', 'mini-back']) $(`#${id}`).setAttribute('aria-label', say(`${seconds}초 뒤로`, `Back ${seconds} seconds`))
+  for (const id of ['forward', 'mini-forward']) $(`#${id}`).setAttribute('aria-label', say(`${seconds}초 앞으로`, `Forward ${seconds} seconds`))
+}
+$('#skip').onchange = () => {
+  $('#skip').value = String(skipInterval()); updateSkipUI()
+  try { localStorage.setItem(skipStorageKey, $('#skip').value) } catch {}
+}
+$('#back').onclick = $('#mini-back').onclick = () => seek(position() - skipInterval())
+$('#forward').onclick = $('#mini-forward').onclick = () => seek(position() + skipInterval())
+for (const id of ['seek', 'mini-seek']) {
+  const slider = $(`#${id}`)
+  slider.oninput = event => { state.seeking = true; state.scrubPosition = Number(event.target.value); paintProgress() }
+  slider.onchange = event => { const target = Number(event.target.value); state.seeking = false; state.scrubPosition = null; seek(target) }
+  slider.onblur = () => { state.seeking = false; state.scrubPosition = null; paintProgress() }
+}
 function clearLoop() { state.loopA = null; state.loopB = null; state.loopEnabled = false; updateLoopUI() }
 function updateLoopUI() {
   $('#loop-a span').textContent = state.loopA === null ? '—' : fmtTime(state.loopA)
@@ -427,6 +450,15 @@ function updateLoopUI() {
   $('#loop-toggle').setAttribute('aria-pressed', String(state.loopEnabled))
   $('#loop-a').setAttribute('aria-label', say('반복 시작 A를 현재 시간으로', 'Set loop start A to current time'))
   $('#loop-b').setAttribute('aria-label', say('반복 끝 B를 현재 시간으로', 'Set loop end B to current time'))
+  const waitingForB = state.loopA !== null && state.loopB === null
+  $('#mini-loop-set').textContent = waitingForB ? say('B 지정', 'Set B') : 'A–B'
+  $('#mini-loop-set').setAttribute('aria-label', waitingForB ? say('현재 위치를 B 끝으로 설정', 'Set current position as loop end B') : say('현재 위치를 새 A 시작으로 설정', 'Set current position as a new loop start A'))
+  $('#mini-loop-set').setAttribute('title', say('한 번 누르면 A, 다음에 누르면 B를 지정합니다.', 'Press once to set A, then again to set B.'))
+  $('#mini-loop-set').disabled = !state.ready || duration() < .5
+  $('#mini-loop-toggle').textContent = state.loopEnabled ? 'ON' : 'OFF'
+  $('#mini-loop-toggle').setAttribute('aria-label', state.loopEnabled ? say('구간 반복 끄기', 'Turn loop off') : say('구간 반복 켜기', 'Turn loop on'))
+  $('#mini-loop-toggle').setAttribute('aria-pressed', String(state.loopEnabled))
+  $('#mini-loop-toggle').disabled = !state.ready || state.loopA === null || state.loopB === null
 }
 $('#loop-a').onclick = () => { if (!state.ready) return; state.loopA = position(); if (state.loopB !== null && state.loopB <= state.loopA + .2) { state.loopB = null; state.loopEnabled = false }; updateLoopUI() }
 $('#loop-b').onclick = () => {
@@ -436,7 +468,26 @@ $('#loop-b').onclick = () => {
   if (current <= state.loopA + .2) { message(say('A보다 뒤에서 B를 지정하세요.', 'Set B at least a moment after A.')); return }
   state.loopB = current; state.loopEnabled = true; updateLoopUI(); message()
 }
-$('#loop-toggle').onclick = () => { state.loopEnabled = !state.loopEnabled; if (state.loopEnabled && (position() < state.loopA || position() >= state.loopB)) seek(state.loopA); updateLoopUI() }
+$('#mini-loop-set').onclick = () => {
+  if (!state.ready || duration() < .5) return
+  const current = position()
+  if (state.loopA !== null && state.loopB === null) {
+    if (current - state.loopA < .5) { message(say('B는 A보다 0.5초 뒤부터 지정할 수 있어요.', 'Set B at least 0.5 seconds after A.')); return }
+    state.loopB = current
+    message(say(`B ${fmtTime(current)} 설정 · ON을 누르면 반복해요.`, `B set at ${fmtTime(current)} · Press ON to repeat.`))
+  } else {
+    if (current > duration() - .5) { message(say('곡 끝보다 앞에서 A를 지정해 주세요.', 'Set A before the end of the track.')); return }
+    state.loopA = current; state.loopB = null; state.loopEnabled = false
+    message(say(`A ${fmtTime(current)} 설정 · 한 번 더 누르면 B예요.`, `A set at ${fmtTime(current)} · Press again to set B.`))
+  }
+  updateLoopUI()
+}
+$('#loop-toggle').onclick = $('#mini-loop-toggle').onclick = () => {
+  if (!state.ready || state.loopA === null || state.loopB === null) return
+  state.loopEnabled = !state.loopEnabled
+  if (state.loopEnabled && (position() < state.loopA || position() >= state.loopB)) seek(state.loopA)
+  updateLoopUI(); message()
+}
 $('#loop-clear').onclick = clearLoop
 
 function updatePitchUI() {
@@ -525,11 +576,11 @@ function updateMarkerToggle() { $('#marker-toggle').textContent = state.markersV
 $('#marker-toggle').onclick = () => { state.markersVisible = !state.markersVisible; updateMarkerToggle() }
 
 function setOpen(open) {
-  if (!open && isYouTube()) pause()
   player.classList.toggle('collapsed', !open)
   $('#expand').setAttribute('aria-expanded', String(open)); $('#show-player').setAttribute('aria-expanded', String(open)); constrainPlayer()
 }
 $('#collapse').onclick = () => setOpen(false); $('#expand').onclick = () => setOpen(true)
+$('#mini-close').onclick = () => { pause(); player.classList.add('hidden'); $('#show-player').setAttribute('aria-expanded', 'false') }
 $('#show-player').onclick = () => { player.classList.remove('hidden'); setOpen(player.classList.contains('collapsed')) }
 function resetPlayerPosition() { player.style.left = ''; player.style.top = ''; player.style.right = ''; player.style.bottom = '' }
 $('#reset-position').onclick = resetPlayerPosition
@@ -551,7 +602,7 @@ $('#phead').addEventListener('pointercancel', () => { drag = null })
 document.addEventListener('keydown', event => {
   if (/^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(document.activeElement?.tagName) || document.activeElement?.isContentEditable) return
   if (event.code === 'Space') { event.preventDefault(); toggle() }
-  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); seek(position() + Number($('#skip').value) * (event.key === 'ArrowLeft' ? -1 : 1)) }
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); seek(position() + skipInterval() * (event.key === 'ArrowLeft' ? -1 : 1)) }
   if (event.key === 'Escape') { cancelPlacement(); notice(); setOpen(false) }
 })
 
@@ -597,7 +648,7 @@ function ensureYouTube(videoId, startSeconds) {
           onStateChange: event => {
             if (!current(event)) return
             if (!isYouTube()) { if (event.data === 1) state.yt.pauseVideo(); return }
-            if (event.data === 1 && (document.hidden || player.classList.contains('collapsed'))) { state.yt.pauseVideo(); return }
+            if (event.data === 1 && (document.hidden || player.classList.contains('hidden'))) { state.yt.pauseVideo(); return }
             if (event.data === 1) { state.ytWantPlay = true; setPlaying(true) }
             else if (event.data === 2 || event.data === 0 || event.data === 5) { setPlaying(false); state.follower?.pause() }
             if (event.data === 3) state.follower?.pause()
@@ -648,7 +699,7 @@ setInterval(() => {
   if (!state.current || !state.ready) return
   if (isYouTube() && state.ytReady) {
     const actual = state.yt.getPlayerState()
-    if (actual === 1 && (document.hidden || player.classList.contains('collapsed'))) pause()
+    if (actual === 1 && (document.hidden || player.classList.contains('hidden'))) pause()
     else if (actual === 1 && !state.playing) setPlaying(true)
     else if ([0, 2, 5].includes(actual) && state.playing) { setPlaying(false); state.follower?.pause() }
   }

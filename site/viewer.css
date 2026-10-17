@@ -62,7 +62,7 @@
 .current-label strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .track-dot { display: block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 #time { font: 11px var(--mono, monospace); color: #7d7d71; display: block; margin: 5px 0 0 14px; }
-.mini-play, .mini-expand { display: none; }
+.practice-mini { display: none; }
 .practice-transport { padding: 5px 18px 0; flex-shrink: 0; }
 .practice-expanded { overflow: auto; padding: 5px 18px 18px; overscroll-behavior: contain; }
 .seek-label { display: block; }
@@ -104,11 +104,30 @@
 .practice-marker-row button:first-child { text-align: left; flex: 1; }
 .practice-marker-row button:last-child:not(:first-child) { color: #9b5238; font-size: 17px; }
 .player-message { font-size: 11px; line-height: 1.7; background: #fff1df; color: #80502b; padding: 9px; border-radius: 6px; margin-top: 8px; }
-.practice-player.collapsed { width: 340px; border-radius: 15px; }
-.practice-player.collapsed .practice-player-head, .practice-player.collapsed .practice-expanded, .practice-player.collapsed .practice-transport, .practice-player.collapsed .practice-video { display: none; }
-.practice-player.collapsed .practice-now { padding: 8px 10px; }
-.practice-player.collapsed .mini-play, .practice-player.collapsed .mini-expand { display: grid; place-items: center; flex-shrink: 0; }
-.practice-player.collapsed .mini-play { min-width: 44px; height: 44px; }
+/* The compact controls follow the app: skip, play, skip, A–B, repeat, expand. */
+.practice-player.collapsed { width: 360px; border-radius: 15px; }
+.practice-player.collapsed .practice-player-head, .practice-player.collapsed .practice-expanded, .practice-player.collapsed .practice-transport { display: none; }
+.practice-player.collapsed .practice-now { order: 0; padding: 8px 14px 0; }
+.practice-player.collapsed .current-label strong { font-size: 11px; font-weight: 500; }
+.practice-player.collapsed #time { display: none; }
+.practice-player.collapsed .practice-mini { display: block; order: 1; padding: 2px 8px 5px; flex-shrink: 0; }
+.practice-player.collapsed .practice-video { order: 2; height: 200px; min-height: 200px; }
+.mini-transport { display: flex; justify-content: space-between; align-items: center; gap: 0; }
+.mini-transport button, .mini-close { display: grid; place-content: center; flex-shrink: 0; width: 44px; min-width: 44px; height: 44px; padding: 0; border: 0; border-radius: 9px; background: transparent; line-height: 1; }
+.mini-transport .mini-play { background: #f7e7da; color: #9b471e; border-radius: 50%; font-size: 16px; }
+.mini-skip { gap: 1px; }
+#mini-forward svg { transform: scaleX(-1); }
+.mini-skip small { font: 500 10px var(--mono, monospace); }
+.mini-loop { font: 600 11px var(--mono, monospace); }
+.mini-loop[aria-pressed="true"] { color: #9b471e; background: #f7e7da; }
+.mini-expand { font-size: 21px; }
+.mini-position { display: flex; align-items: center; gap: 8px; padding-left: 5px; }
+.mini-seek-label { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; min-height: 44px; }
+.practice-player .mini-seek-label input { height: 30px; margin: 0; }
+#mini-time { font: 10px var(--mono, monospace); color: #7d7d71; line-height: 14px; }
+.mini-close { font-size: 22px; }
+.practice-player.collapsed .practice-expanded:has(.player-message:not(.hidden)) { display: block; order: 3; padding: 0 12px 8px; }
+.practice-player.collapsed .practice-expanded > :not(.player-message) { display: none; }
 @media (hover: hover) { .practice-player button:hover, .text-action:hover, .page-navigation button:hover { background-color: #f1eee4; } .practice-page-controls button:hover { outline: 2px solid #b95020; } }
 @media (max-width: 1000px) { .practice-header { padding: 12px 18px; gap: 16px; } .practice-header .brand small, .practice-header .brand span, .create-link { display: none !important; } .practice-actions .btn { padding: 7px 10px; } }
 @media (max-width: 720px) {
@@ -134,7 +153,7 @@
   .practice-empty p:not(.eyebrow) { font-size: 12px; }
   .empty-actions .btn { font-size: 12px; padding: 11px 15px; }
   .practice-player { left: auto !important; top: auto !important; right: 10px !important; bottom: max(10px, env(safe-area-inset-bottom)) !important; width: 350px; max-width: calc(100vw - 20px); max-height: calc(100dvh - 140px); border-radius: 15px; }
-  .practice-player.collapsed { width: 320px; }
+  .practice-player.collapsed { width: 360px; }
   .practice-player-head { cursor: default; }
   .practice-player-head .drag-grip { display: none; }
   .practice-video { height: 200px; min-height: 200px; }

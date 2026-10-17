@@ -45,11 +45,23 @@
   </main>
   <section class="practice-player hidden" id="player" aria-label="Music player">
     <div class="practice-player-head" id="phead"><span class="drag-grip" aria-hidden="true">⠿</span><span data-en="LISTEN & PRACTISE" data-ko="듣고 연습하기">LISTEN & PRACTISE</span><button id="reset-position" aria-label="Reset player position" title="Reset player position">⌖</button><button id="collapse" aria-label="Collapse player">⌄</button></div>
+    <div class="practice-mini">
+      <div class="mini-transport">
+        <button class="mini-skip" id="mini-back" aria-label="Skip back 5 seconds"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2.1 8.4"/><path d="M3 3v7h7"/></svg><small id="mini-back-label">5 s</small></button>
+        <button class="mini-play" id="miniplay" aria-label="Play">▶</button>
+        <button class="mini-skip" id="mini-forward" aria-label="Skip forward 5 seconds"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2.1 8.4"/><path d="M3 3v7h7"/></svg><small id="mini-forward-label">5 s</small></button>
+        <button class="mini-loop" id="mini-loop-set" aria-label="Set loop start A">A–B</button>
+        <button class="mini-loop" id="mini-loop-toggle" aria-label="Repeat" aria-pressed="false" disabled>OFF</button>
+        <button class="mini-expand" id="expand" aria-label="Expand player">⌃</button>
+      </div>
+      <div class="mini-position">
+        <label class="mini-seek-label"><span class="sr-only" data-en="Playback position" data-ko="재생 위치">Playback position</span><input id="mini-seek" type="range" min="0" max="1" value="0" step="0.1" disabled><span id="mini-time" aria-hidden="true">0:00 / 0:00</span></label>
+        <button class="mini-close" id="mini-close" aria-label="Close player">×</button>
+      </div>
+    </div>
     <div class="practice-video hidden" id="yt"><div id="ytplayer"></div></div>
     <div class="practice-now">
-      <button class="mini-play" id="miniplay" aria-label="Play">▶</button>
       <div class="now-description"><div class="current-label"><span class="track-dot" id="dot"></span><strong id="name">—</strong></div><span id="time">0:00 / 0:00</span></div>
-      <button class="mini-expand" id="expand" aria-label="Expand player">⌃</button>
     </div>
     <div class="practice-transport">
       <label class="seek-label"><span class="sr-only" data-en="Playback position" data-ko="재생 위치">Playback position</span><input id="seek" type="range" min="0" max="1" value="0" step="0.1" disabled></label>
