@@ -665,7 +665,7 @@ function ensureYouTube(videoId, startSeconds) {
     }
     begin = () => {
       if (document.hidden) { fail('youtube-background'); return }
-      timeout = setTimeout(() => fail('youtube-timeout'), 20000)
+      timeout = setTimeout(() => fail('youtube-timeout'), 60000)
       if (window.YT?.Player) install()
       else {
         window.onYouTubeIframeAPIReady = install
