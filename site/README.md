@@ -1,33 +1,64 @@
-# MPDF 사이트
+# MPDF 웹사이트
 
-운영 주소: https://mpdf.pages.dev (Cloudflare Pages 프로젝트 `mpdf`, R2 버킷 `mpdf-files`, 90일 후 자동 삭제 규칙 적용)
+운영 주소: [mpdf.pages.dev](https://mpdf.pages.dev/) · Cloudflare Pages 프로젝트 `mpdf` · R2 버킷 `mpdf-files`.
 
-정적 파일뿐입니다. 서버 코드 없음. 파일은 브라우저 안에서만 처리됩니다.
+MPDF 제작·연습·공유를 위한 정적 프런트엔드와 Cloudflare Pages Functions입니다. 파일 열기·편집·저장은 브라우저에서 처리하며, 공개 링크를 만들 때만 공유용 PDF를 R2에 업로드합니다. 선택적 SEETO 제작자 등록은 Firebase에 파일 해시와 계정 정보를 기록합니다.
 
-| 경로 | 역할 |
+## 화면과 구현
+
+| 경로 / 파일 | 역할 |
 |---|---|
-| `index.html` + `maker.js` | 랜딩 + 메이커. PDF 놓기 → 유튜브 링크·음원 파일 → 페이지별 곡 지정 → `.pdf`(기본) 또는 `.mpdf`로 저장 |
-| `v/index.html` + `viewer.js` | 뷰어. 파일을 놓거나 `?file=URL`. PDF는 원래 뷰어처럼, 플레이어는 접었다 펴는 팝업(모바일은 알약 → 시트) |
-| `mpdf-browser.js` | 브라우저용 MPDF 라이브러리 (pdf-lib UMD + pdf.js) |
-| `functions/` | Cloudflare Pages Functions: `POST /api/upload`(R2 저장, 유튜브·URL 트랙만 허용), `GET /f/{id}`(파일), `GET /v/{id}`(OG 태그가 들어간 뷰어 페이지) |
-| `ads.js` | 광고 자리. `ADS.provider`와 유닛 id를 채우면 애드핏/애드센스 코드가 들어가고, 비어 있으면 점선 자리만 보임 |
-| `site.css` | 최종 디자인 토큰 |
-| `i18n.js` | 문구 사전(en/ko)과 제자리 언어 전환(국기 버튼). 랜딩은 두 언어 텍스트를 한 페이지에 담고(`data-l`) CSS가 하나만 보여 줌. `/` 영어 기본, `/ko/`는 `build-ko.py`가 index.html에서 생성 |
-| `ko/` | 한국어 랜딩(생성됨)·가이드·약관·신고·개발자 |
-| `developers.html` | 앱 개발자용: 파일 구조, 네 단계, JS·Python·Swift 복사 코드 |
-| `guides/` | 가이드 글(레슨 교재, 합창단, 유튜브 링크 문제) |
+| `/`, `/ko/` · `index.html` | 새 MPDF 만들기, 받은 파일 열기, 완성 예시로 진입하는 영어·한국어 랜딩 |
+| `/make/` · `maker.js` | 페이지 목록·큰 악보·음원 설정, 버튼 배치, 시작·끝 시간, 시간 마킹, 미리보기, 저장·공유 |
+| `/v/` · `viewer.js` | 받은 파일 열기, 페이지 버튼·시간 마킹, A–B 반복, 내장 음원 키 조절, 포함 데이터에 따른 악보·코드·원음·함께 재생 |
+| `/v/?file=/samples/practice.mpdf` | 실제 완성 MPDF 연습 예시 |
+| `mpdf-browser.js` | 기본 MPDF와 선택 SEETO 확장 읽기, 첨부 보존, 명시적인 공유본 정리·악보만 PDF 내보내기 |
+| `seeto-account.js`, `account.css` | 선택적 SEETO Google 로그인, 제작자 원본 확인과 새 완성본 등록 |
+| `functions/` | `POST /api/upload`, `GET /f/{id}`, `GET /v/{id}`: 공유 링크 생성·제공·미리보기 |
+| `site.css`, `i18n.js` | 밝은 작업 화면 스타일, 영어·한국어 문구와 화면 내 언어 전환 |
+| `guide.html`, `developers.html`, `terms.html`, `report.html`, `ko/` | 언어별 사용 안내·개발자 안내·약관·지원 |
+| `ads.js` | 기존 광고 슬롯 구성 |
 
-로컬 실행 (링크 기능 포함, 로컬 R2 흉내): `npm install` 후 `npm run dev` → `http://127.0.0.1:8788/`
-(샘플: `/?file=samples/score.pdf`, 뷰어: `/v/?file=../samples/mixed.mpdf`). 함수 단위 테스트: `npm test`.
+`/make/`와 `/v/`의 `?lang=ko` 또는 `?lang=en`은 표시 언어를 선택합니다. 주요 문서 링크는 `data-route`를 사용하고 로컬 자산 경로는 `/site.css`처럼 루트 기준으로 연결합니다. `ko/index.html`은 `build-ko.py`가 생성하므로 랜딩은 `index.html`에서 수정합니다. 한국어 문서 페이지는 직접 관리합니다.
 
-배포: 이 폴더에서 `npm run deploy` (wrangler 로그인 필요). 빌드 명령 없음. 함수의 R2 바인딩은 `wrangler.toml`에 있습니다.
+## 파일 호환과 저장 종류
 
-링크 정책: 유튜브·URL 트랙만 링크가 됩니다. 음원 파일이 든 파일은 서버가 거부하고(저작권·용량), 메이커가 "PDF로 저장"을 안내합니다.
+- MPDF 1.x 기본 정보는 `mpdf.json`의 트랙·페이지 큐·옵션입니다. `buttons`·`timeMarkers`와 SEETO 첨부 데이터는 선택 확장입니다. 한글 첨부파일 이름과 알려지지 않은 확장은 원본 보존 경로에서 유지합니다.
+- 받은 파일의 원본 다운로드는 PDF를 다시 저장하지 않고 원래 바이트를 반환합니다. 재작성하면 파일 해시와 제작자 등록이 달라집니다.
+- **원본 저장**은 제작용 정보와 필요한 첨부를 유지합니다. **공유용 MPDF**는 편집용 원본 PDF·필기 자료를 제외하고 공유본으로 표시합니다. **악보만 PDF**는 음악·MPDF 첨부를 제외합니다.
+- 확장자 `.pdf` / `.mpdf`와 음악 포함 여부는 별도입니다. 일반 PDF 앱에서는 악보만 보이며 음악 재생은 MPDF 지원 뷰어가 필요합니다.
+- 키 조절은 내장 파일 음원에만 적용하며 ±12반음 범위에서 속도를 유지합니다. YouTube·외부 URL에는 적용하지 않습니다. 일반 PDF 자동 인식, YouTube 오프라인 재생, 배속 기능은 제공하지 않습니다.
+- 카피 노트 악보·코드·원음 선택은 파일에 포함된 데이터에 따라 제공됩니다. 로그인으로 앱 서재를 동기화하지 않습니다.
 
-언어: 영어가 기본(`/`), 한국어는 `/ko/`. 국기 버튼으로 페이지를 새로 불러오지 않고 바꾸므로 넣어 둔 PDF·트랙이 유지됩니다. `ko/index.html`은 직접 고치지 말고 `index.html`을 고친 뒤 `python3 build-ko.py`(deploy 스크립트가 자동 실행).
+## SEETO 계정과 제작자 등록
 
-메이커: PDF를 넣으면 바로 페이지 카드가 펼쳐지고, 트랙 옆 칸에 `all` / `3` / `3-5`를 적어 페이지 구간을 정할 수 있습니다.
+사용 프로젝트는 **`seetogether-app-2026`만**입니다. `seeto-account.js`는 기존 SEETO 공개 웹 설정을 사용하며 Firebase SDK는 계정 UI 준비 시 불러옵니다. 서버 비밀키를 프런트엔드에 넣지 않습니다.
 
-광고: 전 세계 대상이므로 애드센스가 기본(`ADS.provider = 'adsense'`), 애드핏은 한국 트래픽용 선택지.
+새 MPDF 제작자 등록은 선택입니다. 로그인한 비익명 UID와 완성 PDF 전체의 SHA-256, 발행 ID를 `mpdfPublications/{sha256}`에 불변 transaction으로 등록한 뒤 결과물을 제공합니다. 계정이 도중에 바뀌거나 온라인 확인에 실패하면 등록·수정을 허용하지 않습니다. 기존 제작자 원본은 서버 등록과 파일 메타데이터의 UID·발행 ID가 모두 맞아야 수정할 수 있습니다. `creatorUID` 문자열만으로 권한을 부여하지 않으며, `sharedReadOnly: true`는 제작자 자신에게도 읽기 전용입니다.
 
-아직 없는 것: 도메인, `index.html`의 스펙·GitHub 링크와 `report.html`·`terms.html`의 `[ ]` 자리표시(신고 메일, 보관 기간, 시행일).
+2026-10-18 운영 설정 확인: Firebase Authentication의 Google 공급자가 활성화되어 있으며, 기존 도메인을 보존하고 `mpdf.pages.dev`를 승인 도메인에 추가한 뒤 재조회했습니다. Apple 공급자 웹 설정은 아직 없어 버튼을 제공하지 않으며, Apple 전용 계정의 원본 수정은 SEETO 앱으로 안내합니다. Apple 웹 지원을 추가하려면 공급자 설정과 웹 Service ID·Firebase OAuth return URL이 필요합니다. 이 연결 설정과 실제 로그인 여부는 코드 구현·정적 검증과 구분해서 확인합니다. MPDF 사이트 배포를 다른 Firebase 프로젝트나 SEETO 보안 규칙 수정 승인으로 해석하지 않습니다.
+
+## 공개 링크 정책
+
+- 최대 **20 MiB**, YouTube·HTTPS 트랙만 허용합니다. 내장 음원, 편집용 원본, 비공개·미허용 첨부가 있으면 API가 업로드를 거부합니다.
+- 공개할 파일은 먼저 공유용 복사본으로 정리합니다. 로컬 원본 저장에서 첨부를 보존하는 정책과 공개 링크의 제한은 별개입니다.
+- 링크를 아는 누구나 열 수 있습니다. 생성 후 **90일**이 지나면 파일·뷰어 제공을 중단합니다. 서버의 접근 만료가 물리적인 저장소 삭제 시각을 보장하지는 않습니다.
+- 2026-10-18 운영 설정 확인: R2 `mpdf-files` 버킷과 활성화된 `expire-90d` lifecycle 규칙이 존재합니다. API의 90일 접근 만료와 저장소의 비동기 삭제를 구분하며, 특정 파일이 이미 삭제되었다고 보장하지 않습니다.
+- 신고·삭제 요청은 SEETO 공개 지원 소스에 명시된 `sinbun001@gmail.com`을 사용합니다. GitHub Issues에는 비공개 파일·개인정보를 요청하지 않습니다.
+
+## 로컬 실행과 배포
+
+```bash
+cd site
+npm install
+npm run dev
+# http://127.0.0.1:8788/
+```
+
+`npm run build`는 한국어 랜딩을 생성합니다. Cloudflare 로그인과 대상 프로젝트·R2 바인딩을 확인한 뒤 `npm run deploy`로 배포합니다. `wrangler.toml`이 Pages Functions와 R2 연결을 정의합니다.
+
+함수 자동 테스트 명령은 `npm test`입니다. 실행은 작업 요청의 테스트 승인 범위를 따릅니다. 빌드 성공·배포 성공·실계정 로그인·재생 확인을 각각 구분해서 보고합니다.
+
+## 로컬 임시 저장과 개인정보
+
+미리보기는 같은 브라우저의 IndexedDB에 파일을 임시 보관하며 이용 기간은 최대 1일입니다. 만료 자료는 접근·정리 시 삭제되고 브라우저의 사이트 데이터 삭제로 직접 제거할 수 있습니다. 제작자 등록에는 UID·파일 해시·발행 ID·등록 시각을 전송하며 악보와 음원을 업로드하지 않습니다. 공개 링크만 실제 공유 PDF를 업로드합니다. 세부 안내는 영어·한국어 약관 페이지를 함께 유지합니다.

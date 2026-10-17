@@ -53,6 +53,7 @@ export function applyDom() {
   for (const el of document.querySelectorAll('[data-i18n-label]')) el.dataset.label = t(el.dataset.i18nLabel)
   for (const el of document.querySelectorAll('[data-ko-placeholder]')) { el.dataset.enPlaceholder ??= el.placeholder; el.placeholder = lang === 'ko' ? el.dataset.koPlaceholder : el.dataset.enPlaceholder }
   for (const el of document.querySelectorAll('[data-ko-aria]')) { el.dataset.enAria ??= el.getAttribute('aria-label'); el.setAttribute('aria-label', lang === 'ko' ? el.dataset.koAria : el.dataset.enAria) }
+  for (const link of document.querySelectorAll('[data-route]')) link.href = (lang === 'ko' ? '/ko/' : '/') + link.dataset.route;
   const b = document.getElementById('langbtn'); if (b) b.innerHTML = lang === 'ko' ? FLAG_US + '<span>English</span>' : FLAG_KR + '<span lang="ko">한국어</span>'
 }
 // Switch without reloading: state on the page (a loaded PDF, tracks) stays. Scripts listen for 'langchange'.

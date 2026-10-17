@@ -3,62 +3,69 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MPDF Viewer</title>
+  <meta name="description" content="Open your MPDF, listen to its music, repeat a passage, and practise directly on your score.">
+  <title>MPDF · Listen & practise</title>
   <!--og-->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
-  <link rel="icon" href="../favicon.svg">
-  <link rel="stylesheet" href="../site.css">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/site.css">
+  <link rel="stylesheet" href="/viewer.css">
 </head>
-<body>
-<div class="vw">
-  <header class="vw-head">
-    <a class="brand" href="../">MPDF</a>
-    <span class="sep"></span>
-    <span class="title" id="title" data-i18n="v.title">Viewer</span>
-    <span class="meta" id="meta"></span>
-    <div class="right">
-      <button class="btn ghost small hidden" id="sharebtn" data-i18n="v.copy">Copy link</button>
-      <button class="btn ghost small hidden" id="dl" data-i18n="v.save">Save PDF</button>
-      <a class="btn small" href="../" data-i18n="v.make">Make your own</a>
-      <button class="lang" id="langbtn" type="button" aria-label="Switch language"></button>
+<body class="practice-viewer">
+  <main class="practice-shell">
+    <header class="practice-header">
+      <a class="brand" href="/" aria-label="MPDF home">MPDF<span> / </span><small data-en="PRACTISE" data-ko="연습하기">PRACTISE</small></a>
+      <div class="document-heading"><h1 id="title" data-en="Your score, with its music." data-ko="악보와 음악을 함께.">Your score, with its music.</h1><p id="meta" data-en="Open a file to begin." data-ko="파일을 열고 연습을 시작하세요.">Open a file to begin.</p></div>
+      <div class="practice-actions">
+        <button class="btn ghost small" id="openfile" data-en="Open file" data-ko="파일 열기">Open file</button>
+        <button class="btn ghost small hidden" id="sharebtn" data-en="Copy link" data-ko="링크 복사">Copy link</button>
+        <button class="btn ghost small hidden" id="dl" data-en="Save original" data-ko="원본 저장">Save original</button>
+        <a class="btn ghost small create-link" href="/make/" data-en="Make an MPDF" data-ko="MPDF 만들기">Make an MPDF</a>
+        <button class="lang" id="langbtn" type="button" aria-label="Switch language"></button>
+      </div>
+      <input type="file" id="file" accept="application/pdf,.pdf,.mpdf" hidden>
+    </header>
+    <div class="practice-sponsor"><div class="ad-slot" data-ad="viewerTop" data-size="728x90" aria-label="Advertisement"></div></div>
+    <div class="practice-toolbar hidden" id="toolbar">
+      <nav class="page-navigation" aria-label="Pages"><button id="pageprev" aria-label="Previous page">‹</button><label><span data-en="Page" data-ko="페이지">Page</span> <input id="pagenumber" type="number" min="1" value="1" aria-label="Current page"> <span id="pagecount">/ 1</span></label><button id="pagenext" aria-label="Next page">›</button></nav>
+      <label class="follow-label"><input id="follow" type="checkbox" checked><span data-en="Follow page cues" data-ko="페이지별 음원 연결">Follow page cues</span></label>
+      <button id="marker-toggle" class="text-action" aria-pressed="true" data-en="Time marks on" data-ko="시간 표시 켜짐">Time marks on</button>
+      <button id="show-player" class="text-action" data-en="Player" data-ko="재생창">Player</button>
     </div>
-  </header>
-  <div class="vw-ad"><div class="ad-slot" data-ad="viewerTop" data-size="728x90" data-label="ad" data-i18n-label="v.ad"></div></div>
-  <div class="vw-pages" id="pages">
-    <div class="vw-drop" id="drop">
-      <h2 data-i18n="v.drop.h">MPDF Viewer</h2>
-      <p data-i18n="v.drop.p">Drop a .pdf or .mpdf you received. If it carries music, it plays from the pill below. Plain PDFs open too.</p>
-      <label class="btn"><span data-i18n="v.drop.btn">Open file</span><input type="file" id="file" accept="application/pdf,.pdf,.mpdf"></label>
-      <small style="color: var(--faint);" data-i18n="v.drop.note">Files never leave your browser.</small>
+    <p class="practice-notice hidden" id="notice" role="status" aria-live="polite"></p>
+    <div class="practice-pages" id="pages" tabindex="0" aria-label="Score pages">
+      <section class="practice-empty" id="drop">
+        <div class="empty-symbol" aria-hidden="true">♫<span>PDF</span></div>
+        <p class="eyebrow" data-en="A LITTLE PRACTICE, ANYWHERE" data-ko="어디에서나, 가볍게 연습">A LITTLE PRACTICE, ANYWHERE</p>
+        <h2 data-en="Open. Listen. Play it again." data-ko="열고, 듣고, 다시 연습하세요.">Open. Listen. Play it again.</h2>
+        <p data-en="Drop your MPDF here. Its score, music and time marks open together. A regular PDF opens too." data-ko="MPDF를 여기에 놓아 보세요. 악보와 음악, 시간 표시를 함께 엽니다. 일반 PDF도 볼 수 있어요.">Drop your MPDF here. Its score, music and time marks open together. A regular PDF opens too.</p>
+        <div class="empty-actions"><button class="btn" id="empty-open" data-en="Open an MPDF" data-ko="MPDF 열기">Open an MPDF</button><button class="btn ghost" id="sample" data-en="Try a finished example ↗" data-ko="완성 예시 체험 ↗">Try a finished example ↗</button></div>
+        <small data-en="Local files stay in this browser. YouTube and linked audio need the internet." data-ko="내 파일은 브라우저 안에서만 열립니다. YouTube·외부 음원은 인터넷이 필요합니다.">Local files stay in this browser. YouTube and linked audio need the internet.</small>
+      </section>
     </div>
-  </div>
-</div>
-<div class="scrim hidden" id="scrim"></div>
-<div class="player hidden collapsed" id="player">
-  <div class="player-head" id="phead">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="#6f6a62"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
-    <span class="lbl" data-i18n="v.player">Player · drag to move</span>
-    <button id="collapse" aria-label="Collapse" data-i18n-aria="v.collapse"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-  </div>
-  <div class="yt" id="yt"><div id="ytplayer"></div></div>
-  <div class="now">
-    <button class="mini play" id="miniplay" aria-label="Play" data-i18n-aria="v.play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
-    <div class="line"><span class="dot" id="dot"></span><span class="name" id="name">—</span><span class="time" id="time"></span></div>
-    <div class="bar" id="bar"><i id="fill"></i></div>
-    <div class="ctl">
-      <button id="prev" aria-label="Previous track" data-i18n-aria="v.prev"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
-      <button class="play" id="play" aria-label="Play" data-i18n-aria="v.play"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
-      <button id="next" aria-label="Next track" data-i18n-aria="v.next"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+  </main>
+  <section class="practice-player hidden" id="player" aria-label="Music player">
+    <div class="practice-player-head" id="phead"><span class="drag-grip" aria-hidden="true">⠿</span><span data-en="LISTEN & PRACTISE" data-ko="듣고 연습하기">LISTEN & PRACTISE</span><button id="reset-position" aria-label="Reset player position" title="Reset player position">⌖</button><button id="collapse" aria-label="Collapse player">⌄</button></div>
+    <div class="practice-video hidden" id="yt"><div id="ytplayer"></div></div>
+    <div class="practice-now">
+      <button class="mini-play" id="miniplay" aria-label="Play">▶</button>
+      <div class="now-description"><div class="current-label"><span class="track-dot" id="dot"></span><strong id="name">—</strong></div><span id="time">0:00 / 0:00</span></div>
+      <button class="mini-expand" id="expand" aria-label="Expand player">⌃</button>
     </div>
-    <button class="mini exp" id="expand" aria-label="Expand" data-i18n-aria="v.expand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>
-  </div>
-  <div class="list" id="list"></div>
-  <div class="ad-slot" data-ad="house" data-size="300x100" data-label="sponsor" data-i18n-label="v.house"></div>
-</div>
-<audio id="audio" preload="metadata"></audio>
-<script src="https://www.youtube.com/iframe_api"></script>
-<script type="module" src="../viewer.js"></script>
+    <div class="practice-transport">
+      <label class="seek-label"><span class="sr-only" data-en="Playback position" data-ko="재생 위치">Playback position</span><input id="seek" type="range" min="0" max="1" value="0" step="0.1" disabled></label>
+      <div class="transport"><button id="prev" aria-label="Previous track">Ⅰ◀</button><button id="back" aria-label="Skip back"><span id="back-label">−5</span></button><button class="main-play" id="play" aria-label="Play">▶</button><button id="forward" aria-label="Skip forward"><span id="forward-label">+5</span></button><button id="next" aria-label="Next track">▶Ⅰ</button></div>
+    </div>
+    <div class="practice-expanded">
+      <div class="practice-setting-row"><label for="skip" data-en="Skip" data-ko="앞뒤 이동">Skip</label><select id="skip"><option value="3">3 s</option><option value="5" selected>5 s</option><option value="10">10 s</option></select><span id="network-label"></span></div>
+      <div class="loop-controls"><button id="loop-a">A <span>—</span></button><button id="loop-b">B <span>—</span></button><button id="loop-toggle" aria-pressed="false" disabled data-en="Repeat" data-ko="반복">Repeat</button><button id="loop-clear" aria-label="Clear loop">×</button></div>
+      <div class="pitch-controls"><label for="pitch" data-en="Key" data-ko="키 조절">Key</label><button id="pitch-down" aria-label="Lower one semitone">−</button><output id="pitch-value">0</output><button id="pitch-up" aria-label="Raise one semitone">+</button><input id="pitch" type="range" min="-12" max="12" step="1" value="0" aria-label="Pitch in semitones"><button id="pitch-reset" data-en="Reset" data-ko="초기화">Reset</button></div>
+      <p class="pitch-note" id="pitch-note" data-en="File audio · ±12 semitones, original speed" data-ko="파일 음원 · 속도 그대로, 반음 ±12">File audio · ±12 semitones, original speed</p>
+      <details class="track-details" open><summary><span data-en="Choose your sound" data-ko="들을 소리 선택">Choose your sound</span><span id="track-count"></span></summary><div class="practice-track-list" id="list"></div></details>
+      <details class="marker-details"><summary><span data-en="Time marks" data-ko="시간 표시">Time marks</span><span id="marker-count">0</span></summary><p data-en="Mark a moment, then tap a spot on the score. Your marks stay in this browser; the original file is untouched." data-ko="현재 시간을 잡고 악보에서 위치를 누르세요. 내 표시는 이 브라우저에만 저장되고 원본 파일은 보존됩니다.">Mark a moment, then tap a spot on the score. Your marks stay in this browser; the original file is untouched.</p><button id="mark-add" class="text-action" data-en="＋ Mark this moment" data-ko="＋ 현재 시간 표시">＋ Mark this moment</button><button id="mark-cancel" class="text-action hidden" data-en="Cancel placement" data-ko="배치 취소">Cancel placement</button><div id="marker-list"></div></details>
+      <div class="ad-slot" data-ad="house" data-size="300x100" aria-label="Sponsor"></div>
+      <p class="player-message hidden" id="player-message" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+  <script type="module" src="/viewer.js"></script>
 </body>
 </html>

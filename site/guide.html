@@ -1,67 +1,61 @@
 <!doctype html>
-<html lang="en" data-ko="ko/guide.html">
+<html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Guide · MPDF</title>
+  <title>MPDF guide · MPDF</title>
+  <meta name="description" content="Make MPDF files, practice with buttons, markers, A–B loops and key adjustment, and choose creator originals or sharing copies.">
   <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/guide">
   <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/guide">
   <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/guide">
   <link rel="canonical" href="https://mpdf.pages.dev/guide">
+  <meta property="og:title" content="MPDF guide · MPDF">
+  <meta property="og:description" content="Make MPDF files, practice with buttons, markers, A–B loops and key adjustment, and choose creator originals or sharing copies.">
+  <meta property="og:image" content="https://mpdf.pages.dev/og.png">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/site.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
-  <link rel="icon" href="favicon.svg">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<header class="wrap nav"><a class="brand" href="./">MPDF</a><nav><a href="ko/guide" hreflang="ko" lang="ko">한국어</a><a href="v/">Viewer</a><a href="guide">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<header class="wrap nav"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">♪</span>MPDF</a><nav aria-label="Main navigation"><a href="/make/?lang=en">Make</a><a href="/v/?lang=en">Open</a><a data-route="guide" href="/guide">Guide</a><a class="keep" href="/ko/guide" hreflang="ko">한국어</a></nav></header>
 <main class="wrap doc">
-  <h1>Guide</h1>
-  <p>MPDF is <strong>a PDF with music attached</strong>. The file is a plain PDF, so it opens anywhere; in a viewer that understands MPDF, the music plays while you read. This page covers making one, sending it, and opening it.</p>
-
-  <h2>1. Making one</h2>
+<div class="eyebrow">MPDF GUIDE</div>
+  <h1>Make, practice, and share</h1>
+  <p>An MPDF carries music links and practice markers inside a PDF. A regular PDF app shows the score; an MPDF viewer also plays its music.</p>
+  <p><a class="btn" href="/make/?lang=en">Make an MPDF</a> <a class="btn ghost" href="/v/?file=/samples/practice.mpdf&amp;lang=en">Try the complete example</a></p>
+  <h2>1. Connect music to a PDF</h2>
   <ol>
-    <li><strong>Drop a PDF.</strong> Drag it onto the box on the front page or click to choose. A PDF you received by chat works too. The pages are never altered.</li>
-    <li><strong>Paste YouTube links.</strong> Copy the link from the address bar, paste, press Enter. <code>youtu.be/…</code>, <code>youtube.com/watch?v=…</code> and Shorts links all work. One per song. Click the title to name the song so recipients know what it is.</li>
-    <li><strong>Audio files work as well.</strong> “Add an audio file” takes m4a, mp3 or wav and embeds it in the PDF. It plays offline, but the file grows (about 1 MB per minute) and it cannot be shared by link (see 3).</li>
-    <li><strong>Pick a track for each page.</strong> Under each page card choose a song; ranges like “1–2 · Canon, 3 · Arirang” appear. Pages you leave empty keep playing the previous track. To start a song at a specific point, type <code>0:32</code> into “Start”.</li>
-    <li><strong>Give it a title, then save or create a link.</strong></li>
+    <li><strong>Open your PDF in the maker.</strong> Select a page on the left and work on the large score in the center.</li>
+    <li><strong>Add a YouTube link or audio file.</strong> Name the track and choose its start and end times. Embedded audio increases the MPDF file size.</li>
+    <li><strong>Place playback buttons on the score.</strong> Choose a position on the selected page and move the button as needed. You can also assign tracks by page number.</li>
+    <li><strong>Add time markers.</strong> Choose a music position and mark the score to return directly to that moment.</li>
+    <li><strong>Preview playback, then save.</strong> Your working file is processed in your browser.</li>
   </ol>
-
-  <h2>2. Sending: link</h2>
-  <p>“Create link” gives you a <code>/v/…</code> address. Paste it into any chat or mail; it shows a preview card with the title, and opens in the browser with the music. No app to install.</p>
+  <h2>2. Listen and practice</h2>
+  <p>Open a received MPDF in the <a href="/v/?lang=en">practice viewer</a>, or try the complete example. Playback buttons and time markers on the page lead to the associated track or moment. The lower player controls tracks, position, and loops.</p>
   <ul>
-    <li>Links work for YouTube and URL tracks only. This site never stores audio files.</li>
-    <li>Anyone with the link can open it. Links are deleted automatically after [retention period]. To remove one sooner, <a href="report">request removal</a>.</li>
+    <li><strong>A–B loops:</strong> choose a start A and end B to repeat a practice section.</li>
+    <li><strong>Key adjustment:</strong> shift embedded file audio by up to ±12 semitones while keeping its playback speed. YouTube and external URL tracks do not support this adjustment.</li>
+    <li><strong>Copy Note playback:</strong> select score, chords, original audio, or a mix when the file contains the required data. This does not automatically recognize and perform ordinary PDF notation.</li>
+    <li><strong>Internet access:</strong> YouTube and external URL tracks need a connection. Embedded audio can play offline once the web viewer has loaded. Opening the website for the first time still needs internet access.</li>
   </ul>
-
-  <h2>3. Sending: file</h2>
-  <p>“Save as PDF” downloads the file; send it by chat, mail or cloud drive. Use this when the file has embedded audio, or when you want it to last beyond the link.</p>
-  <ul>
-    <li>The file is named <code>.pdf</code> by default. Every app opens that name, and MPDF viewers recognize the file by what's inside, not by its name. <code>.mpdf</code> is only for apps that register that extension.</li>
-    <li><strong>Send the file as it is.</strong> “Print to PDF”, screenshots and some compressors or markup tools drop attachments and with them the music. The pages survive.</li>
-  </ul>
-
-  <h2>4. Opening</h2>
-  <ul>
-    <li><strong>Got a link?</strong> Just tap it. Press the pill at the bottom to play; expand it for the track list and the YouTube player. Turn pages and the music follows.</li>
-    <li><strong>Got a file?</strong> Drop it on the <a href="v/">viewer</a>. Files never leave your browser.</li>
-    <li><strong>In any other PDF app</strong> it's simply a PDF, minus the music. Apps that support MPDF: [coming soon]</li>
-  </ul>
-
-  <h2>5. Copyright</h2>
-  <p>YouTube tracks play through YouTube's official player; nothing is extracted or hidden. The PDF and any audio you embed must be yours to share. Links reported for infringement are removed.</p>
-
-  <h2>6. For developers</h2>
-  <p>If your app opens PDFs, reading one attachment named <code>mpdf.json</code> makes it MPDF-aware. The spec is three pages, the JS and Python references are 80 lines, the license is MIT. <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Read the spec</a> · <a href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></p>
-
-  <h2>More guides</h2>
-  <ul>
-    <li><a href="guides/lesson-book">Add a backing track to a lesson book</a></li>
-    <li><a href="guides/choir-parts">Share choir parts with reference recordings</a></li>
-    <li><a href="guides/youtube-links">When a YouTube link doesn't play</a></li>
-  </ul>
+  <h2>3. Choose how to save</h2>
+  <table><thead><tr><th>Choice</th><th>Use it for</th></tr></thead><tbody>
+    <tr><td>Save original</td><td>Keep the music connections and production information. Retain a creator original for yourself and send a sharing copy to others.</td></tr>
+    <tr><td>Shared MPDF</td><td>Send the finished score with music. The sharing copy excludes editable source PDFs and original markup data.</td></tr>
+    <tr><td>Score-only PDF</td><td>Save the PDF pages without music or MPDF attachments.</td></tr>
+    <tr><td>Create link</td><td>Upload a sharing copy containing only YouTube or HTTPS tracks. Anyone with the link can open it for 90 days after creation.</td></tr>
+  </tbody></table>
+  <p><code>.pdf</code> and <code>.mpdf</code> are filename options. The save choice determines whether music is included. The <code>.pdf</code> extension is easier to open in ordinary PDF apps; music plays in MPDF-aware viewers.</p>
+  <p>Creator originals containing source documents, and files containing embedded audio, cannot be uploaded as public links. Download and send embedded-audio sharing copies as files. Links are not permanent storage; keep your own copy.</p>
+  <h2>4. Open MPDF files from SEETO</h2>
+  <p>The viewer reads playback buttons, time markers, and embedded audio from app-created MPDFs. You can download a received file unchanged. Saving it without revision preserves its exact bytes and attachments.</p>
+  <p>To revise a creator original, sign in with <strong>the same SEETO account</strong> and pass the file's creator-registration check. Shared copies remain read-only even for their creator. Files without verifiable creator information, or whose registration cannot be checked online, also open read-only.</p>
+  <p>The website supports Google-connected SEETO accounts. For Apple-only accounts, use the SEETO app to revise creator originals. Creator registration is optional for a new MPDF. If you choose it, the finished file's hash and your account ID are registered with SEETO; the score and audio are not uploaded by this step. Signing in does not synchronize your app library or Copy Notes to the website.</p>
+  <h2>5. Send the file itself</h2>
+  <p><strong>Send the downloaded file directly.</strong> Printing to PDF, taking screenshots, or saving through some compressors and editors can discard attachments, music, and creator information. Share only scores and recordings you have permission to share. YouTube playback uses its official player.</p>
+  <p>For public-link removal, use <a data-route="report" href="/report">Report / removal</a>. For file structure and integration, read the <a data-route="developers" href="/developers">developer guide</a>.</p>
 </main>
-<footer class="wrap"><span>MPDF · a PDF that plays music</span><nav><a href="guide">Guide</a><a href="terms">Terms</a><a href="report">Report</a></nav></footer>
-<script type="module">import { offerKorean } from "./i18n.js"; offerKorean()</script>
+<footer class="wrap"><span>MPDF · Read your score. Play your music.</span><nav><a data-route="guide" href="/guide">Guide</a><a data-route="developers" href="/developers">Developers</a><a data-route="terms" href="/terms">Terms</a><a data-route="report" href="/report">Report / removal</a></nav></footer>
+
 </body>
 </html>

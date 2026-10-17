@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-ko="../ko/guides/choir-parts.html">
+<html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Share choir parts with reference recordings · MPDF</title>
@@ -13,14 +13,14 @@
   <meta property="og:image" content="https://mpdf.pages.dev/og.png">
   <meta property="og:type" content="article">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
-  <link rel="icon" href="../favicon.svg">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="../site.css">
+  <link rel="stylesheet" href="/site.css">
 </head>
 <body>
-<header class="wrap nav"><a class="brand" href="../">MPDF</a><nav><a href="../ko/guides/choir-parts" hreflang="ko" lang="ko">한국어</a><a href="../v/">Viewer</a><a href="../guide">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<header class="wrap nav"><a class="brand" href="/">MPDF</a><nav><a class="keep" href="/ko/guides/choir-parts" hreflang="ko" lang="ko">한국어</a><a href="/v/?lang=en">Viewer</a><a data-route="guide" href="/guide">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
 <main class="wrap doc">
-  <div class="draft" style="color: var(--faint);">GUIDE · 2026-09-15</div>
+  <div class="draft" style="color: var(--faint);">GUIDE · 2026-10-18</div>
   <h1>Share choir parts with reference recordings</h1>
 
   <p>Choir members rehearse at home with whatever recording they can find, usually the wrong one. A single MPDF link gives everyone the same score, the same reference mix, and their own voice part one tap away, with no app to install.</p>
@@ -30,28 +30,28 @@
 
   <h2>Set it up</h2>
   <ol>
-    <li>Drop the score PDF into the <a href="../">maker</a>.</li>
+    <li>Drop the score PDF into the <a href="/make/?lang=en">maker</a>.</li>
     <li>Paste one YouTube link per track: the full mix first, then each voice. Name them “Full mix”, “Soprano”, “Alto” and so on. The names are what singers see in the player.</li>
-    <li>Under <em>Pages</em>, assign the full mix to page 1. That is the default; every singer picks their own part from the track list in the player, and the choice stays while they turn pages.</li>
+    <li>Assign the full mix to page 1 or place a playback button there. Singers choose their own part from the player; keep Follow pages off to retain that choice while changing pages.</li>
     <li>Title the file (“Messiah · Hallelujah”), then <strong>Create link</strong>.</li>
   </ol>
 
   <h2>Page cues for longer works</h2>
-  <p>For a piece with several movements, or a long video where the section on page 7 starts at 4:12, assign the track to page 7 and type <code>4:12</code> into <em>Start</em>. When a singer turns to that page, playback jumps there. Find the timestamps by scrubbing the video once; it takes a minute and saves every member the same minute.</p>
+  <p>For a section beginning at 4:12, set a separate track to start at <code>4:12</code> and assign it to the relevant page. Enable Follow pages to use the cue after playback has started. For quick jumps within one track, place time markers on the score.</p>
 
   <h2>Sending the link</h2>
   <ul>
     <li>Paste the link into the choir's group chat. It shows the title and a preview.</li>
-    <li>Anyone with the link can open it; there is no login. Links expire after [retention period], so make a fresh one for next season.</li>
-    <li>If someone prefers a file, <em>Save as PDF</em> gives the same content; the YouTube links are inside the file and play in the viewer.</li>
+    <li>Anyone with the link can open it without signing in. Links are available for 90 days after creation; keep your original and make a new sharing link when needed.</li>
+    <li>If someone prefers a file, <em>Shared MPDF</em> saves a file with the music connections; the YouTube links are inside the file and play in the viewer.</li>
   </ul>
 
   <h2>At rehearsal</h2>
-  <p>On a tablet the score fills the screen exactly like a plain PDF, and the player is a small pill you can move out of the way. Tap it to play, tap again to stop; nothing is drawn over the music.</p>
+  <p>The viewer keeps the score central and the playback controls close by. Use the lower player, on-page buttons, and time markers to start or jump to a section, then set an A–B loop for repeated practice.</p>
 
-  <p style="margin-top: 40px;"><a class="btn" href="../#tool">Make one now</a></p>
+  <p style="margin-top: 40px;"><a class="btn" href="/make/?lang=en">Make one now</a></p>
 </main>
-<footer class="wrap"><span>MPDF · a PDF that plays music</span><nav><a href="../guide">Guide</a><a href="../terms">Terms</a><a href="../report">Report</a></nav></footer>
-<script type="module">import { offerKorean } from "../i18n.js"; offerKorean()</script>
+<footer class="wrap"><span>MPDF · a PDF that plays music</span><nav><a data-route="guide" href="/guide">Guide</a><a data-route="terms" href="/terms">Terms</a><a data-route="report" href="/report">Report</a></nav></footer>
+
 </body>
 </html>

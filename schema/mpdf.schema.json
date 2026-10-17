@@ -1,47 +1,215 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://mpdf.dev/schema/mpdf-1.0.json",
-  "title": "MPDF manifest (mpdf.json) v1.0",
+  "title": "MPDF manifest (mpdf.json) v1.x with optional page controls",
   "type": "object",
-  "required": ["mpdf", "tracks"],
+  "required": [
+    "mpdf",
+    "tracks"
+  ],
   "properties": {
-    "mpdf": { "type": "string", "pattern": "^1\\.[0-9]+$" },
-    "title": { "type": "string" },
+    "mpdf": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$",
+      "maxLength": 32
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 4096
+    },
     "tracks": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "src"],
+        "required": [
+          "id",
+          "src"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,64}$" },
-          "src": { "type": "string", "pattern": "^(youtube:[A-Za-z0-9_-]{6,}|file:.+|https://.+)$" },
-          "title": { "type": "string" },
-          "artist": { "type": "string" },
-          "start": { "type": "number", "minimum": 0 },
-          "end": { "type": "number", "minimum": 0 }
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "src": {
+            "type": "string",
+            "pattern": "^(youtube:[A-Za-z0-9_-]{11}|file:.+|https://.+)$",
+            "maxLength": 4096
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 4096
+          },
+          "artist": {
+            "type": "string",
+            "maxLength": 4096
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          }
         }
-      }
+      },
+      "maxItems": 256
     },
     "cues": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["page", "track"],
+        "required": [
+          "page",
+          "track"
+        ],
         "properties": {
-          "page": { "type": "integer", "minimum": 1 },
-          "track": { "type": "string" },
-          "at": { "type": "number", "minimum": 0 }
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "track": {
+            "type": "string"
+          },
+          "at": {
+            "type": "number",
+            "minimum": 0
+          }
         }
-      }
+      },
+      "maxItems": 100000
     },
     "options": {
       "type": "object",
       "properties": {
-        "autoplay": { "type": "boolean", "default": false },
-        "followPage": { "type": "boolean", "default": true },
-        "loop": { "type": "boolean", "default": false }
+        "autoplay": {
+          "type": "boolean",
+          "default": false
+        },
+        "followPage": {
+          "type": "boolean",
+          "default": true
+        },
+        "loop": {
+          "type": "boolean",
+          "default": false
+        }
       }
+    },
+    "buttons": {
+      "type": "array",
+      "maxItems": 256,
+      "description": "Optional page playback buttons. Coordinates use the rotated crop-box viewport with top-left origin.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "page",
+          "track",
+          "x",
+          "y"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/uuid"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "track": {
+            "$ref": "#/definitions/trackID"
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 0.95
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 0.95
+          }
+        }
+      }
+    },
+    "timeMarkers": {
+      "type": "array",
+      "maxItems": 2048,
+      "description": "Optional interactive bookmarks. seconds is relative to the track start. Markers are not printed on plain PDFs.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "page",
+          "track",
+          "seconds",
+          "x",
+          "y"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/definitions/uuid"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "track": {
+            "$ref": "#/definitions/trackID"
+          },
+          "choice": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,80}$"
+          },
+          "seconds": {
+            "type": "number",
+            "minimum": 0
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "web": {
+      "type": "object",
+      "description": "Optional web authoring hints; these never prove ownership.",
+      "properties": {
+        "sourcePDFKey": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "buttonRendering": {
+          "type": "string",
+          "enum": [
+            "baked",
+            "overlay"
+          ]
+        },
+        "sharedReadOnly": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "description": "Unknown fields are preserved. Track end must be greater than start; IDs must be unique; page and track references must resolve (semantic validation).",
+  "definitions": {
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    },
+    "trackID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
     }
   }
 }

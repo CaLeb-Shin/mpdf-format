@@ -1,193 +1,122 @@
-import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
-import { createMpdf, readMpdf, parseYouTube, parseTime, fmtTime, rangesOf, TRACK_COLORS } from './mpdf-browser.js'
-import { mountAds } from './ads.js'
-import { t, offerKorean, mountLangButton } from './i18n.js'
-const ROOT = new URL('.', import.meta.url).pathname.replace(/\/$/, '')
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
-mountAds(); mountLangButton(); offerKorean()
-
-const $ = (s) => document.querySelector(s)
-const state = { name: '', bytes: null, pages: 0, thumbs: [], tracks: [], files: {}, cues: {}, seq: 0, existing: false }
-const setStatus = (msg, err = false) => { const el = $('#status'); el.textContent = msg; el.classList.toggle('err', err) }
-setStatus(t('status.idle'))
-document.addEventListener('langchange', () => { setStatus(t('status.idle')); renderAll() })
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
-
-// ---- 01 PDF -----------------------------------------------------------------
-const drop = $('#drop'), pdfInput = $('#pdf-input')
-drop.onclick = () => pdfInput.click()
-drop.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pdfInput.click() } }
-pdfInput.onchange = (e) => e.target.files[0] && loadPdf(e.target.files[0])
-document.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over') })
-document.addEventListener('dragleave', () => drop.classList.remove('over'))
-document.addEventListener('drop', async (e) => {
-  e.preventDefault(); drop.classList.remove('over')
-  for (const f of e.dataTransfer.files) (/\.(pdf|mpdf)$/i.test(f.name) || f.type === 'application/pdf') ? await loadPdf(f) : await addAudioFile(f)
-})
-const param = new URLSearchParams(location.search).get('file')
-if (param) fetch(param).then((r) => r.arrayBuffer()).then((b) => loadPdf(new File([b], param.split('/').pop()))).catch(() => setStatus(t('fetch.fail'), true))
-
-async function loadPdf(file) {
-  const bytes = new Uint8Array(await file.arrayBuffer())
-  let doc
-  try { doc = await pdfjsLib.getDocument({ data: bytes.slice() }).promise } catch { return setStatus(t('pdf.unreadable'), true) }
-  state.bytes = bytes; state.name = file.name.replace(/\.(pdf|mpdf)$/i, ''); state.pages = doc.numPages
-  state.thumbs = []; state.cues = {}; state.existing = false
-  if (!$('#title').value) $('#title').value = state.name
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i)
-    const vp0 = page.getViewport({ scale: 1 }); const vp = page.getViewport({ scale: 260 / vp0.width })
-    const c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height
-    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise
-    state.thumbs.push(c)
-  }
-  const existing = await readMpdf(doc)
-  if (existing) {
-    state.existing = true; state.tracks = []; state.files = existing.files; state.seq = 0
-    for (const t of existing.manifest.tracks) { state.seq++; state.tracks.push({ ...t, id: 't' + state.seq, color: TRACK_COLORS[(state.seq - 1) % TRACK_COLORS.length], _old: t.id }) }
-    for (const c of existing.manifest.cues || []) { const t = state.tracks.find((x) => x._old === c.track); if (t) state.cues[c.page] = { track: t.id, at: c.at || 0 } }
-    if (existing.manifest.title) $('#title').value = existing.manifest.title
-    setStatus(t('pdf.existing'))
-  } else if (state.tracks.length) { state.cues[1] = { track: state.tracks[0].id, at: 0 }; setStatus(t('pdf.loaded', { name: file.name, n: doc.numPages })) }
-  else setStatus(t('pdf.loadedNext', { name: file.name, n: doc.numPages }))
-  drop.classList.add('loaded')
-  drop.innerHTML = `<div class="thumb"></div><strong>${esc(file.name)}</strong><small>${t('drop.change', { n: doc.numPages })}</small>`
-  drop.querySelector('.thumb').appendChild(state.thumbs[0].cloneNode(true)).getContext('2d').drawImage(state.thumbs[0], 0, 0)
-  renderAll()
+import * as pdfjs from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+import {readMpdf,createMpdf,inspectPublication,prepareSharedFiles,normalizeAttachmentNames,renderPageButtons,exportPlainPdf,safeAttachmentName,parseYouTube,parseTime,fmtTime,TRACK_COLORS,mimeOf} from './mpdf-browser.js';
+import {mountLangButton,getLang} from './i18n.js';
+import {createSeetoAccount} from './seeto-account.js';
+import {storeFile} from './file-session.js';
+pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+const $=s=>document.querySelector(s), L=(ko,en)=>getLang()==='ko'?ko:en;
+const clone=x=>structuredClone(x), enc=x=>new TextEncoder().encode(JSON.stringify(x));
+const safeTitle=x=>(x||'MPDF').replace(/[\\/:*?"<>|\u0000-\u001f]/g,'_').slice(0,180);
+const state={original:null,base:null,pdf:null,name:'',files:{},removedFiles:new Set(),manifest:{mpdf:'1.0',tracks:[],cues:[],buttons:[],timeMarkers:[],options:{autoplay:false,followPage:false,loop:false}},publication:null,page:1,track:null,selected:null,placement:null,locked:false,geometryLocked:false,verifiedUID:null,ownershipVersion:0,busy:false,dirty:false,generation:0,renderVersion:0,thumbnailObserver:null,renderTask:null};
+let audioURL=null,drag=null;
+mountLangButton();
+const account=createSeetoAccount({lang:getLang()});account.mount($('#account-host'));
+function status(message,error=false){$('#status').textContent=message;$('#status').classList.toggle('err',error);}
+function fail(error){status(error?.code?account.errorMessage(error):error?.message||String(error),true);}
+function dirty(){if(state.busy||state.locked)return;state.dirty=true;status(L('수정 중 · 원본 또는 공유본으로 저장하세요.','Changes ready · save an original or sharing copy.'));}
+function track(){return state.manifest.tracks.find(t=>t.id===state.track);}
+function canEdit(){return !!state.pdf&&!state.locked&&!state.busy;}
+function controls(){
+  $('#edit-fields').disabled=!canEdit();$('#title').disabled=!canEdit();
+  for(const el of document.querySelectorAll('[data-edit]'))el.disabled=!canEdit()||(el.id==='place-button'&&state.geometryLocked);
+  for(const id of ['preview','save-plain','save-shared'])$('#'+id).disabled=!state.pdf||state.busy;
+  $('#save-original').disabled=!canEdit();$('#choose-pdf').disabled=state.busy;$('#welcome-pick').disabled=state.busy;
+  $('#create-link').disabled=!state.pdf||state.busy||!state.manifest.tracks.length||state.manifest.tracks.some(t=>t.src.startsWith('file:'));
+  $('#create-link').title=state.manifest.tracks.some(t=>t.src.startsWith('file:'))?L('파일 음원이 들어 있으면 공유용 MPDF로 보내세요.','Use a sharing MPDF for embedded audio.'):L('누구나 열 수 있는 링크 · 90일','Public link · 90 days');
+  $('#previous-page').disabled=!state.pdf||state.page<=1||state.busy;$('#next-page').disabled=!state.pdf||state.page>=state.pdf.numPages||state.busy;
+  $('#download-original').classList.toggle('hidden',!state.original);$('#download-original').disabled=state.busy;
+  for(const el of document.querySelectorAll('.page-control'))el.disabled=state.locked||state.busy;
 }
-
-// ---- 02 tracks --------------------------------------------------------------
-function addTrack(t) {
-  state.seq++
-  state.tracks.push({ ...t, id: 't' + state.seq, color: TRACK_COLORS[(state.seq - 1) % TRACK_COLORS.length] })
-  if (state.pages && !Object.keys(state.cues).length) state.cues[1] = { track: 't' + state.seq, at: 0 }
-  renderAll()
+async function run(action){if(state.busy)return;state.busy=true;controls();try{await action();}catch(e){console.error(e);fail(e);}finally{state.busy=false;controls();}}
+function stopAudio(){const a=$('#track-audio');a.pause();a.removeAttribute('src');a.load();if(audioURL){URL.revokeObjectURL(audioURL);audioURL=null;}}
+function selectTrack(id){state.track=id;state.selected=null;renderTracks();renderTrackDetails();renderConnections();renderControls();}
+function renderTracks(){const el=$('#tracks');el.replaceChildren();state.manifest.tracks.forEach((t,i)=>{
+  const row=document.createElement('div');row.className='editor-track'+(t.id===state.track?' active':'');
+  const button=document.createElement('button');button.type='button';button.className='select-track';button.setAttribute('aria-pressed',String(t.id===state.track));
+  const dot=document.createElement('span');dot.className='track-dot';dot.style.background=TRACK_COLORS[i%TRACK_COLORS.length];
+  const copy=document.createElement('span');copy.className='track-copy';const title=document.createElement('strong');title.textContent=t.title||t.id;const sub=document.createElement('small');sub.textContent=t.src.startsWith('youtube:')?'YouTube · '+L('인터넷 필요','Online'):L('파일 음원','Audio file');copy.append(title,sub);button.append(dot,copy);button.onclick=()=>selectTrack(t.id);
+  const remove=document.createElement('button');remove.type='button';remove.className='delete-track';remove.textContent='×';remove.setAttribute('aria-label',L('음원 삭제: ','Remove track: ')+(t.title||t.id));remove.onclick=()=>{if(!canEdit())return;if(state.geometryLocked&&state.manifest.buttons?.some(b=>b.track===t.id))return status(L('원본에 그려진 버튼의 음원은 삭제할 수 없어요. SEETO에서 수정하세요.','Edit this native button in SEETO to remove its track.'),true);state.manifest.tracks=state.manifest.tracks.filter(x=>x.id!==t.id);if(t.src.startsWith('file:')&&!state.manifest.tracks.some(x=>x.src===t.src)){const key=t.src.slice(5);delete state.files[key];state.removedFiles.add(key);}for(const key of ['cues','buttons','timeMarkers'])state.manifest[key]=(state.manifest[key]||[]).filter(x=>x.track!==t.id);if(state.track===t.id)state.track=state.manifest.tracks[0]?.id||null;dirty();renderAll();};row.append(button,remove);el.append(row);
+});}
+function renderTrackDetails(){const t=track();$('#track-details').classList.toggle('hidden',!t);stopAudio();if(!t)return;
+  $('#track-name').value=t.title||'';$('#track-start').value=fmtTime(t.start||0);$('#track-end').value=t.end==null?'':fmtTime(t.end);$('#track-pages').value=(state.manifest.cues||[]).filter(c=>c.track===t.id).map(c=>c.page).join(', ');
+  const a=$('#track-audio'),bytes=t.src.startsWith('file:')&&state.files[t.src.slice(5)];a.hidden=!bytes;
+  if(bytes){audioURL=URL.createObjectURL(new Blob([bytes],{type:mimeOf(t.src.slice(5))}));a.src=audioURL;a.onloadedmetadata=()=>{if(track()?.id!==t.id)return;a.currentTime=Math.min(t.start||0,a.duration||0);};a.ontimeupdate=()=>{if(t.end!=null&&a.currentTime>=t.end){a.pause();a.currentTime=t.start||0;}};}
+  $('#track-note').textContent=bytes?L('현재 재생 시각으로 시간 표시를 놓을 수 있어요.','Use the current playback position for a time marker.'):L('유튜브 연결은 미리보기에서 공식 플레이어로 확인하세요.','Use Preview to check YouTube in its official player.');
 }
-function addYouTube() {
-  const id = parseYouTube($('#yt-url').value)
-  if (!id) return setStatus(t('yt.invalid'), true)
-  addTrack({ title: `YouTube ${id}`, src: 'youtube:' + id }); $('#yt-url').value = ''; setStatus(t('yt.added'))
+function renderConnections(){const el=$('#connections');el.replaceChildren();const list=[...(state.manifest.buttons||[]).map(x=>({...x,kind:'button'})),...(state.manifest.timeMarkers||[]).map(x=>({...x,kind:'marker'}))].filter(x=>x.page===state.page);
+  if(!list.length){const p=document.createElement('p');p.className='field-note';p.textContent=L('재생 버튼이나 시간 표시를 악보에 놓으세요.','Place a playback button or time marker on the score.');el.append(p);}
+  for(const item of list){const row=document.createElement('div');row.className='connection-item'+(state.selected?.id===item.id?' selected':'');const b=document.createElement('button');b.type='button';const t=state.manifest.tracks.find(t=>t.id===item.track);b.textContent=(item.kind==='button'?'▶ ':fmtTime(item.seconds)+' · ')+(t?.title||item.track);b.onclick=()=>{state.selected={id:item.id,kind:item.kind};state.track=item.track;renderControls();renderConnections();if(item.kind==='marker')$('#marker-seconds').value=String(item.seconds);};const remove=document.createElement('button');remove.type='button';remove.className='remove';remove.textContent='×';remove.setAttribute('aria-label',L('연결 삭제','Remove connection'));remove.disabled=item.kind==='button'&&state.geometryLocked;remove.onclick=()=>{if(!canEdit())return;const key=item.kind==='button'?'buttons':'timeMarkers';state.manifest[key]=state.manifest[key].filter(x=>x.id!==item.id);state.selected=null;dirty();renderConnections();renderControls();};row.append(b,remove);el.append(row);}
+  $('#marker-edit').classList.toggle('hidden',state.selected?.kind!=='marker');
 }
-$('#yt-add').onclick = addYouTube
-$('#yt-url').onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addYouTube() } }
-$('#audio-input').onchange = async (e) => { for (const f of e.target.files) await addAudioFile(f); e.target.value = '' }
-async function addAudioFile(f) {
-  if (!/^audio\//.test(f.type) && !/\.(m4a|mp3|wav|aac|ogg)$/i.test(f.name)) return setStatus(t('audio.notAudio', { name: f.name }), true)
-  let name = f.name.replace(/[^\w.\-가-힣]/g, '_'), n = 1
-  while (state.files[name]) name = name.replace(/(\.\w+)$/, `-${++n}$1`)
-  state.files[name] = new Uint8Array(await f.arrayBuffer())
-  addTrack({ title: f.name.replace(/\.[^.]+$/, ''), src: 'file:' + name })
-  setStatus(t('audio.added', { name: f.name, mb: (f.size / 1048576).toFixed(1) }))
+function selection(){const key=state.selected?.kind==='marker'?'timeMarkers':'buttons';return(state.manifest[key]||[]).find(x=>x.id===state.selected?.id);}
+function renderControls(){const layer=$('#controls-layer');layer.replaceChildren();for(const kind of ['button','marker'])for(const x of state.manifest[kind==='button'?'buttons':'timeMarkers']||[]){if(x.page!==state.page)continue;const el=document.createElement('button');el.type='button';el.className='page-control'+(kind==='marker'?' marker':'')+(state.selected?.id===x.id?' selected':'');el.style.left=x.x*100+'%';el.style.top=x.y*100+'%';el.textContent=kind==='marker'?fmtTime(x.seconds):'MPDF';el.dataset.id=x.id;el.dataset.kind=kind;el.setAttribute('aria-label',(kind==='marker'?L('시간 표시 ','Time marker ')+fmtTime(x.seconds):L('재생 버튼','Playback button'))+L(' · 방향키로 이동',' · arrow keys to move'));el.disabled=state.locked||state.busy;if(kind==='button'&&state.geometryLocked)el.classList.add('locked');el.onclick=e=>{e.stopPropagation();state.selected={id:x.id,kind};if(state.track!==x.track){state.track=x.track;renderTracks();renderTrackDetails();}renderConnections();if(kind==='marker')$('#marker-seconds').value=String(x.seconds);for(const b of layer.children)b.classList.toggle('selected',b.dataset.id===x.id);};el.onpointerdown=e=>{if(!canEdit()||(kind==='button'&&state.geometryLocked))return;e.stopPropagation();state.selected={id:x.id,kind};drag={id:x.id,kind,element:el,moved:false};el.setPointerCapture(e.pointerId);};el.onpointermove=e=>{if(!drag||drag.id!==x.id)return;const r=layer.getBoundingClientRect(),min=kind==='button'?.05:0,max=kind==='button'?.95:1;x.x=Math.max(min,Math.min(max,(e.clientX-r.left)/r.width));x.y=Math.max(min,Math.min(max,(e.clientY-r.top)/r.height));el.style.left=x.x*100+'%';el.style.top=x.y*100+'%';drag.moved=true;};el.onpointerup=()=>{if(drag?.moved)dirty();drag=null;renderConnections();};el.onpointercancel=()=>{drag=null;};el.onkeydown=e=>{if(!canEdit()||(kind==='button'&&state.geometryLocked))return;const delta={ArrowLeft:[-.01,0],ArrowRight:[.01,0],ArrowUp:[0,-.01],ArrowDown:[0,.01]}[e.key];if(!delta)return;e.preventDefault();const lo=kind==='button'?.05:0,hi=kind==='button'?.95:1;x.x=Math.max(lo,Math.min(hi,x.x+delta[0]));x.y=Math.max(lo,Math.min(hi,x.y+delta[1]));el.style.left=x.x*100+'%';el.style.top=x.y*100+'%';dirty();};layer.append(el);}}
+function renderAll(){renderTracks();renderTrackDetails();renderConnections();renderControls();controls();}
+async function renderPage(){if(!state.pdf)return;const version=++state.renderVersion,pdf=state.pdf,index=state.page;state.renderTask?.cancel();state.renderTask=null;const page=await pdf.getPage(index);if(version!==state.renderVersion)return;
+  const normal=page.getViewport({scale:1}),width=Math.min(Math.max(100,$('#score-scroll').clientWidth-50),950),scale=width/normal.width,viewport=page.getViewport({scale:scale*Math.min(devicePixelRatio||1,2)});const canvas=$('#score-canvas');canvas.width=viewport.width;canvas.height=viewport.height;$('#score-stage').style.width=width+'px';$('#score-stage').classList.remove('hidden');$('#welcome').hidden=true;$('#placement-bar').classList.remove('hidden');$('#page-label').textContent=index+' / '+pdf.numPages;for(const b of $('#thumbnails').children)b.classList.toggle('active',Number(b.dataset.page)===index);
+  try{state.renderTask=page.render({canvasContext:canvas.getContext('2d'),viewport});await state.renderTask.promise;}catch(e){if(e.name!=='RenderingCancelledException')throw e;}if(version!==state.renderVersion)return;state.renderTask=null;renderControls();renderConnections();controls();}
+function setupThumbnails(){state.thumbnailObserver?.disconnect();$('#thumbnails').replaceChildren();const version=state.generation,pdf=state.pdf;state.thumbnailObserver=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){const b=entry.target;state.thumbnailObserver.unobserve(b);(async()=>{const p=await pdf.getPage(Number(b.dataset.page));if(version!==state.generation)return;const vp=p.getViewport({scale:110/p.getViewport({scale:1}).width}),c=b.querySelector('canvas');c.width=vp.width;c.height=vp.height;await p.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;})().catch(()=>{});}}, {root:$('#thumbnails'),rootMargin:'200px'});
+ for(let i=1;i<=pdf.numPages;i++){const b=document.createElement('button');b.type='button';b.className='thumb';b.dataset.page=i;b.setAttribute('aria-label',L('페이지 ','Page ')+i);const c=document.createElement('canvas');c.width=110;c.height=150;const span=document.createElement('span');span.textContent=String(i).padStart(2,'0');b.append(c,span);b.onclick=()=>{if(state.busy)return;state.page=i;state.selected=null;state.placement=null;renderPage().catch(fail);};$('#thumbnails').append(b);state.thumbnailObserver.observe(b);}}
+async function open(file){if(!file)return;await run(async()=>{if(file.size>256*1024*1024)throw new Error(L('브라우저에서는 256MB 이하 파일을 열어 주세요.','Please open a file under 256 MB.'));status(L('악보와 연결 정보를 읽고 있어요…','Reading the score and its connections…'));stopAudio();state.generation++;state.renderVersion++;state.renderTask?.cancel();await state.pdf?.destroy();state.pdf=null;const original=new Uint8Array(await file.arrayBuffer());const originalDoc=await pdfjs.getDocument({data:original.slice()}).promise;if(originalDoc.numPages>2000){await originalDoc.destroy();throw new Error(L('최대 2,000쪽까지 열 수 있어요.','Up to 2,000 pages are supported.'));}
+ const parsed=await readMpdf(originalDoc);if(parsed?.validationErrors?.length){await originalDoc.destroy();throw new Error(L('재생 정보를 확인할 수 없습니다. 원본은 뷰어에서 열어 주세요.','The playback metadata is invalid. Open the unchanged original in the viewer.'));}const m=parsed?.manifest||{mpdf:'1.0',tracks:[],cues:[],buttons:[],timeMarkers:[],options:{autoplay:false,followPage:false,loop:false}};const files=parsed?.files||{};const info=inspectPublication(files,m);if(info.errors.length){await originalDoc.destroy();throw new Error(L('편집 정보를 확인할 수 없습니다. 원본은 뷰어에서 열어 주세요.','Editing metadata is invalid. Open the original in the viewer.'));}
+ state.original=original;state.originalName=file.name;state.name=file.name.replace(/\.(pdf|mpdf)$/i,'');state.files=files;state.removedFiles=new Set();state.manifest=clone(m);state.publication=info.publication;state.page=1;state.track=m.tracks[0]?.id||null;state.selected=null;state.placement=null;state.verifiedUID=null;state.dirty=false;
+ const hasMarkup=!!info.publication?.editableMarkupKey;const clean=info.sourcePdf&&!hasMarkup?info.sourcePdf:null;state.base=clean||original;state.geometryLocked=hasMarkup||!!((info.publication||m.web?.buttonRendering==='baked')&&(m.buttons||[]).length&&!clean);state.locked=!!(info.publication||m.web?.sharedReadOnly);state.pdf=clean?await pdfjs.getDocument({data:clean.slice()}).promise:originalDoc;if(clean)await originalDoc.destroy();
+ if(!Array.isArray(state.manifest.buttons))state.manifest.buttons=[];if(!Array.isArray(state.manifest.timeMarkers))state.manifest.timeMarkers=[];if(!state.manifest.options)state.manifest.options={autoplay:false,followPage:false,loop:false};
+ $('#title').value=m.title||state.name;$('#tags').value=(info.publication?.tags||m.web?.tags||[]).join(', ');$('#follow-page').checked=m.options?.followPage!==false;$('#loop-track').checked=m.options?.loop===true;$('#file-info').textContent=file.name+' · '+(file.size/1048576).toFixed(1)+' MB';$('#register-creator').checked=!!info.publication&&!info.publication.sharedReadOnly;
+ setupThumbnails();renderAll();await renderPage();await updateOwnership();status(state.locked?L('받은 파일을 그대로 열었습니다. 원본 다운로드와 미리보기를 사용할 수 있어요.','Original loaded. Preview and unchanged download are available.'):L('음원을 연결하고 악보 위에 재생 버튼을 놓아보세요.','Connect a track and place a playback button on the score.'));
+ });}
+async function updateOwnership(){const gen=state.generation,version=++state.ownershipVersion,box=$('#ownership'),p=state.publication;box.replaceChildren();box.classList.toggle('hidden',!p&&!state.manifest.web?.sharedReadOnly);if(!p&&!state.manifest.web?.sharedReadOnly){state.locked=false;controls();return;}
+ state.locked=true;state.verifiedUID=null;controls();if(p?.sharedReadOnly||state.manifest.web?.sharedReadOnly){box.textContent=L('공유용 MPDF는 보기·재생 전용입니다. 수정하려면 제작자 원본을 열어 주세요.','Sharing copies are read-only. Open your editable original to revise.');return;}
+ if(!account.user){box.textContent=L('SEETO 제작자 원본입니다. 같은 Google 계정으로 로그인하면 수정 권한을 확인합니다.','SEETO original. Sign in with the same Google account to verify revision access.');return;}
+ box.textContent=L('서버에서 제작자를 확인하고 있어요…','Verifying the creator with the server…');try{const receipt=await account.verify(state.original,p);if(gen!==state.generation||version!==state.ownershipVersion||account.user?.uid!==receipt.ownerUID)return;state.verifiedUID=receipt.ownerUID;state.locked=false;box.textContent=state.geometryLocked?L('제작자 확인 완료 · 악보에 이미 그려진 버튼 위치와 필기는 보존합니다. 음원 구간·시간 표시는 수정할 수 있어요.','Creator verified. Baked buttons and markup stay in place; audio ranges and time markers can be revised.'):L('제작자 확인 완료 · 수정본은 새 파일로 등록하며 받은 원본은 유지됩니다.','Creator verified. Revisions are registered as a new file; your original is preserved.');}catch(e){if(gen===state.generation&&version===state.ownershipVersion)box.textContent=account.errorMessage(e);}if(gen===state.generation&&version===state.ownershipVersion){controls();renderControls();}}
+account.onChange(()=>{if(state.publication){if(drag?.moved)state.dirty=true;drag=null;state.placement=null;state.locked=true;state.verifiedUID=null;controls();renderControls();updateOwnership();}});
+$('#welcome-pick').onclick=$('#choose-pdf').onclick=()=>$('#pdf-input').click();$('#pdf-input').onchange=e=>open(e.target.files[0]);
+$('#load-sample').onclick=()=>loadURL('/samples/practice-original.pdf');
+async function loadURL(url){try{const u=new URL(url,location.href);if(!['http:','https:'].includes(u.protocol))throw new Error('Unsupported URL');const response=await fetch(u);if(!response.ok)throw new Error(L('파일을 불러오지 못했습니다.','Could not load the file.'));await open(new File([await response.blob()],decodeURIComponent(u.pathname.split('/').pop()||'score.pdf'),{type:'application/pdf'}));}catch(e){fail(e);}}
+for(const b of document.querySelectorAll('[data-source]'))b.onclick=()=>{for(const x of document.querySelectorAll('[data-source]'))x.classList.toggle('active',x===b);$('#audio-source').hidden=b.dataset.source!=='file';$('#youtube-source').hidden=b.dataset.source!=='youtube';};
+$('#title').oninput=()=>{if(canEdit()){state.manifest.title=$('#title').value;dirty();}};
+$('#yt-add').onclick=()=>{if(!canEdit())return;const id=parseYouTube($('#yt-url').value);if(!id)return status(L('올바른 유튜브 링크를 넣어 주세요.','Enter a valid YouTube link.'),true);addTrack({id:'t_'+crypto.randomUUID(),title:'YouTube '+id,src:'youtube:'+id,start:0});$('#yt-url').value='';};
+$('#yt-url').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#yt-add').click();}};
+function addTrack(t){if(state.manifest.tracks.length>=60)throw new Error(L('한 파일에는 음원 60개까지 연결할 수 있어요.','Up to 60 tracks per file.'));state.manifest.tracks.push(t);state.track=t.id;if(!state.manifest.cues?.length)state.manifest.cues=[{page:1,track:t.id,at:0}];dirty();renderAll();}
+$('#audio-input').onchange=async e=>{if(!canEdit())return;const files=Array.from(e.target.files);await run(async()=>{let total=Object.values(state.files).reduce((s,f)=>s+(f.byteLength||0),state.base.byteLength);for(const file of files){if(!/\.(mp3|m4a|wav|aac|ogg)$/i.test(file.name))throw new Error(L('지원 음원: MP3, M4A, WAV, AAC, OGG','Supported audio: MP3, M4A, WAV, AAC, OGG'));total+=file.size;if(total>256*1048576)throw new Error(L('파일 전체가 256MB를 넘습니다. 음원을 줄여 주세요.','Total exceeds 256 MB. Use smaller audio files.'));const key=safeAttachmentName(file.name);state.files[key]=new Uint8Array(await file.arrayBuffer());addTrack({id:'t_'+crypto.randomUUID(),title:file.name.replace(/\.[^.]+$/,''),src:'file:'+key,start:0});}state.dirty=true;status(L('음원을 넣었습니다. 악보 위에 재생 버튼을 놓아보세요.','Audio added. Place its playback button on the score.'));});e.target.value='';};
+$('#track-name').oninput=()=>{if(!canEdit()||!track())return;track().title=$('#track-name').value;dirty();renderTracks();renderConnections();};
+for(const key of ['start','end'])$('#track-'+key).onchange=()=>{if(!canEdit()||!track())return;const t=track(),raw=$('#track-'+key).value.trim(),n=raw===''&&key==='end'?undefined:parseTime(raw);if(n===null||n<0||(key==='end'&&n!==undefined&&n<=(t.start||0))||(key==='start'&&t.end!=null&&n>=t.end)){status(L('끝 시간은 시작보다 뒤여야 합니다. 예: 0:32','End must follow start. Example: 0:32'),true);renderTrackDetails();return;}if((key==='start'?t.end:n)!=null&&(state.manifest.timeMarkers||[]).some(m=>m.track===t.id&&m.seconds>(key==='start'?t.end-n:n-(t.start||0)))){status(L('시간 표시가 구간 밖에 있습니다. 먼저 표시를 수정하세요.','A time marker would fall outside this range. Adjust it first.'),true);renderTrackDetails();return;}t[key]=n;dirty();renderTrackDetails();};
+$('#assign-pages').onclick=()=>{if(!canEdit()||!track())return;const raw=$('#track-pages').value.trim().toLowerCase();let pages=[];if(raw==='all')pages=[1];else for(const range of raw.split(/[,\s]+/).filter(Boolean)){const m=range.match(/^(\d+)(?:[-–](\d+))?$/);if(!m)return status(L('페이지는 all 또는 1-3, 5처럼 입력하세요.','Use all or page ranges such as 1-3, 5.'),true);const a=Number(m[1]),b=Number(m[2]||m[1]);if(a<1||b<a||b>state.pdf.numPages)return status(L('악보 안의 올바른 페이지 범위를 입력하세요.','Enter a valid page range.'),true);for(let p=a;p<=b;p++)pages.push(p);}
+ state.manifest.cues=(state.manifest.cues||[]).filter(c=>c.track!==state.track&&!pages.includes(c.page));for(const page of pages)state.manifest.cues.push({page,track:state.track,at:track().start||0});state.manifest.cues.sort((a,b)=>a.page-b.page);dirty();status(L('지정한 페이지에 도착하면 이 음원을 선택합니다. 다음 연결까지 재생이 유지되며, 페이지 따라가기를 켜서 사용할 수 있어요.','This track is selected when you reach each assigned page and keeps playing until the next cue. Enable Follow pages to use it.'));};
+$('#follow-page').onchange=()=>{if(canEdit()){state.manifest.options.followPage=$('#follow-page').checked;dirty();}};$('#loop-track').onchange=()=>{if(canEdit()){state.manifest.options.loop=$('#loop-track').checked;dirty();}};$('#tags').oninput=dirty;
+function setPlacement(kind){if(!canEdit())return;if(!track())return status(L('음원을 먼저 넣거나 선택해 주세요.','Add or select a track first.'),true);state.placement=state.placement===kind?null:kind;for(const k of ['button','marker'])$('#place-'+k).classList.toggle('active',state.placement===k);$('#controls-layer').style.cursor=state.placement?'crosshair':'';$('#placement-hint').textContent=state.placement?L('악보에서 놓을 곳을 누르세요.','Click where you want to place it.'):L('음원을 고른 뒤 악보 위에 놓으세요.','Choose a track and place it on the score.');}
+$('#place-button').onclick=()=>setPlacement('button');$('#place-marker').onclick=()=>setPlacement('marker');
+$('#controls-layer').onclick=e=>{if(!canEdit()||!state.placement||e.target!==e.currentTarget)return;const kind=state.placement,key=kind==='button'?'buttons':'timeMarkers';if(kind==='button'&&state.manifest.buttons.length>=60)return status(L('재생 버튼은 60개까지 넣을 수 있어요.','Up to 60 playback buttons.'),true);const r=e.currentTarget.getBoundingClientRect(),lo=kind==='button'?.05:0,hi=kind==='button'?.95:1;const item={id:crypto.randomUUID(),page:state.page,track:state.track,x:Math.max(lo,Math.min(hi,(e.clientX-r.left)/r.width)),y:Math.max(lo,Math.min(hi,(e.clientY-r.top)/r.height))};if(kind==='marker')item.seconds=Math.max(0,($('#track-audio').currentTime||0)-(track()?.start||0));state.manifest[key].push(item);state.selected={id:item.id,kind};state.placement=null;for(const b of ['button','marker'])$('#place-'+b).classList.remove('active');e.currentTarget.style.cursor='';dirty();renderControls();renderConnections();if(kind==='marker')$('#marker-seconds').value=String(Math.round(item.seconds*10)/10);};
+$('#marker-seconds').onchange=()=>{if(!canEdit()||state.selected?.kind!=='marker')return;const marker=selection(),n=parseTime($('#marker-seconds').value),t=state.manifest.tracks.find(t=>t.id===marker.track);if(n===null||n<0||(t?.end!=null&&n>t.end-(t.start||0)))return status(L('음원 구간 안의 시간을 입력하세요.','Enter a time within the track range.'),true);marker.seconds=n;dirty();renderControls();renderConnections();};$('#marker-current').onclick=()=>{const marker=selection();if(!canEdit()||!marker||state.selected.kind!=='marker')return;if(marker.track!==state.track||!track()?.src.startsWith('file:'))return status(L('해당 파일 음원을 선택해 재생한 뒤 눌러 주세요.','Play the matching embedded track first.'),true);$('#marker-seconds').value=String(Math.max(0,$('#track-audio').currentTime-(track().start||0)));$('#marker-seconds').onchange();};
+$('#previous-page').onclick=()=>{if(state.page>1){state.page--;state.selected=null;renderPage().catch(fail);}};$('#next-page').onclick=()=>{if(state.pdf&&state.page<state.pdf.numPages){state.page++;state.selected=null;renderPage().catch(fail);}};
+let resizeTimer;new ResizeObserver(()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>renderPage().catch(fail),160);}).observe($('#score-scroll'));
+function tags(){return [...new Set($('#tags').value.split(/[,#]/).map(t=>t.trim()).filter(Boolean))].slice(0,50);}
+async function assemble(mode){if(!state.pdf)throw new Error(L('PDF를 먼저 선택하세요.','Choose a PDF first.'));if(mode==='plain')return exportPlainPdf(state.geometryLocked?state.original:state.base);if(mode==='preview'&&state.locked)return state.original.slice();
+ if(mode==='original'&&state.locked)throw new Error(L('제작자 원본의 수정 권한을 확인해 주세요.','Verify access to the creator original.'));
+ if(state.publication&&state.locked&&state.dirty)throw new Error(L('계정이 바뀌어 수정본을 내보낼 수 없습니다. 제작자 계정으로 다시 확인해 주세요.','Your account changed. Verify the creator account again before exporting these revisions.'));
+ if(!state.manifest.tracks.length)throw new Error(L('음원을 하나 이상 연결해 주세요.','Add at least one track.'));
+ const generation=state.generation;let m=clone(state.manifest),files={...state.files},removed=[...state.removedFiles];m.title=$('#title').value.trim()||state.name;m.options={...m.options,autoplay:false};m.web={...m.web,tags:tags()};
+ const shouldRegister=mode==='original'&&($('#register-creator').checked||!!state.publication),protectedRevision=!!state.publication&&!state.locked;
+ let owner=null,accountVersion=null;const checkAccount=async()=>{if(!owner)return;await account.requireAccount(owner);if(account.sessionVersion!==accountVersion)throw new Error(L('로그인 계정이 바뀌었습니다. 현재 제작자 계정으로 다시 저장해 주세요.','Your sign-in changed. Save again with the current creator account.'));};
+ if(shouldRegister||protectedRevision){if(state.publication&&!state.verifiedUID)throw new Error(L('먼저 제작자 원본의 수정 권한을 확인해 주세요.','Verify access to this creator original first.'));owner=await account.requireAccount(state.publication?state.verifiedUID:undefined);accountVersion=account.sessionVersion;if(state.publication){const receipt=await account.verify(state.original,state.publication);if(receipt.ownerUID!==owner)throw new Error(L('제작자 계정이 일치하지 않습니다.','The creator account does not match.'));}await checkAccount();}
+ if(!state.locked){const norm=normalizeAttachmentNames(m,files);m=norm.manifest;files=norm.files;removed.push(...norm.removed);if(!state.geometryLocked){files['mpdf-web-source.pdf']=await exportPlainPdf(state.base);m.web={...m.web,sourcePDFKey:'mpdf-web-source.pdf',buttonRendering:'baked'};}}
+ let bytes=state.geometryLocked||state.locked?state.original:await renderPageButtons(state.base,m.buttons||[],{guideURL:'https://mpdf.pages.dev/v/'});
+ if(shouldRegister){await checkAccount();const publication=await account.createPublication({...state.publication,sourceNoteID:state.publication?.sourceNoteID||'pdf-'+crypto.randomUUID(),tempo:state.publication?.tempo||80,sourceStartSeconds:state.publication?.sourceStartSeconds||0,sourcePDFKey:state.geometryLocked?state.publication?.sourcePDFKey:'mpdf-web-source.pdf',tags:tags(),sharedReadOnly:false});await checkAccount();if(publication.creatorUID!==owner)throw new Error(L('제작자 계정이 바뀌었습니다. 다시 저장해 주세요.','The creator account changed. Save again.'));files['seetogether-mpdf.json']=enc(publication);}
+ if(files['seetogether-mpdf.json']&&!state.locked){const publication=JSON.parse(new TextDecoder().decode(files['seetogether-mpdf.json']));const ids=new Set(m.tracks.map(t=>t.id));for(const role of ['scoreTrackID','chordTrackID','sourceTrackID'])if(publication[role]&&!ids.has(publication[role])){delete publication[role];if(role==='sourceTrackID')delete publication.audioSyncMap;}files['seetogether-mpdf.json']=enc(publication);}
+ if(mode==='shared'||mode==='link'){const prepared=prepareSharedFiles(m,files);m=prepared.manifest;files=prepared.files;removed=[...new Set([...removed,...prepared.removed])];}
+ const output=await createMpdf(bytes,m,files,{replace:true,shared:mode==='shared'||mode==='link',removeFiles:removed});
+ if(generation!==state.generation)throw new Error(L('파일이 바뀌었습니다. 다시 저장해 주세요.','The file changed. Save again.'));
+ await checkAccount();if(shouldRegister){const p=JSON.parse(new TextDecoder().decode(files['seetogether-mpdf.json']));await account.register(output,p);await checkAccount();}
+ return output;
 }
-function removeTrack(id) {
-  const t = state.tracks.find((x) => x.id === id); if (!t) return
-  state.tracks = state.tracks.filter((x) => x.id !== id)
-  if (t.src.startsWith('file:')) delete state.files[t.src.slice(5)]
-  for (const p of Object.keys(state.cues)) if (state.cues[p].track === id) delete state.cues[p]
-  renderAll()
-}
-const T = t
-// "1–2,4" for a track, from its cues
-function rangeText(id) { const rs = rangesOf(cueList(), state.pages).filter((r) => r.track === id); return rs.map((r) => (r.from === r.to ? r.from : r.from + '–' + r.to)).join(',') }
-// Type "all", "3" or "3-5" next to a track: it starts on `from`; if `to` ends before the last page, the track that
-// used to play there resumes on the next page, so the range really ends where the user said.
-function assignPages(id, text) {
-  if (!state.pages) return true
-  const s = String(text).trim().toLowerCase().replace(/[–~]/g, '-')
-  let from, to
-  if (s === '' ) { for (const p of Object.keys(state.cues)) if (state.cues[p].track === id) delete state.cues[p]; renderAll(); return true }
-  if (s === 'all' || s === '*' || s === '전체') { from = 1; to = state.pages }
-  else { const mm = s.match(/^(\d+)\s*(?:-\s*(\d+))?$/); if (!mm) return false; from = +mm[1]; to = mm[2] ? +mm[2] : state.pages }
-  if (from < 1 || to < from || from > state.pages) return false
-  to = Math.min(to, state.pages)
-  const before = trackForPage(from), after = trackForPage(Math.min(to + 1, state.pages))
-  for (const p of Object.keys(state.cues)) { const n = +p; if (state.cues[p].track === id || (n > from && n <= to)) delete state.cues[p] }
-  const keepAt = (state.cues[from] || {}).at || 0
-  state.cues[from] = { track: id, at: keepAt }
-  if (to < state.pages && !state.cues[to + 1]) { const back = after && after.id !== id ? after : (before && before.id !== id ? before : null); if (back) state.cues[to + 1] = { track: back.id, at: 0 } }
-  renderAll(); return true
-}
-function renderTracks() {
-  const box = $('#tracks'); box.innerHTML = ''
-  if (!state.tracks.length) { box.innerHTML = `<div class="step-label" style="padding: 6px 0;">${t('tracks.none')}</div>`; return }
-  for (const t of state.tracks) {
-    const row = document.createElement('div'); row.className = 'track'
-    const src = t.src.startsWith('youtube:') ? T('src.youtube', { id: t.src.slice(8) }) : t.src.startsWith('file:') ? T('src.file', { name: t.src.slice(5) }) : t.src
-    row.innerHTML = `<span class="dot" style="background:${t.color}"></span><input value="${esc(t.title || '')}" placeholder="${T('track.title')}" aria-label="${T('track.title')}"><span class="src">${esc(src)}</span><input class="pg" value="${esc(rangeText(t.id))}" placeholder="${T('pages.placeholder')}" title="${T('pages.title')}" aria-label="${T('pages.title')}"><button class="x" aria-label="${T('track.remove')}">×</button>`
-    row.querySelector('input').oninput = (e) => { t.title = e.target.value; renderRanges() }
-    row.querySelector('.pg').onchange = (e) => { if (!assignPages(t.id, e.target.value)) { setStatus(T('pages.invalid'), true); e.target.value = rangeText(t.id) } }
-    row.querySelector('.x').onclick = () => removeTrack(t.id)
-    box.appendChild(row)
-  }
-}
-
-// ---- 03 page assignment -----------------------------------------------------
-const cueList = () => Object.entries(state.cues).map(([p, c]) => ({ page: +p, track: c.track, at: c.at || 0 }))
-function trackForPage(page) { const r = rangesOf(cueList(), state.pages).find((r) => page >= r.from && page <= r.to); return r && state.tracks.find((t) => t.id === r.track) }
-function renderPages() {
-  const wrap = $('#assign'); const show = state.pages > 0
-  wrap.classList.toggle('hidden', !show); if (!show) return
-  wrap.querySelector('.assign-head p').style.opacity = state.tracks.length ? '' : '.7'
-  const grid = $('#pages'); grid.innerHTML = ''
-  for (let p = 1; p <= state.pages; p++) {
-    const cue = state.cues[p]; const eff = trackForPage(p)
-    const card = document.createElement('div'); card.className = 'pagecard'
-    const opts = [`<option value="">${p === 1 ? t('page.none') : t('page.continues') + (eff ? ' · ' + esc(eff.title || eff.id) : '')}</option>`]
-      .concat(state.tracks.map((t) => `<option value="${t.id}" ${cue && cue.track === t.id ? 'selected' : ''}>${esc(t.title || t.id)}</option>`)).join('')
-    card.innerHTML = `<div class="pg" style="border-top-color:${eff ? eff.color : 'var(--line-2)'}${cue ? '' : ';border-top-style:dashed'}"><span class="n">${p}</span></div>
-      <select aria-label="${t('page.aria', { p })}">${opts}</select>
-      <div class="at ${cue ? '' : 'hidden'}"><span>${t('at.label')}</span><input value="${cue ? fmtTime(cue.at) : '0:00'}" inputmode="numeric" aria-label="${t('at.aria')}"></div>`
-    const pg = card.querySelector('.pg'); const c = state.thumbs[p - 1].cloneNode(true); c.getContext('2d').drawImage(state.thumbs[p - 1], 0, 0); pg.prepend(c)
-    card.querySelector('select').onchange = (e) => { if (e.target.value) state.cues[p] = { track: e.target.value, at: (state.cues[p] || {}).at || 0 }; else delete state.cues[p]; renderPages(); renderRanges() }
-    card.querySelector('.at input').onchange = (e) => { const t = parseTime(e.target.value); if (t == null) { e.target.value = fmtTime(state.cues[p].at); return } state.cues[p].at = t; e.target.value = fmtTime(t); renderRanges() }
-    grid.appendChild(card)
-  }
-}
-function renderRanges() {
-  const box = $('#ranges'); box.innerHTML = ''
-  for (const r of rangesOf(cueList(), state.pages)) {
-    const t = state.tracks.find((x) => x.id === r.track); if (!t) continue
-    const s = document.createElement('span'); s.style.background = t.color
-    s.textContent = `${r.from === r.to ? r.from : r.from + '–' + r.to} · ${t.title || t.id}${r.at ? ' · ' + T('range.from', { t: fmtTime(r.at) }) : ''}`
-    box.appendChild(s)
-  }
-}
-function renderAll() { renderTracks(); renderPages(); renderRanges() }
-renderAll()
-
-// ---- save -------------------------------------------------------------------
-function manifest() {
-  const cues = cueList().sort((a, b) => a.page - b.page).map((c) => (c.at ? c : { page: c.page, track: c.track }))
-  return { mpdf: '1.0', title: $('#title').value.trim() || state.name, tracks: state.tracks.map(({ id, title, src }) => ({ id, title: title || undefined, src })), cues }
-}
-async function save(ext) {
-  if (!state.bytes) return setStatus(t('save.noPdf'), true)
-  if (!state.tracks.length) return setStatus(t('save.noTracks'), true)
-  const used = {}; for (const t of state.tracks) if (t.src.startsWith('file:')) used[t.src.slice(5)] = state.files[t.src.slice(5)]
-  try {
-    setStatus(t('save.making'))
-    const out = await createMpdf(state.bytes, manifest(), used, { replace: state.existing })
-    const name = ($('#title').value.trim() || state.name).replace(/[\\/:*?"<>|]/g, '_') + '.' + ext
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'application/pdf' })); a.download = name; a.click()
-    setTimeout(() => URL.revokeObjectURL(a.href), 60000)
-    setStatus(t('save.done', { name, mb: (out.length / 1048576).toFixed(1) }))
-  } catch (e) { setStatus(e.message, true) }
-}
-$('#save-pdf').onclick = () => save('pdf')
-$('#save-mpdf').onclick = () => save('mpdf')
-$('#link').onclick = async () => {
-  if (!state.bytes) return setStatus(t('save.noPdf'), true)
-  if (!state.tracks.length) return setStatus(t('save.noTracks'), true)
-  if (state.tracks.some((x) => x.src.startsWith('file:'))) return setStatus(t('link.audio'), true)
-  try {
-    setStatus(t('link.uploading')); $('#link').disabled = true
-    const out = await createMpdf(state.bytes, manifest(), {}, { replace: state.existing })
-    const res = await fetch(ROOT + '/api/upload', { method: 'POST', headers: { 'content-type': 'application/pdf' }, body: out })
-    const j = await res.json().catch(() => ({}))
-    if (!res.ok) throw new Error(j.error && t('err.' + j.error) !== 'err.' + j.error ? t('err.' + j.error) : t('link.fail', { code: res.status }))
-    $('#linkurl').value = j.url; $('#openlink').href = j.url; $('#linkbox').classList.remove('hidden')
-    setStatus(t('link.done'))
-  } catch (e) { setStatus(e.message, true) } finally { $('#link').disabled = false }
-}
-$('#copy').onclick = async () => { try { await navigator.clipboard.writeText($('#linkurl').value); setStatus(t('link.copied')) } catch { $('#linkurl').select(); setStatus(t('link.copyManual')) } }
-$('#share').onclick = async () => { const url = $('#linkurl').value; if (navigator.share) { try { await navigator.share({ title: $('#title').value || 'MPDF', url }) } catch {} } else $('#copy').click() }
+function download(bytes,name){const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+$('#download-original').onclick=()=>state.original&&download(state.original,state.originalName);
+$('#save-original').onclick=()=>run(async()=>{status(L('원본을 만들고 제작자 정보를 확인하고 있어요…','Preparing the original and creator registration…'));const out=await assemble('original');download(out,safeTitle($('#title').value)+'.original.'+$('#extension').value);state.dirty=false;$('#save-menu').open=false;status(L('편집용 원본을 저장했습니다. 다른 사람에게는 공유용 MPDF를 보내세요.','Editable original saved. Send a sharing MPDF to others.'));});
+$('#save-shared').onclick=()=>run(async()=>{status(L('편집용 자료를 제외한 공유본을 만들고 있어요…','Preparing a sharing copy without editing sources…'));const out=await assemble('shared');download(out,safeTitle($('#title').value)+'.'+$('#extension').value);status(L('음원이 포함된 공유용 MPDF를 저장했습니다. 받은 사람은 보고 재생할 수 있어요.','Sharing MPDF saved with music. Recipients can read and play it.'));});
+$('#save-plain').onclick=()=>run(async()=>{const out=await assemble('plain');download(out,safeTitle($('#title').value)+'.score.pdf');status(L('음원과 편집 첨부를 뺀 악보 PDF를 저장했습니다.','Score-only PDF saved without music or editing attachments.'));});
+$('#preview').onclick=()=>{const popup=window.open('about:blank','mpdf-preview');run(async()=>{try{$('#track-audio').pause();const out=state.manifest.tracks.length?await assemble('preview'):state.original;const id=await storeFile(new File([out],safeTitle($('#title').value)+'.pdf',{type:'application/pdf'}));if(popup)popup.location.href='/v/?session='+encodeURIComponent(id);else location.href='/v/?session='+encodeURIComponent(id);status(L('완성될 파일을 연습 뷰어에서 열었습니다.','Preview opened in the practice viewer.'));}catch(e){popup?.close();throw e;}});};
+$('#create-link').onclick=()=>run(async()=>{status(L('공유본을 준비하고 링크를 만들고 있어요…','Preparing the sharing copy and link…'));const out=await assemble('link');const response=await fetch('/api/upload',{method:'POST',headers:{'content-type':'application/pdf'},body:out});const data=await response.json();if(!response.ok){const errors={link_disabled:L('링크 저장소를 아직 사용할 수 없어요. 공유용 MPDF로 저장해 보내 주세요.','Link storage is unavailable. Save and send a sharing MPDF.'),embedded_audio:L('파일 음원은 링크 대신 공유용 MPDF로 보내 주세요.','Send embedded audio as a sharing MPDF.'),private_original:L('편집용 원본은 공개할 수 없습니다. 공유본을 저장해 주세요.','An editable original cannot be public. Save a sharing copy.'),unsupported_attachment:L('지원하지 않는 첨부가 있습니다. 파일로 공유해 주세요.','Unsupported attachments. Share this file directly.'),too_large:L('링크 공유는 20MB까지입니다. 파일로 공유해 주세요.','Link sharing supports up to 20 MB.')};throw new Error(errors[data.error]||data.error||'Link creation failed');}$('#share-url').value=data.url;$('#open-link').href=data.url;$('#link-dialog').showModal();status(L('공개 링크가 준비됐습니다. 90일 동안 이용할 수 있어요.','Public link ready. Available for 90 days.'));});
+$('#copy-link').onclick=async()=>{try{await navigator.clipboard.writeText($('#share-url').value);$('#copy-link').textContent=L('복사했어요','Copied');}catch{$('#share-url').select();}};$('#close-link').onclick=()=>$('#link-dialog').close();
+window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});
+document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('drop',e=>{e.preventDefault();if(state.busy)return;const f=[...e.dataTransfer.files].find(f=>/\.(pdf|mpdf)$/i.test(f.name));if(f)open(f);});
+document.addEventListener('langchange',()=>{renderAll();renderConnections();});
+const params=new URLSearchParams(location.search);if(params.get('file'))loadURL(params.get('file'));controls();if(params.get('account')==='1')$('#account-host .account-trigger')?.click();

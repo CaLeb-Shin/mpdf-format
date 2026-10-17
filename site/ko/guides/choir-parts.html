@@ -13,14 +13,14 @@
   <meta property="og:image" content="https://mpdf.pages.dev/og-ko.png">
   <meta property="og:type" content="article">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
-  <link rel="icon" href="../../favicon.svg">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="../../site.css">
+  <link rel="stylesheet" href="/site.css">
 </head>
 <body>
-<header class="wrap nav"><a class="brand" href="../../ko/">MPDF</a><nav><a href="../../guides/choir-parts.html" hreflang="en" lang="en">English</a><a href="../../v/">뷰어</a><a href="../guide">가이드</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<header class="wrap nav"><a class="brand" href="/ko/">MPDF</a><nav><a class="keep" href="/guides/choir-parts.html" hreflang="en" lang="en">English</a><a href="/v/?lang=ko">뷰어</a><a data-route="guide" href="/ko/guide">가이드</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
 <main class="wrap doc">
-  <div class="draft" style="color: var(--faint);">가이드 · 2026-09-15</div>
+  <div class="draft" style="color: var(--faint);">가이드 · 2026-10-18</div>
   <h1>합창단 파트보와 참고 음원 공유</h1>
 
   <p>단원들은 집에서 각자 찾은 음원으로 연습합니다. 보통 틀린 음원으로요. MPDF 링크 하나면 모두가 같은 악보, 같은 참고 믹스, 그리고 자기 파트를 한 번의 탭으로 듣습니다. 설치할 앱도 없습니다.</p>
@@ -30,28 +30,28 @@
 
   <h2>만들기</h2>
   <ol>
-    <li><a href="../">메이커</a>에 악보 PDF를 놓습니다.</li>
+    <li><a href="/make/?lang=ko">제작기</a>에 악보 PDF를 놓습니다.</li>
     <li>트랙마다 유튜브 링크를 하나씩 붙입니다. 전체 믹스를 먼저, 그다음 파트별로. 이름은 "전체", "소프라노", "알토"처럼 붙입니다. 이 이름이 단원들에게 보입니다.</li>
-    <li><em>페이지 지정</em>에서 1페이지에 전체 믹스를 지정합니다. 그게 기본값이고, 단원은 플레이어의 곡 목록에서 자기 파트를 고르면 페이지를 넘겨도 그 선택이 유지됩니다.</li>
+    <li>1페이지에 전체 믹스를 지정하거나 재생 버튼을 놓습니다. 단원은 플레이어에서 자기 파트를 고르고, 페이지를 넘겨도 유지하려면 페이지 따라가기를 꺼 둡니다.</li>
     <li>제목을 적고("메시아 · 할렐루야") <strong>링크 만들기</strong>를 누릅니다.</li>
   </ol>
 
   <h2>긴 곡의 페이지 큐</h2>
-  <p>악장이 여럿이거나, 긴 영상에서 7페이지 부분이 4:12에 시작한다면 7페이지에 그 트랙을 지정하고 <em>시작</em>에 <code>4:12</code>를 적습니다. 단원이 그 페이지를 펴면 재생이 거기로 갑니다. 영상을 한 번 훑어 시각을 적는 데 1분이면 되고, 단원 전원이 그 1분을 아낍니다.</p>
+  <p>4:12부터 시작할 구간은 별도 트랙의 시작을 <code>4:12</code>로 정하고 해당 페이지에 연결합니다. 재생을 시작한 뒤 페이지 따라가기를 켜면 큐를 사용할 수 있습니다. 같은 트랙 안에서 빠르게 이동할 곳은 악보 위 시간 표시로 남기세요.</p>
 
   <h2>링크 보내기</h2>
   <ul>
     <li>단톡방에 링크를 붙여 넣으면 제목과 미리보기가 뜹니다.</li>
-    <li>링크를 아는 사람은 누구나 열 수 있고 로그인은 없습니다. 링크는 [보관 기간] 뒤 사라지니 다음 시즌에는 새로 만드세요.</li>
-    <li>파일로 갖고 싶은 사람에게는 <em>PDF로 저장</em>으로 같은 내용을 줄 수 있습니다. 유튜브 링크가 파일 안에 있어 뷰어에서 재생됩니다.</li>
+    <li>링크를 아는 사람은 누구나 로그인 없이 열 수 있습니다. 링크 이용 기간은 생성 후 90일입니다. 원본을 보관하고 필요할 때 새 공유 링크를 만드세요.</li>
+    <li>파일로 갖고 싶은 사람에게는 <em>공유용 MPDF</em>로 음원 연결이 담긴 파일을 보낼 수 있습니다. 유튜브 링크가 파일 안에 있어 뷰어에서 재생됩니다.</li>
   </ul>
 
   <h2>연습 때</h2>
-  <p>태블릿에서 악보는 보통 PDF처럼 화면을 가득 채우고, 플레이어는 옆으로 치울 수 있는 작은 알약입니다. 누르면 재생, 다시 누르면 정지. 악보 위에는 아무것도 그리지 않습니다.</p>
+  <p>악보를 중심으로 아래 플레이어에서 재생을 조절합니다. 페이지 버튼이나 시간 표시로 필요한 부분에 이동하고, A–B 구간을 정해 반복해서 연습하세요.</p>
 
-  <p style="margin-top: 40px;"><a class="btn" href="../../ko/#tool">지금 만들기</a></p>
+  <p style="margin-top: 40px;"><a class="btn" href="/make/?lang=ko">지금 만들기</a></p>
 </main>
-<footer class="wrap"><span>MPDF · 음악이 같이 재생되는 PDF</span><nav><a href="../guide">가이드</a><a href="../terms">이용약관</a><a href="../report">신고</a></nav></footer>
+<footer class="wrap"><span>MPDF · 음악이 같이 재생되는 PDF</span><nav><a data-route="guide" href="/ko/guide">가이드</a><a data-route="terms" href="/ko/terms">이용약관</a><a data-route="report" href="/ko/report">신고</a></nav></footer>
 
 </body>
 </html>

@@ -1,33 +1,33 @@
 <!doctype html>
-<html lang="en" data-ko="../ko/guides/lesson-book.html">
+<html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Add a backing track to a lesson book · MPDF</title>
-  <meta name="description" content="How a music teacher turns a lesson-book PDF into a file that plays the accompaniment on every page, works offline, and goes out by chat.">
+  <meta name="description" content="How a music teacher turns a lesson-book PDF into a file that connects each piece to its accompaniment and can be shared as one file.">
   <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/guides/lesson-book">
   <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/guides/lesson-book">
   <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/guides/lesson-book">
   <link rel="canonical" href="https://mpdf.pages.dev/guides/lesson-book">
   <meta property="og:title" content="Add a backing track to a lesson book">
-  <meta property="og:description" content="How a music teacher turns a lesson-book PDF into a file that plays the accompaniment on every page, works offline, and goes out by chat.">
+  <meta property="og:description" content="How a music teacher turns a lesson-book PDF into a file that connects each piece to its accompaniment and can be shared as one file.">
   <meta property="og:image" content="https://mpdf.pages.dev/og.png">
   <meta property="og:type" content="article">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
-  <link rel="icon" href="../favicon.svg">
+  <link rel="icon" href="/favicon.svg">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="../site.css">
+  <link rel="stylesheet" href="/site.css">
 </head>
 <body>
-<header class="wrap nav"><a class="brand" href="../">MPDF</a><nav><a href="../ko/guides/lesson-book" hreflang="ko" lang="ko">한국어</a><a href="../v/">Viewer</a><a href="../guide">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<header class="wrap nav"><a class="brand" href="/">MPDF</a><nav><a class="keep" href="/ko/guides/lesson-book" hreflang="ko" lang="ko">한국어</a><a href="/v/?lang=en">Viewer</a><a data-route="guide" href="/guide">Guide</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">Spec</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
 <main class="wrap doc">
-  <div class="draft" style="color: var(--faint);">GUIDE · 2026-09-15</div>
+  <div class="draft" style="color: var(--faint);">GUIDE · 2026-10-18</div>
   <h1>Add a backing track to a lesson book</h1>
 
-  <p>A student who can hear the accompaniment practices differently: the tempo holds, the entries land, the piece feels like music instead of a page of notes. This guide is for teachers who want each piece in a lesson book to play its backing track the moment the student turns to it.</p>
+  <p>A student who can hear the accompaniment practices differently: the tempo holds, the entries land, the piece feels like music instead of a page of notes. This guide is for teachers who want each piece in a lesson book to play its backing track using playback buttons or optional page following.</p>
 
   <h2>What you need</h2>
   <ul>
-    <li><strong>The lesson book as a PDF.</strong> A scan is fine. Nothing on the pages is changed.</li>
+    <li><strong>The lesson book as a PDF.</strong> A scan is fine. The existing score is retained; you can add playback buttons where needed.</li>
     <li><strong>One recording per piece.</strong> Record the accompaniment on your phone (the voice memo app saves m4a, which is ideal), or export from whatever you use to make backing tracks. Name the files by piece so you can tell them apart later.</li>
     <li>Ten minutes.</li>
   </ul>
@@ -36,30 +36,30 @@
   <ul>
     <li>Record the piece at the tempo you want the student to practice at. A second, slower take is worth more than a better microphone.</li>
     <li>Leave one bar of count-in at the start. Students need it to enter; you can point the file at the first downbeat later if you prefer.</li>
-    <li>Keep each take under three minutes if you can. Audio adds roughly one megabyte per minute to the file.</li>
+    <li>Keep each take under three minutes if you can. The file grows by the size of the audio you include.</li>
   </ul>
 
   <h2>Making the file</h2>
   <ol>
-    <li>Open the <a href="../">maker</a> and drop the lesson-book PDF.</li>
-    <li>Under <em>Tracks</em>, use <em>Add an audio file</em> and choose all your recordings at once. Each becomes a track; click the titles to name them after the pieces.</li>
-    <li>Under <em>Pages</em>, pick the track for the page where each piece begins. Pages you leave empty keep playing the previous piece, so a four-page sonatina needs only one assignment on its first page.</li>
+    <li>Open the <a href="/make/?lang=en">maker</a> and drop the lesson-book PDF.</li>
+    <li>Choose audio files in the music panel. Each becomes a track; select it and enter a clear piece name.</li>
+    <li>Select a track and assign its starting page, or place its playback button on the score. Enable Follow pages if you want page cues to select tracks; playback first requires a user gesture.</li>
     <li>If a recording has a long count-in, type the time of the first downbeat into <em>Start</em> (for example <code>0:04</code>).</li>
-    <li>Give the file a title and choose <strong>Save as PDF</strong>.</li>
+    <li>Give the file a title. Keep an <strong>original</strong> for revisions and save a separate <strong>sharing MPDF</strong> for students.</li>
   </ol>
 
   <h2>Two tempos for one piece</h2>
   <p>Add both takes as tracks (say “Canon · slow” and “Canon · tempo”) and assign the slow one to the page. The student can switch to the tempo take from the track list in the player at any time, and the page assignment stays as the default.</p>
 
   <h2>Sending it</h2>
-  <p>Files with embedded audio are sent as files, not links: this site never stores audio, so the link button refuses them. Send the PDF by chat or mail as it is. It opens in any PDF app as a normal book; in the <a href="../v/">viewer</a> or any MPDF-aware app the accompaniment plays. Everything works offline once the file is on the student's device.</p>
+  <p>Files with embedded audio are sent as files, not links: this site never stores audio, so the link button refuses them. Send the PDF by chat or mail as it is. It opens in any PDF app as a normal book; in the <a href="/v/?lang=en">viewer</a> or any MPDF-aware app the accompaniment plays. Embedded audio can play offline once the web viewer is loaded; opening the website initially requires internet access.</p>
 
   <h2>Updating later</h2>
-  <p>Drop the finished file back into the maker. It recognizes the existing tracks and page assignments, so you can replace one recording or add a new piece and save again.</p>
+  <p>Keep and reopen your creator original to revise it. Registered SEETO originals require the same Google-connected creator account and online verification. Shared copies are read-only; do not use them as your editing source.</p>
 
-  <p style="margin-top: 40px;"><a class="btn" href="../#tool">Make one now</a></p>
+  <p style="margin-top: 40px;"><a class="btn" href="/make/?lang=en">Make one now</a></p>
 </main>
-<footer class="wrap"><span>MPDF · a PDF that plays music</span><nav><a href="../guide">Guide</a><a href="../terms">Terms</a><a href="../report">Report</a></nav></footer>
-<script type="module">import { offerKorean } from "../i18n.js"; offerKorean()</script>
+<footer class="wrap"><span>MPDF · a PDF that plays music</span><nav><a data-route="guide" href="/guide">Guide</a><a data-route="terms" href="/terms">Terms</a><a data-route="report" href="/report">Report</a></nav></footer>
+
 </body>
 </html>

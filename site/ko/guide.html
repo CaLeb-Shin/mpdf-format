@@ -2,66 +2,60 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>가이드 · MPDF</title>
-  <meta name="description" content="MPDF 만들기, 보내기, 열기. 유튜브 링크 붙이는 법, 페이지별 곡 지정, 파일이 깨지는 경우, 다른 앱에서 여는 법.">
+  <title>MPDF 사용 가이드 · MPDF</title>
+  <meta name="description" content="MPDF 만들기부터 버튼·시간 마킹, A–B 반복, 키 조절, 제작자 원본과 공유용 저장까지.">
   <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/guide">
   <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/guide">
   <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/guide">
   <link rel="canonical" href="https://mpdf.pages.dev/ko/guide">
+  <meta property="og:title" content="MPDF 사용 가이드 · MPDF">
+  <meta property="og:description" content="MPDF 만들기부터 버튼·시간 마킹, A–B 반복, 키 조절, 제작자 원본과 공유용 저장까지.">
+  <meta property="og:image" content="https://mpdf.pages.dev/og-ko.png">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/site.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
-  <link rel="icon" href="../favicon.svg">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="../site.css">
 </head>
 <body>
-<header class="wrap nav"><a class="brand" href="../">MPDF</a><nav><a href="../guide" hreflang="en">English</a><a href="../v/">뷰어</a><a href="guide">가이드</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<header class="wrap nav"><a class="brand" href="/ko/"><span class="brand-mark" aria-hidden="true">♪</span>MPDF</a><nav aria-label="주 메뉴"><a href="/make/?lang=ko">만들기</a><a href="/v/?lang=ko">열기</a><a data-route="guide" href="/ko/guide">가이드</a><a class="keep" href="/guide" hreflang="en">English</a></nav></header>
 <main class="wrap doc">
-  <h1>가이드</h1>
-  <p>MPDF는 <strong>음악이 붙은 PDF</strong>입니다. 파일은 그냥 PDF라서 어디서든 열리고, MPDF를 아는 뷰어에서는 악보를 보는 동안 음악이 나옵니다. 이 글은 만들고, 보내고, 여는 법 전부입니다.</p>
-
-  <h2>1. 만들기</h2>
+<div class="eyebrow">MPDF GUIDE</div>
+  <h1>만들고, 연습하고, 공유하기</h1>
+  <p>MPDF는 PDF에 음원 연결 정보와 연습 표시를 담는 파일입니다. 일반 PDF 앱에서는 악보를 보고, MPDF 뷰어에서는 연결된 음악을 함께 들을 수 있습니다.</p>
+  <p><a class="btn" href="/make/?lang=ko">새 MPDF 만들기</a> <a class="btn ghost" href="/v/?file=/samples/practice.mpdf&amp;lang=ko">완성 예시 체험</a></p>
+  <h2>1. PDF에 음악 연결하기</h2>
   <ol>
-    <li><strong>PDF를 놓습니다.</strong> 첫 화면의 상자에 끌어다 놓거나 클릭해서 고릅니다. 카톡에서 받은 PDF도 됩니다. 페이지는 한 글자도 바뀌지 않습니다.</li>
-    <li><strong>유튜브 링크를 붙여 넣습니다.</strong> 주소창의 링크를 그대로 붙이고 Enter. <code>youtu.be/…</code>, <code>youtube.com/watch?v=…</code>, 쇼츠 링크 모두 됩니다. 곡마다 하나씩 넣고, 제목을 눌러 곡 이름으로 바꿔 두면 받는 사람이 알아보기 쉽습니다.</li>
-    <li><strong>음원 파일도 넣을 수 있습니다.</strong> "+ 음원 파일"로 m4a·mp3·wav를 고르면 파일 안에 들어갑니다. 인터넷 없이도 재생되지만 파일이 커지고(1분에 약 1MB), 링크로는 공유할 수 없습니다(아래 3 참고).</li>
-    <li><strong>페이지마다 곡을 고릅니다.</strong> 페이지 카드 아래에서 곡을 고르면 "1–2 · 캐논, 3 · 아리랑"처럼 구간이 생깁니다. 고르지 않은 페이지는 앞 곡이 그대로 이어집니다. 곡의 특정 지점부터 틀고 싶으면 "시작"에 <code>0:32</code>처럼 적습니다.</li>
-    <li><strong>제목을 적고 저장하거나 링크를 만듭니다.</strong></li>
+    <li><strong>제작기에서 PDF를 엽니다.</strong> 왼쪽에서 페이지를 고르고, 가운데 큰 악보를 보며 작업합니다.</li>
+    <li><strong>YouTube 링크 또는 음원 파일을 넣습니다.</strong> 곡 이름과 시작·끝 시간을 정합니다. 내장 음원은 파일 크기만큼 MPDF 크기를 늘립니다.</li>
+    <li><strong>악보 위에 재생 버튼을 배치합니다.</strong> 선택한 페이지의 원하는 곳에 버튼을 놓고 위치를 조절합니다. 페이지 번호로 곡을 연결하는 방법도 사용할 수 있습니다.</li>
+    <li><strong>필요한 부분에 시간 마킹을 추가합니다.</strong> 음악의 위치를 정하고 악보에 표시를 남기면 그 지점으로 바로 돌아갈 수 있습니다.</li>
+    <li><strong>미리보기에서 재생을 확인하고 저장합니다.</strong> 작업 중인 파일은 브라우저에서 처리됩니다.</li>
   </ol>
-
-  <h2>2. 보내기: 링크</h2>
-  <p>"링크 만들기"를 누르면 <code>/v/…</code> 주소가 나옵니다. 카톡·밴드·메일에 붙여 넣으면 제목과 함께 미리보기 카드가 뜨고, 누르면 앱 설치 없이 브라우저에서 바로 악보를 보며 듣습니다.</p>
+  <h2>2. 듣고 반복해서 연습하기</h2>
+  <p><a href="/v/?lang=ko">연습 뷰어</a>에서 받은 MPDF를 열거나 완성 예시를 선택하세요. 악보 위 재생 버튼과 시간 표시를 누르면 연결된 곡·지점으로 이동합니다. 아래 플레이어에서 곡, 재생 위치와 반복 구간을 조절합니다.</p>
   <ul>
-    <li>링크는 유튜브·URL 트랙만 됩니다. 이 사이트는 음원 파일을 서버에 두지 않습니다.</li>
-    <li>링크를 아는 사람은 누구나 열 수 있고, [보관 기간] 후 자동으로 지워집니다. 지우고 싶으면 <a href="report">삭제 요청</a>을 보내세요.</li>
+    <li><strong>A–B 반복:</strong> 연습할 시작 A와 끝 B를 정해 그 구간을 반복합니다.</li>
+    <li><strong>키 조절:</strong> 파일에 포함된 음원을 최대 ±12반음 조절합니다. 재생 속도를 유지하며, YouTube와 외부 URL 음원에는 적용하지 않습니다.</li>
+    <li><strong>카피 노트 선택 재생:</strong> 파일에 포함된 데이터에 따라 악보·코드·원음·함께 재생을 선택할 수 있습니다. 일반 PDF를 자동으로 인식해 연주하는 기능은 아닙니다.</li>
+    <li><strong>인터넷:</strong> YouTube·외부 URL 음원은 연결이 필요합니다. 내장 음원은 웹 뷰어가 이미 열린 상태에서 오프라인 재생할 수 있습니다. 처음 웹사이트에 접속하려면 인터넷이 필요합니다.</li>
   </ul>
-
-  <h2>3. 보내기: 파일</h2>
-  <p>"PDF로 저장"으로 내려받아 카톡·메일·드라이브로 보냅니다. 음원 파일이 들어 있거나, 링크 없이 오래 보관하고 싶을 때는 이 방법입니다.</p>
-  <ul>
-    <li>파일 이름은 <code>.pdf</code>가 기본입니다. 모든 앱이 열 수 있는 이름이고, MPDF 뷰어는 이름이 아니라 파일 안의 정보로 알아봅니다. <code>.mpdf</code>는 그 확장자를 등록한 앱에서 열 때만 씁니다.</li>
-    <li><strong>파일을 그대로 보내세요.</strong> "PDF로 인쇄", 스크린샷, 일부 압축·편집 앱으로 다시 저장하면 첨부가 지워져 음악 정보가 사라집니다. 페이지는 남습니다.</li>
-  </ul>
-
-  <h2>4. 열기</h2>
-  <ul>
-    <li><strong>링크를 받았다면</strong> 누르기만 하면 됩니다. 아래 알약을 누르면 재생되고, 펼치면 곡 목록과 유튜브 플레이어가 보입니다. 페이지를 넘기면 정해 둔 곡으로 바뀝니다.</li>
-    <li><strong>파일을 받았다면</strong> <a href="../v/">뷰어</a>에 파일을 놓으세요. 파일은 브라우저 안에서만 열립니다.</li>
-    <li><strong>다른 PDF 앱에서 열면</strong> 그냥 PDF입니다. 음악만 없습니다. MPDF를 지원하는 앱 목록: [준비 중]</li>
-  </ul>
-
-  <h2>5. 저작권</h2>
-  <p>유튜브 트랙은 유튜브의 공식 플레이어로 재생되며, 소리만 뽑거나 숨겨서 틀지 않습니다. 직접 넣는 음원 파일과 PDF의 권리는 만드는 분에게 있어야 합니다. 침해 신고가 들어온 링크는 지웁니다.</p>
-
-  <h2>6. 앱 개발자라면</h2>
-  <p>PDF를 여는 앱이라면 첨부파일 <code>mpdf.json</code> 하나만 읽으면 MPDF를 지원합니다. 스펙은 세 쪽, JS·Python 레퍼런스는 80줄, 라이선스는 MIT입니다. <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙 읽기</a> · <a href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></p>
-
-  <h2>더 읽기</h2>
-  <ul>
-    <li><a href="guides/lesson-book">레슨 교재에 반주 넣기</a></li>
-    <li><a href="guides/choir-parts">합창단 파트보와 참고 음원 공유</a></li>
-    <li><a href="guides/youtube-links">유튜브 링크가 안 될 때 확인할 것</a></li>
-  </ul>
+  <h2>3. 어떤 파일로 저장할까요?</h2>
+  <table><thead><tr><th>선택</th><th>용도</th></tr></thead><tbody>
+    <tr><td>원본 저장</td><td>음원 연결과 제작 정보를 보관합니다. 제작자 원본은 자신이 보관하고, 다른 사람에게는 공유용 복사본을 보내세요.</td></tr>
+    <tr><td>공유용 MPDF</td><td>음악과 완성 악보를 함께 보냅니다. 편집용 원본 PDF·필기 원본 등을 제외한 공유 복사본을 만듭니다.</td></tr>
+    <tr><td>악보만 PDF</td><td>음원·MPDF 첨부를 제외하고 PDF 페이지를 저장합니다.</td></tr>
+    <tr><td>링크 만들기</td><td>YouTube·HTTPS 트랙만 있는 공유 복사본을 올립니다. 링크를 아는 누구나 열 수 있으며 만든 날부터 90일 동안 사용할 수 있습니다.</td></tr>
+  </tbody></table>
+  <p><code>.pdf</code>와 <code>.mpdf</code>는 파일 이름의 선택입니다. 음악 포함 여부는 확장자가 아니라 저장 종류로 결정됩니다. 일반 PDF 앱에서 열기 쉬운 확장자는 <code>.pdf</code>이며, 음악은 MPDF 지원 뷰어에서 재생됩니다.</p>
+  <p>음원 파일이나 편집 원본이 들어 있는 제작자 원본은 공개 링크로 올릴 수 없습니다. 내장 음원이 있는 공유본은 파일로 내려받아 보내세요. 링크는 장기 보관용 저장소가 아니므로 필요한 파일은 따로 보관하세요.</p>
+  <h2>4. SEETO에서 만든 MPDF 열기</h2>
+  <p>앱에서 만든 MPDF의 재생 버튼·시간 마킹·포함된 음원을 읽습니다. 받은 파일은 원본 그대로 내려받을 수 있습니다. 파일을 수정하지 않고 저장할 때 원래 첨부 정보와 바이트를 보존합니다.</p>
+  <p>제작자 원본을 수정하려면 <strong>SEETO에서 사용한 같은 계정</strong>으로 로그인하고 파일의 제작자 등록 확인을 통과해야 합니다. 공유용 MPDF는 제작자라도 읽기 전용입니다. 제작자 확인 정보가 없거나 인터넷에서 확인할 수 없는 파일도 읽기 전용으로 열립니다.</p>
+  <p>웹에서는 Google로 연결한 SEETO 계정을 지원합니다. Apple 전용 계정의 원본 수정은 SEETO 앱을 이용해 주세요. 새 MPDF의 제작자 등록은 선택 사항입니다. 등록을 선택하면 완성 파일의 해시와 계정 ID를 SEETO에 등록하며, 이 과정에서 악보와 음원 파일을 업로드하지 않습니다. 로그인만으로 앱의 서재나 카피 노트가 웹으로 동기화되지는 않습니다.</p>
+  <h2>5. 파일을 안전하게 보내기</h2>
+  <p><strong>파일 자체를 보내세요.</strong> ‘PDF로 인쇄’, 스크린샷, 일부 압축·편집 앱에서 재저장하면 첨부가 사라져 음악과 제작 정보가 없어질 수 있습니다. 자신에게 공유 권한이 있는 악보·음원만 보내세요. YouTube 음원은 공식 플레이어로 재생합니다.</p>
+  <p>공개 링크 삭제가 필요하면 <a data-route="report" href="/ko/report">신고·삭제 요청</a>을 이용하세요. 파일 구조가 궁금하다면 <a data-route="developers" href="/ko/developers">개발자 안내</a>를 참고하세요.</p>
 </main>
-<footer class="wrap"><span>MPDF · 음악이 같이 재생되는 PDF</span><nav><a href="guide">가이드</a><a href="terms">이용약관</a><a href="report">신고</a></nav></footer>
+<footer class="wrap"><span>MPDF · 음악을 들으며, 악보를 함께.</span><nav><a data-route="guide" href="/ko/guide">가이드</a><a data-route="developers" href="/ko/developers">개발자</a><a data-route="terms" href="/ko/terms">이용약관</a><a data-route="report" href="/ko/report">신고·삭제</a></nav></footer>
+
 </body>
 </html>

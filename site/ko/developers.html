@@ -2,123 +2,87 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>내 앱에 MPDF 적용하기 · MPDF</title>
-  <meta name="description" content="앱에서 MPDF를 재생하는 데 필요한 전부: 파일 안에 뭐가 있는지, 네 단계, 그리고 바로 복사해 쓰는 JavaScript·Python·Swift 코드.">
+  <title>앱 개발자 안내 · MPDF</title>
+  <meta name="description" content="MPDF 기본 형식, 선택 확장, 원본 보존, SEETO 제작자 확인과 웹 통합 안내.">
   <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/developers">
   <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/developers">
   <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/developers">
   <link rel="canonical" href="https://mpdf.pages.dev/ko/developers">
-  <meta property="og:title" content="내 앱에 MPDF 적용하기">
-  <meta property="og:description" content="앱에서 MPDF를 재생하는 데 필요한 전부: 파일 안에 뭐가 있는지, 네 단계, 그리고 바로 복사해 쓰는 JavaScript·Python·Swift 코드.">
+  <meta property="og:title" content="앱 개발자 안내 · MPDF">
+  <meta property="og:description" content="MPDF 기본 형식, 선택 확장, 원본 보존, SEETO 제작자 확인과 웹 통합 안내.">
   <meta property="og:image" content="https://mpdf.pages.dev/og-ko.png">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/site.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
-  <link rel="icon" href="../favicon.svg">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="../site.css">
 </head>
 <body>
-<header class="wrap nav"><a class="brand" href="../ko/">MPDF</a><nav><a href="../developers" hreflang="en" lang="en">English</a><a href="../v/">뷰어</a><a href="guide">가이드</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
-<main class="wrap doc" style="max-width: 860px;">
-  <h1>내 앱에 MPDF 적용하기</h1>
-
-  <p>PDF를 여는 앱이라면 MPDF 파일은 이미 열립니다. 음악까지 나오게 하려면 첨부파일 하나를 읽고 몇 가지 규칙만 따르면 됩니다. 페이지는 바뀌지 않으니 렌더링 코드는 그대로 둡니다.</p>
-
-  <h2>파일 안에 있는 것</h2>
-  <p>보통 PDF에 <code>mpdf.json</code>이라는 첨부파일(선택적으로 음원 파일)이 들어 있습니다. 이 목록에 트랙과 페이지 큐가 적혀 있습니다.</p>
-  <div class="code">
-    <div class="code-head"><span>mpdf.json</span><span class="mono" style="color: var(--faint);">JSON</span><button class="btn ghost small copy-btn" type="button">복사</button></div>
-    <pre><code>{
-  "mpdf": "1.0",
-  "title": "Piano Book 2",
-  "tracks": [
-    { "id": "t1", "title": "Canon in D", "src": "youtube:dQw4w9WgXcQ" },
-    { "id": "t2", "title": "Arirang",    "src": "file:track2.m4a" }
+<header class="wrap nav"><a class="brand" href="/ko/"><span class="brand-mark" aria-hidden="true">♪</span>MPDF</a><nav aria-label="주 메뉴"><a href="/make/?lang=ko">만들기</a><a href="/v/?lang=ko">열기</a><a data-route="guide" href="/ko/guide">가이드</a><a class="keep" href="/developers" hreflang="en">English</a></nav></header>
+<main class="wrap doc">
+<div class="eyebrow">FOR DEVELOPERS</div><h1>앱에 MPDF 연결하기</h1>
+  <p>MPDF는 표준 PDF 첨부파일로 음악 정보를 전달합니다. 기본 형식과 선택 확장을 구분해서 구현하면 기존 PDF 표시 기능을 유지하면서 필요한 재생 기능을 추가할 수 있습니다.</p>
+  <p><a class="btn" href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">형식 사양</a> <a class="btn ghost" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></p>
+  <h2>기본 형식: mpdf.json</h2>
+  <p>PDF의 EmbeddedFiles 이름 트리에서 <code>mpdf.json</code>을 읽습니다. MPDF 1.x의 기본 구성은 트랙, 페이지 큐와 재생 옵션입니다. 내장 음원은 별도의 PDF 첨부파일이며 <code>file:</code>로 참조합니다.</p>
+  <div class="code"><div class="code-head"><span>mpdf.json · 기본 예시</span><button class="btn ghost small copy-btn" type="button">복사</button></div><pre><code>{
+  &quot;mpdf&quot;: &quot;1.0&quot;,
+  &quot;title&quot;: &quot;Practice score&quot;,
+  &quot;tracks&quot;: [
+    { &quot;id&quot;: &quot;backing&quot;, &quot;title&quot;: &quot;Backing track&quot;, &quot;src&quot;: &quot;file:backing.m4a&quot;, &quot;start&quot;: 10, &quot;end&quot;: 70 }
   ],
-  "cues": [ { "page": 1, "track": "t1" }, { "page": 4, "track": "t2", "at": 32.5 } ]
-}</code></pre>
-  </div>
-
-  <h2>네 단계</h2>
-  <ol>
-    <li><code>mpdf.json</code>이라는 <strong>첨부파일을 찾습니다.</strong> 없으면 그냥 PDF이니 아무것도 하지 않습니다.</li>
-    <li><strong>JSON을 읽어</strong> 트랙 목록을 보여 줍니다. 모르는 필드와 <code>src</code> 형식은 무시합니다.</li>
-    <li><strong>재생</strong>: <code>youtube:ID</code>는 공식 유튜브 플레이어로(화면에 보이게), <code>file:이름</code>은 같은 이름의 내장 파일로, <code>https:</code>는 URL로.</li>
-    <li><strong>페이지가 바뀌면</strong> 그 페이지의 큐가 있을 때 그 트랙의 <code>at</code>초로 전환하고, 없으면 그대로 이어갑니다.</li>
-  </ol>
-  <p>포맷의 신뢰를 지키는 규칙: 페이지 위에 그리지 않기, 플레이어는 페이지 밖에 두거나 옮기고 접을 수 있는 패널로, 사용자 동작 전 자동재생 금지. 자세한 내용은 <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">스펙</a>(세 쪽, CC BY)에 있습니다.</p>
-
-  <h2>목록 읽기</h2>
-  <div class="code">
-    <div class="code-head"><span>JavaScript</span><span class="mono" style="color: var(--faint);">pdf.js</span><button class="btn ghost small copy-btn" type="button">복사</button></div>
-    <pre><code>// Browser or Node, with pdf.js (any version that has getAttachments)
-const pdf = await pdfjsLib.getDocument({ data: bytes }).promise
-const att = (await pdf.getAttachments()) || {}
-const raw = att['mpdf.json']                       // no attachment -&gt; a plain PDF, nothing to do
+  &quot;cues&quot;: [ { &quot;page&quot;: 1, &quot;track&quot;: &quot;backing&quot;, &quot;at&quot;: 10 } ],
+  &quot;options&quot;: { &quot;autoplay&quot;: false, &quot;followPage&quot;: false, &quot;loop&quot;: false }
+}</code></pre></div>
+  <p>페이지는 1부터 셉니다. <code>start</code>와 <code>end</code>는 원본 음원의 초 단위 위치이며, 큐의 <code>at</code>도 원본 음원의 절대 시각을 사용합니다. 예시에서 <code>at: 10</code>은 원본 음원의 10초를 뜻합니다. 선택 확장의 <code>timeMarkers.seconds</code>는 트랙 시작점에서부터의 상대 시간입니다.</p>
+  <h2>선택 확장: 필요한 만큼 읽고 보존하기</h2>
+  <table><thead><tr><th>정보</th><th>역할</th></tr></thead><tbody>
+    <tr><td><code>buttons</code></td><td>페이지 위 재생 버튼의 위치와 연결된 트랙</td></tr>
+    <tr><td><code>timeMarkers</code></td><td>페이지 위치와 트랙 내 상대 시간 표시</td></tr>
+    <tr><td><code>seetogether-mpdf.json</code></td><td>SEETO 제작 정보, 선택 재생 트랙, 제작자 표시, 공유본 상태</td></tr>
+    <tr><td><code>seetogether-score.json</code></td><td>포함된 카피 노트 악보·코드 재생 데이터</td></tr>
+    <tr><td>편집용 원본·필기 첨부</td><td>제작자 수정용 자료. 공개 공유본에서는 제외</td></tr>
+  </tbody></table>
+  <p>이 확장들은 기본 MPDF 재생의 필수 요건이 아닙니다. 지원하지 않는 필드는 읽을 때 무시하되, 수정본을 만들 때 임의로 삭제하지 마세요. 원본 그대로 다운로드하는 경우는 PDF를 재작성하지 않고 받은 바이트를 그대로 전달합니다. 별도 공유 복사본은 공개할 데이터만 남기는 명시적 내보내기입니다.</p>
+  <h2>읽기와 재생</h2>
+  <div class="code"><div class="code-head"><span>JavaScript · pdf.js</span><button class="btn ghost small copy-btn" type="button">복사</button></div><pre><code>const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise
+const attachments = (await pdf.getAttachments()) || {}
+const raw = attachments[&#x27;mpdf.json&#x27;]
 if (raw) {
   const manifest = JSON.parse(new TextDecoder().decode(raw.content))
-  // manifest.tracks: [{ id, title, src }]   src = "youtube:ID" | "file:name" | "https://..."
-  // manifest.cues:   [{ page, track, at }]  when page becomes current, play track from `at` seconds
-  // embedded audio:  att[name].content       for src "file:name"
-}</code></pre>
-  </div>
-  <div class="code">
-    <div class="code-head"><span>Python</span><span class="mono" style="color: var(--faint);">pypdf</span><button class="btn ghost small copy-btn" type="button">복사</button></div>
-    <pre><code># Python 3.8+, pip install pypdf
-from pypdf import PdfReader
+  // Validate version, size limits, unique IDs, page ranges and track references.
+  // Render text with textContent, never as HTML. Keep unknown extension fields.
+  // Resolve file: names against attachments; never treat them as filesystem paths.
+  // Retain `bytes` for an unchanged download; rewriting changes the file hash.
+}</code></pre></div>
+  <ul>
+    <li><code>youtube:</code>는 보이는 공식 YouTube 플레이어, <code>file:</code>는 해당 PDF 첨부, <code>https:</code>는 유효한 외부 음원 URL로 연결합니다. 외부 서버의 CORS·형식·접근 설정에 따라 재생이 제한될 수 있습니다.</li>
+    <li>사용자가 재생을 시작하기 전에는 자동 재생하지 않습니다. 페이지 큐 따라가기는 사용자 설정을 따릅니다. 큐가 없는 페이지에서는 현재 재생을 이어갑니다.</li>
+    <li>버튼·마커는 PDF를 덮어쓰지 않는 별도 인터랙션 레이어로 표시합니다. 플레이어는 악보를 가리지 않도록 접거나 화면 밖 영역에 배치합니다.</li>
+    <li>파일명은 유니코드를 보존하되 경로·예약 메타데이터 이름을 음원으로 허용하지 않습니다. 크기, 페이지 범위, 시간, ID와 참조를 검증합니다.</li>
+  </ul>
+  <h2>새 MPDF 만들기</h2>
+  <div class="code"><div class="code-head"><span>Python · pypdf</span><button class="btn ghost small copy-btn" type="button">복사</button></div><pre><code>from pypdf import PdfWriter
 import json
 
-reader = PdfReader("score.pdf")
-att = reader.attachments                           # {name: [bytes]}
-if "mpdf.json" in att:
-    manifest = json.loads(att["mpdf.json"][0])
-    tracks = {t["id"]: t for t in manifest["tracks"]}
-    for cue in manifest.get("cues", []):
-        print(cue["page"], tracks[cue["track"]]["src"], cue.get("at", 0))</code></pre>
-  </div>
-  <div class="code">
-    <div class="code-head"><span>Swift</span><span class="mono" style="color: var(--faint);">PDFKit</span><button class="btn ghost small copy-btn" type="button">복사</button></div>
-    <pre><code>// iOS / macOS with PDFKit (reference; walks the flat /Names form of the EmbeddedFiles tree)
-import PDFKit
-
-func mpdfManifest(_ doc: PDFDocument) -&gt; [String: Any]? {
-    guard let cg = doc.documentRef, let catalog = cg.catalog else { return nil }
-    var names: CGPDFDictionaryRef?, ef: CGPDFDictionaryRef?, arr: CGPDFArrayRef?
-    guard CGPDFDictionaryGetDictionary(catalog, "Names", &amp;names), let names,
-          CGPDFDictionaryGetDictionary(names, "EmbeddedFiles", &amp;ef), let ef,
-          CGPDFDictionaryGetArray(ef, "Names", &amp;arr), let arr else { return nil }
-    for i in stride(from: 0, to: CGPDFArrayGetCount(arr), by: 2) {
-        var key: CGPDFStringRef?, spec: CGPDFDictionaryRef?, efd: CGPDFDictionaryRef?, stream: CGPDFStreamRef?
-        guard CGPDFArrayGetString(arr, i, &amp;key), let key,
-              (CGPDFStringCopyTextString(key) as String?) == "mpdf.json",
-              CGPDFArrayGetDictionary(arr, i + 1, &amp;spec), let spec,
-              CGPDFDictionaryGetDictionary(spec, "EF", &amp;efd), let efd,
-              CGPDFDictionaryGetStream(efd, "F", &amp;stream), let stream else { continue }
-        var fmt = CGPDFDataFormat.raw
-        guard let data = CGPDFStreamCopyData(stream, &amp;fmt) as Data? else { return nil }
-        return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-    }
-    return nil
-}</code></pre>
-  </div>
-
-  <h2>파일 만들기</h2>
-  <div class="code">
-    <div class="code-head"><span>Python</span><span class="mono" style="color: var(--faint);">pypdf</span><button class="btn ghost small copy-btn" type="button">복사</button></div>
-    <pre><code># Producing one: attach the manifest (and any audio) to a normal PDF
-from pypdf import PdfWriter
-w = PdfWriter(clone_from="score.pdf")
-w.add_attachment("mpdf.json", manifest_bytes)
-w.add_attachment("track2.m4a", audio_bytes)   # optional
-w.write("score.pdf")                            # still a PDF; name it .pdf</code></pre>
-  </div>
-  <p><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/js/mpdf.js" rel="noopener">JavaScript</a>와 <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/python/mpdf.py" rel="noopener">Python</a> 레퍼런스 라이브러리(각 80줄 안팎, MIT)는 검증까지 포함해 양방향을 다 하고, <a href="https://github.com/CaLeb-Shin/mpdf-format/tree/main/samples" rel="noopener">샘플 파일</a>이 모든 경우를 담고 있습니다. 지원 등급: <strong>Level 0</strong> PDF로 열림(이미 됨), <strong>Level 1</strong> 트랙 재생, <strong>Level 2</strong> 페이지 큐 따라가기와 <code>.mpdf</code> 확장자 등록.</p>
-  <p>질문이 있거나 만든 뷰어를 이 사이트에 올리고 싶으면 <a href="https://github.com/CaLeb-Shin/mpdf-format/issues" rel="noopener">GitHub 이슈</a>로 알려 주세요.</p>
-
+# Create a NEW MPDF from a plain PDF; do not overwrite the input.
+w = PdfWriter(clone_from=&quot;score.pdf&quot;)
+w.add_attachment(&quot;mpdf.json&quot;, json.dumps(manifest).encode(&quot;utf-8&quot;))
+w.add_attachment(&quot;backing.m4a&quot;, audio_bytes)
+w.write(&quot;score-with-music.pdf&quot;)</code></pre></div>
+  <p>이 예시는 일반 PDF로 새 파일을 만드는 최소 예시입니다. 기존 MPDF를 수정할 때는 중복 이름 트리와 알려지지 않은 첨부·확장을 고려해야 합니다. 저장소의 <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/js/mpdf.js" rel="noopener">JavaScript</a>·<a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/python/mpdf.py" rel="noopener">Python</a> 기본 레퍼런스와 <code>site/mpdf-browser.js</code>의 웹 호환 계층을 구분해 참고하세요.</p>
+  <h2>제작자 표시는 권한 증명이 아닙니다</h2>
+  <p>SEETO 원본 수정은 비익명 계정과 파일 전체의 SHA-256을 사용합니다. 불변 제작자 레지스트리의 파일 해시·발행 ID·소유자 UID가 모두 일치해야 합니다. 메타데이터의 <code>creatorUID</code>만으로 편집을 허용하면 안 됩니다. <code>sharedReadOnly: true</code>는 제작자 본인에게도 읽기 전용입니다. 등록은 완성 파일을 만든 뒤 수행하고, 등록이 성공한 뒤 제공해야 합니다.</p>
+  <h2>공개 링크 서비스는 별도입니다</h2>
+  <p>이 웹사이트의 Cloudflare Pages Functions는 공유용 PDF만 저장합니다. 내장 음원, 편집 원본 및 허용되지 않은 첨부를 거부하고 링크 생성 후 90일이 지나면 제공을 중단합니다. 이 정책과 SEETO 계정 연동은 MPDF 기본 파일 규격의 필수 요소가 아닙니다.</p>
+  <p>코드 라이선스는 MIT, 사양 문서는 CC BY 4.0입니다. 기술 제안은 <a href="https://github.com/CaLeb-Shin/mpdf-format/issues" rel="noopener">GitHub Issues</a>, 비공개 자료·삭제 요청은 <a data-route="report" href="/ko/report">지원 이메일</a>을 이용하세요.</p>
 </main>
-<footer class="wrap"><span>MPDF</span><nav><a href="guide">가이드</a><a href="terms">이용약관</a><a href="report">신고</a></nav></footer>
+<footer class="wrap"><span>MPDF · 음악을 들으며, 악보를 함께.</span><nav><a data-route="guide" href="/ko/guide">가이드</a><a data-route="developers" href="/ko/developers">개발자</a><a data-route="terms" href="/ko/terms">이용약관</a><a data-route="report" href="/ko/report">신고·삭제</a></nav></footer>
 <script type="module">
-  for (const b of document.querySelectorAll('.copy-btn')) b.onclick = async () => { const code = b.closest('.code').querySelector('code').textContent; try { await navigator.clipboard.writeText(code); b.textContent = '복사됨'; setTimeout(() => b.textContent = '복사', 1500) } catch {} }
-  
+  for (const button of document.querySelectorAll('.copy-btn')) button.addEventListener('click', async () => {
+    const ko = document.documentElement.lang === 'ko'
+    try { await navigator.clipboard.writeText(button.closest('.code').querySelector('code').textContent); button.textContent = ko ? '복사됨' : 'Copied' }
+    catch { button.textContent = ko ? '코드를 선택해 복사하세요' : 'Select the code to copy' }
+    setTimeout(() => { button.textContent = ko ? '복사' : 'Copy' }, 2000)
+  })
 </script>
 </body>
 </html>
