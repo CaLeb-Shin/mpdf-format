@@ -15,7 +15,7 @@ const state = {
   current: null, engine: null, follower: null, playing: false, wantsPlayback: false, ready: false, atEnd: false, page: 1, pageCount: 0,
   openGeneration: 0, selectionGeneration: 0, urls: new Map(), papers: [], rendered: new Set(), rendering: new Map(),
   loopA: null, loopB: null, loopEnabled: false, pitch: 0, pitchRequest: 0, hash: null, localMarkers: [], placing: null,
-  markersVisible: true, yt: null, ytPromise: null, ytReady: false, ytWantPlay: false, ytSeekUntil: 0,
+  markersVisible: true, yt: null, ytPromise: null, ytCancel: null, ytDeferred: null, ytReady: false, ytWantPlay: false, ytSeekUntil: 0,
   seeking: false, lastPersist: 0, remoteAbort: null, pageFollowSuppressed: false,
 }
 const positive = value => Number.isFinite(value) && value >= 0
@@ -76,6 +76,7 @@ async function fetchFile(url, filename = 'MPDF.mpdf') {
 }
 async function resetDocument() {
   persistPractice(); pause(); state.selectionGeneration++
+  state.ytCancel?.(); state.ytDeferred = null
   state.engine?.destroy(); state.engine = null
   state.follower?.destroy(); state.follower = null
   if (state.ytReady) { try { state.yt.stopVideo() } catch {} }
@@ -307,6 +308,7 @@ async function selectChoice(id, requestedPosition = null, autoplay = false) {
   const choice = state.choices.find(c => c.id === id)
   if (!choice) return
   const previous = state.current, previousAbsolute = mediaTime(), generation = ++state.selectionGeneration
+  state.ytCancel?.(); state.ytDeferred = null
   pause(); state.engine?.destroy(); state.engine = null; state.follower?.destroy(); state.follower = null
   state.ready = false; state.atEnd = false; state.current = choice; state.pitch = 0; state.pitchRequest++; clearLoop(); cancelPlacement(); message()
   $('#name').textContent = choiceLabel(choice); $('#dot').style.background = choice.track.color
@@ -324,7 +326,8 @@ async function selectChoice(id, requestedPosition = null, autoplay = false) {
   }
   try {
     if (isYouTube()) {
-      await ensureYouTube()
+      if (document.hidden) { deferYouTubeChoice(choice.id, target); return }
+      await ensureYouTube(choice.track.src.slice(8), startOf(choice.track) + target)
       if (generation !== state.selectionGeneration) return
       state.ytWantPlay = false
       state.yt.cueVideoById({ videoId: choice.track.src.slice(8), startSeconds: startOf(choice.track) + target })
@@ -348,11 +351,18 @@ async function selectChoice(id, requestedPosition = null, autoplay = false) {
     }
     if (generation !== state.selectionGeneration) return
     state.ready = true; paintProgress(); updatePitchUI()
-    if (autoplay) await play()
+    if (autoplay && !document.hidden) await play()
   } catch (error) {
     if (generation !== state.selectionGeneration) return
     state.ready = false; pause()
+    if (error.message === 'youtube-background') { deferYouTubeChoice(choice.id, target); return }
     message(error.message === 'missing-audio' ? say('이 음원의 첨부 파일이 없습니다. 원본 MPDF를 다시 받아 주세요.', 'This audio attachment is missing. Ask for the original MPDF file.') : error.message === 'range' ? say('지정한 시작 시간이 음원 길이를 넘습니다.', 'The start time is beyond the audio duration.') : say('음원을 준비하지 못했습니다. 다른 음원을 선택하거나 연결 상태를 확인해 주세요.', 'The audio could not be prepared. Choose another track or check your connection.'))
+    if (isYouTube()) {
+      const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'text-action'
+      retry.textContent = say('YouTube 다시 시도', 'Retry YouTube')
+      retry.onclick = () => { if (generation === state.selectionGeneration) selectChoice(choice.id, target, false) }
+      $('#player-message').append(' ', retry)
+    }
   }
 }
 function setPlaying(playing) {
@@ -545,37 +555,77 @@ document.addEventListener('keydown', event => {
   if (event.key === 'Escape') { cancelPlacement(); notice(); setOpen(false) }
 })
 
-function ensureYouTube() {
+function deferYouTubeChoice(id, target) {
+  state.ytDeferred = { id, target }
+  message(say('이 탭을 열면 YouTube 영상을 준비합니다.', 'The YouTube video will prepare when this tab is visible.'))
+  if (!document.hidden) resumeYouTubeChoice()
+}
+function resumeYouTubeChoice() {
+  const deferred = state.ytDeferred
+  state.ytDeferred = null
+  if (deferred && isYouTube() && !state.ready && state.current.id === deferred.id) selectChoice(deferred.id, deferred.target, false)
+}
+function ensureYouTube(videoId, startSeconds) {
   if (state.ytReady) return Promise.resolve()
   if (state.ytPromise) return state.ytPromise
-  state.ytPromise = new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => { state.ytPromise = null; reject(new Error('youtube-timeout')) }, 20000)
+  let begin
+  const promise = new Promise((resolve, reject) => {
+    let timeout, active = true, settled = false
+    const clearInitialization = () => {
+      clearTimeout(timeout); state.ytPromise = null; state.ytCancel = null
+      if (window.onYouTubeIframeAPIReady === install) delete window.onYouTubeIframeAPIReady
+    }
+    const fail = (reason = 'youtube-cancelled') => {
+      if (!active || settled) return
+      active = false; clearInitialization()
+      const stale = state.yt; state.yt = null; state.ytReady = false
+      try { stale?.destroy() } catch {}
+      // The API replaces the div with an iframe. A retry needs a fresh target.
+      const container = document.createElement('div'); container.id = 'ytplayer'; $('#yt').replaceChildren(container)
+      if (!window.YT?.Player) document.querySelector('script[data-youtube-api]')?.remove()
+      reject(new Error(reason))
+    }
+    state.ytCancel = fail
+    const current = event => active && event.target === state.yt
     const install = () => {
-      if (state.yt) return
-      state.yt = new window.YT.Player('ytplayer', {
-        width: '100%', height: '100%', playerVars: { playsinline: 1, rel: 0, origin: location.origin },
+      if (!active || settled || state.yt) return
+      if (document.hidden) { fail('youtube-background'); return }
+      try { state.yt = new window.YT.Player('ytplayer', {
+        videoId, width: '100%', height: '100%', playerVars: { autoplay: 0, start: Math.floor(startSeconds), playsinline: 1, rel: 0, origin: location.origin },
         events: {
-          onReady: () => { clearTimeout(timeout); state.ytReady = true; resolve() },
+          onReady: event => { if (!current(event) || settled) return; settled = true; clearInitialization(); state.ytReady = true; resolve() },
           onStateChange: event => {
+            if (!current(event)) return
             if (!isYouTube()) { if (event.data === 1) state.yt.pauseVideo(); return }
-            if (event.data === 1 && player.classList.contains('collapsed')) { state.yt.pauseVideo(); return }
+            if (event.data === 1 && (document.hidden || player.classList.contains('collapsed'))) { state.yt.pauseVideo(); return }
             if (event.data === 1) { state.ytWantPlay = true; setPlaying(true) }
             else if (event.data === 2 || event.data === 0 || event.data === 5) { setPlaying(false); state.follower?.pause() }
             if (event.data === 3) state.follower?.pause()
             if (event.data === 0 && state.ytWantPlay) finishPlayback()
           },
-          onAutoplayBlocked: () => { if (isYouTube()) { state.wantsPlayback = false; state.ytWantPlay = false; setPlaying(false); message(say('영상 안의 재생 버튼을 한 번 눌러 주세요. 브라우저가 외부 재생을 제한했습니다.', 'Press Play inside the video once. Your browser restricted playback from an external control.')) } },
-          onError: () => { if (isYouTube()) { pause(); message(say('이 YouTube 영상을 재생할 수 없습니다. 영상이 비공개이거나 외부 재생이 제한되었을 수 있습니다.', 'This YouTube video is unavailable or does not allow embedded playback.')) } },
+          onAutoplayBlocked: event => { if (current(event) && isYouTube()) { state.wantsPlayback = false; state.ytWantPlay = false; setPlaying(false); message(say('영상 안의 재생 버튼을 한 번 눌러 주세요. 브라우저가 외부 재생을 제한했습니다.', 'Press Play inside the video once. Your browser restricted playback from an external control.')) } },
+          onError: event => {
+            if (!current(event)) return
+            if (!settled) { fail('youtube-player'); return }
+            if (isYouTube()) { pause(); message(say('이 YouTube 영상을 재생할 수 없습니다. 영상이 비공개이거나 외부 재생이 제한되었을 수 있습니다.', 'This YouTube video is unavailable or does not allow embedded playback.')) }
+          },
         },
-      })
+      }) } catch { fail('youtube-player') }
     }
-    if (window.YT?.Player) install()
-    else {
-      window.onYouTubeIframeAPIReady = install
-      if (!document.querySelector('script[data-youtube-api]')) { const script = document.createElement('script'); script.src = 'https://www.youtube.com/iframe_api'; script.dataset.youtubeApi = 'true'; script.onerror = () => { clearTimeout(timeout); state.ytPromise = null; reject(new Error('youtube-network')) }; document.head.append(script) }
+    begin = () => {
+      if (document.hidden) { fail('youtube-background'); return }
+      timeout = setTimeout(() => fail('youtube-timeout'), 20000)
+      if (window.YT?.Player) install()
+      else {
+        window.onYouTubeIframeAPIReady = install
+        let script = document.querySelector('script[data-youtube-api]')
+        if (!script) { script = document.createElement('script'); script.src = 'https://www.youtube.com/iframe_api'; script.dataset.youtubeApi = 'true'; document.head.append(script) }
+        script.onerror = () => fail('youtube-network')
+      }
     }
   })
-  return state.ytPromise
+  state.ytPromise = promise; begin()
+  return promise
 }
 function syncYouTubeFollower(absolute = mediaTime()) {
   const follower = state.follower
@@ -598,7 +648,7 @@ setInterval(() => {
   if (!state.current || !state.ready) return
   if (isYouTube() && state.ytReady) {
     const actual = state.yt.getPlayerState()
-    if (actual === 1 && player.classList.contains('collapsed')) pause()
+    if (actual === 1 && (document.hidden || player.classList.contains('collapsed'))) pause()
     else if (actual === 1 && !state.playing) setPlaying(true)
     else if ([0, 2, 5].includes(actual) && state.playing) { setPlaying(false); state.follower?.pause() }
   }
@@ -615,7 +665,10 @@ setInterval(() => {
   if (performance.now() - state.lastPersist > 2500) { persistPractice(); state.lastPersist = performance.now() }
 }, 100)
 window.addEventListener('pagehide', () => { persistPractice(); pause() })
-document.addEventListener('visibilitychange', () => { if (document.hidden && isYouTube()) pause() })
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && isYouTube()) { pause(); state.ytCancel?.('youtube-background') }
+  else if (!document.hidden) resumeYouTubeChoice()
+})
 
 const idMatch = location.pathname.match(/\/v\/([A-Za-z0-9]{8,16})\/?$/)
 const params = new URLSearchParams(location.search)
