@@ -3,10 +3,12 @@
 const h = document.documentElement
 const fromUrl = new URLSearchParams(location.search).get('lang')
 const stored = (() => { try { return localStorage.getItem('mpdf_lang') } catch { return null } })()
-const pick = (v) => (v && v.toLowerCase().startsWith('ko') ? 'ko' : 'en')
+export const LANGS = ['en', 'ko', 'ja']
+const pick = (v) => { v = (v || '').toLowerCase(); return v.startsWith('ko') ? 'ko' : v.startsWith('ja') ? 'ja' : 'en' }
+const PREFIX = { en: '/', ko: '/ko/', ja: '/ja/' }
 let lang = h.dataset.autoLang
   ? pick(fromUrl || stored || navigator.language || 'en')                 // shared viewer page: follow the reader
-  : (fromUrl ? pick(fromUrl) : (h.lang === 'ko' ? 'ko' : (stored || 'en')))  // landing: page language, or a remembered choice
+  : (fromUrl ? pick(fromUrl) : (h.lang === 'ko' || h.lang === 'ja' ? h.lang : pick(stored || 'en')))  // landing: page language, or a remembered choice
 export const getLang = () => lang
 export const LANG = lang
 const D = {
@@ -43,7 +45,7 @@ const D = {
     'v.player': '플레이어 · 끌어서 이동', 'v.collapse': '접기', 'v.expand': '펼치기', 'v.prev': '이전 곡', 'v.next': '다음 곡', 'v.play': '재생', 'v.pause': '일시정지', 'v.ad': '광고', 'v.house': '후원 배너',
   },
 }
-export const t = (k, v = {}) => (D[lang][k] || D.en[k] || k).replace(/\{(\w+)\}/g, (_, n) => (v[n] ?? ''))
+export const t = (k, v = {}) => ((D[lang] || D.en)[k] || D.en[k] || k).replace(/\{(\w+)\}/g, (_, n) => (v[n] ?? ''))
 // Fill elements marked data-i18n / data-i18n-aria / data-i18n-label with the current language,
 // swap data-ko-placeholder / data-ko-aria attributes, and set <html lang> so the CSS shows the right data-l text.
 export function applyDom() {
@@ -51,33 +53,57 @@ export function applyDom() {
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n)
   for (const el of document.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', t(el.dataset.i18nAria))
   for (const el of document.querySelectorAll('[data-i18n-label]')) el.dataset.label = t(el.dataset.i18nLabel)
-  for (const el of document.querySelectorAll('[data-ko-placeholder]')) { el.dataset.enPlaceholder ??= el.placeholder; el.placeholder = lang === 'ko' ? el.dataset.koPlaceholder : el.dataset.enPlaceholder }
-  for (const el of document.querySelectorAll('[data-ko-aria]')) { el.dataset.enAria ??= el.getAttribute('aria-label'); el.setAttribute('aria-label', lang === 'ko' ? el.dataset.koAria : el.dataset.enAria) }
-  for (const link of document.querySelectorAll('[data-route]')) link.href = (lang === 'ko' ? '/ko/' : '/') + link.dataset.route;
-  const b = document.getElementById('langbtn'); if (b) b.innerHTML = lang === 'ko' ? FLAG_US + '<span>English</span>' : FLAG_KR + '<span lang="ko">한국어</span>'
+  for (const el of document.querySelectorAll('[data-ko-placeholder]')) { el.dataset.enPlaceholder ??= el.placeholder; el.placeholder = (lang === 'ko' ? el.dataset.koPlaceholder : lang === 'ja' ? el.dataset.jaPlaceholder : null) || el.dataset.enPlaceholder }
+  for (const el of document.querySelectorAll('[data-ko-aria]')) { el.dataset.enAria ??= el.getAttribute('aria-label'); el.setAttribute('aria-label', (lang === 'ko' ? el.dataset.koAria : lang === 'ja' ? el.dataset.jaAria : null) || el.dataset.enAria) }
+  for (const link of document.querySelectorAll('[data-route]')) link.href = PREFIX[lang] + link.dataset.route;
+  const b = document.getElementById('langbtn'); if (b) { b.innerHTML = FLAGS[lang] + `<span lang="${lang}">${NAMES[lang]}</span><span class="caret" aria-hidden="true">▾</span>`; b.setAttribute('aria-haspopup', 'menu') }
 }
 // Switch without reloading: state on the page (a loaded PDF, tracks) stays. Scripts listen for 'langchange'.
 export function setLang(l) {
-  lang = l === 'ko' ? 'ko' : 'en'
+  lang = LANGS.includes(l) ? l : 'en'
   try { localStorage.setItem('mpdf_lang', lang) } catch {}
   applyDom()
-  if (!h.dataset.autoLang && /\/(ko\/)?(index\.html)?$/.test(location.pathname)) history.replaceState(null, '', location.pathname.replace(/\/ko\/?$/, '/').replace(/\/$/, lang === 'ko' ? '/ko/' : '/') + location.search + location.hash)
+  if (!h.dataset.autoLang && /^\/((ko|ja)\/?)?(index\.html)?$/.test(location.pathname)) history.replaceState(null, '', PREFIX[lang] + location.search + location.hash)
   document.dispatchEvent(new CustomEvent('langchange', { detail: lang }))
 }
+// The language button opens a small menu of flags: English, 한국어, 日本語.
 export function mountLangButton() {
   const b = document.getElementById('langbtn'); if (!b) return
-  b.onclick = () => setLang(lang === 'ko' ? 'en' : 'ko')
+  let menu = null
+  const close = () => { if (menu) { menu.remove(); menu = null; b.setAttribute('aria-expanded', 'false') } }
+  b.onclick = (e) => {
+    e.stopPropagation()
+    if (menu) return close()
+    menu = document.createElement('div'); menu.className = 'langmenu'; menu.setAttribute('role', 'menu')
+    for (const l of LANGS) {
+      const item = document.createElement('button'); item.type = 'button'; item.setAttribute('role', 'menuitemradio'); item.setAttribute('aria-checked', String(l === lang)); item.lang = l
+      item.innerHTML = FLAGS[l] + `<span>${NAMES[l]}</span>`
+      item.onclick = () => { close(); if (l !== lang) setLang(l) }
+      menu.appendChild(item)
+    }
+    const r = b.getBoundingClientRect()
+    menu.style.top = (r.bottom + window.scrollY + 6) + 'px'; menu.style.right = (document.documentElement.clientWidth - r.right) + 'px'
+    document.body.appendChild(menu); b.setAttribute('aria-expanded', 'true')
+    menu.querySelector('[aria-checked="true"]')?.focus()
+  }
+  document.addEventListener('click', (e) => { if (menu && !menu.contains(e.target)) close() })
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close() })
   applyDom()
 }
+const NAMES = { en: 'English', ko: '한국어', ja: '日本語' }
 const FLAG_KR = '<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><g transform="translate(15 10)"><circle r="5" fill="#cd2e3a"/><path d="M-5 0A5 5 0 0 0 5 0A2.5 2.5 0 0 0 0 0A2.5 2.5 0 0 1-5 0Z" fill="#0047a0"/><g fill="#000"><g transform="rotate(-34)"><rect x="-11.5" y="-2.6" width="4" height="1.1"/><rect x="-11.5" y="-.55" width="4" height="1.1"/><rect x="-11.5" y="1.5" width="4" height="1.1"/><rect x="7.5" y="-2.6" width="4" height="1.1"/><rect x="7.5" y="-.55" width="1.8" height="1.1"/><rect x="9.7" y="-.55" width="1.8" height="1.1"/><rect x="7.5" y="1.5" width="4" height="1.1"/></g><g transform="rotate(34)"><rect x="-11.5" y="-2.6" width="1.8" height="1.1"/><rect x="-9.3" y="-2.6" width="1.8" height="1.1"/><rect x="-11.5" y="-.55" width="4" height="1.1"/><rect x="-11.5" y="1.5" width="1.8" height="1.1"/><rect x="-9.3" y="1.5" width="1.8" height="1.1"/><rect x="7.5" y="-2.6" width="1.8" height="1.1"/><rect x="9.7" y="-2.6" width="1.8" height="1.1"/><rect x="7.5" y="-.55" width="1.8" height="1.1"/><rect x="9.7" y="-.55" width="1.8" height="1.1"/><rect x="7.5" y="1.5" width="1.8" height="1.1"/><rect x="9.7" y="1.5" width="1.8" height="1.1"/></g></g></g></svg>'
+const FLAG_JP = '<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="6" fill="#bc002d"/></svg>'
 const FLAG_US = '<svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><g fill="#b22234"><rect y="0" width="30" height="1.54"/><rect y="3.08" width="30" height="1.54"/><rect y="6.15" width="30" height="1.54"/><rect y="9.23" width="30" height="1.54"/><rect y="12.31" width="30" height="1.54"/><rect y="15.38" width="30" height="1.54"/><rect y="18.46" width="30" height="1.54"/></g><rect width="12" height="10.77" fill="#3c3b6e"/></svg>'
-// A Korean-speaking visitor on the English page gets a one-line offer; accepting switches in place.
+// A Korean- or Japanese-speaking visitor on the English page gets a one-line offer; accepting switches in place.
 export function offerKorean() {
-  if (lang === 'ko' || stored) return
-  if (!(navigator.language || '').toLowerCase().startsWith('ko')) return
-  const bar = document.createElement('div'); bar.className = 'langbar'
-  bar.innerHTML = `<span>이 페이지는 한국어로도 볼 수 있습니다.</span><a href="#" id="langbar-ko">한국어로 보기</a><button aria-label="닫기">×</button>`
-  bar.querySelector('#langbar-ko').onclick = (e) => { e.preventDefault(); setLang('ko'); bar.remove() }
+  if (lang !== 'en' || stored) return
+  const want = pick(navigator.language); if (want === 'en') return
+  const msg = { ko: ['이 페이지는 한국어로도 볼 수 있습니다.', '한국어로 보기', '닫기'], ja: ['このページは日本語でも表示できます。', '日本語で見る', '閉じる'] }[want]
+  const bar = document.createElement('div'); bar.className = 'langbar'; bar.lang = want
+  bar.innerHTML = `<span>${msg[0]}</span><a href="#" id="langbar-go">${msg[1]}</a><button aria-label="${msg[2]}">×</button>`
+  bar.querySelector('#langbar-go').onclick = (e) => { e.preventDefault(); setLang(want); bar.remove() }
   bar.querySelector('button').onclick = () => { try { localStorage.setItem('mpdf_lang', 'en') } catch {} bar.remove() }
   document.body.prepend(bar)
 }
+export const offerLanguage = offerKorean
+const FLAGS = { en: FLAG_US, ko: FLAG_KR, ja: FLAG_JP }

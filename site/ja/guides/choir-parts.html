@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>合唱パート譜と参考音源を共有する · MPDF</title>
+  <meta name="description" content="合唱指揮者が、YouTubeの動画とページキューを使って、全体ミックスと各声部がすぐ再生できる楽譜を1つのリンクで送る方法。">
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/guides/choir-parts">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/guides/choir-parts">
+  <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/guides/choir-parts">
+  <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/guides/choir-parts">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/guides/choir-parts">
+  <link rel="canonical" href="https://mpdf.pages.dev/ja/guides/choir-parts">
+  <meta property="og:title" content="合唱パート譜と参考音源を共有する">
+  <meta property="og:description" content="合唱指揮者が、YouTubeの動画とページキューを使って、全体ミックスと各声部がすぐ再生できる楽譜を1つのリンクで送る方法。">
+  <meta property="og:image" content="https://mpdf.pages.dev/og-ja.png">
+  <meta property="og:type" content="記事">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<header class="wrap nav"><a class="brand" href="/ja/">MPDF</a><nav><a class="keep" href="/guides/choir-parts" hreflang="en" lang="en">English</a><a class="keep" href="/ko/guides/choir-parts" hreflang="ko" lang="ko">한국어</a><a href="/v/?lang=ja">ビューアー</a><a data-route="guide" href="/ja/guide">ガイド</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">仕様</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<main class="wrap doc">
+  <div class="draft" style="color: var(--faint);">ガイド · 2026-10-18</div>
+  <h1>合唱パート譜と参考音源を共有する</h1>
+
+  <p>合唱団のメンバーは、家で見つけた録音で練習します。たいていは違う録音で。MPDFのリンクが1つあれば、全員が同じ楽譜、同じ参考ミックス、自分のパートにワンタップでたどり着けます。アプリのインストールも不要です。</p>
+
+  <h2>YouTubeを使えばリンクで送れます</h2>
+  <p>多くの合唱曲には、YouTubeにパート練習用の動画(全体ミックスと、ソプラノ・アルト・テノール・バスの各トラック)があります。ファイルではなくリンクなので、完成した楽譜をリンクで共有できます。ブラウザーでプレビューカード付きで開き、録音はYouTube自身のプレーヤーで再生されます。できるだけ公式チャンネルや出版社のアップロードにリンクしてください。</p>
+
+  <h2>作り方</h2>
+  <ol>
+    <li>楽譜のPDFを<a href="/make/?lang=ja">作成ツール</a>にドロップします。</li>
+    <li>トラックごとにYouTubeリンクを1つずつ貼り付けます。まず全体ミックス、次に各声部。名前は「全体」「ソプラノ」「アルト」のように付けます。この名前が歌い手のプレーヤーに表示されます。</li>
+    <li>全体ミックスを1ページに割り当てるか、そこに再生ボタンを置きます。歌い手はプレーヤーで自分のパートを選びます。ページを変えてもその選択を保つには「ページに合わせる」をオフのままにします。</li>
+    <li>ファイルにタイトルを付け(「メサイア · ハレルヤ」)、<strong>リンクを作成</strong>.</li>
+  </ol>
+
+  <h2>長い作品でのページキュー</h2>
+  <p>4:12から始まる部分には、開始を<code>4:12</code>に設定した別のトラックを作り、該当ページに割り当てます。再生を始めたあとにキューを使うには「ページに合わせる」をオンにします。1つのトラック内ですばやく移動するには、楽譜にタイムマーカーを置きます。</p>
+
+  <h2>リンクを送る</h2>
+  <ul>
+    <li>合唱団のグループチャットにリンクを貼り付けます。タイトルとプレビューが表示されます。</li>
+    <li>リンクを知っている人はサインインなしで開けます。リンクは作成から90日間利用できます。オリジナルを保管し、必要になったら新しい共有リンクを作ってください。</li>
+    <li>ファイルで欲しい人には、<em>共有用MPDF</em>で音楽の接続付きのファイルを保存できます。YouTubeリンクはファイルの中にあり、ビューアーで再生されます。</li>
+  </ul>
+
+  <h2>練習のとき</h2>
+  <p>ビューアーは楽譜を中央に、再生操作をすぐそばに置きます。下のプレーヤー、ページ上のボタン、タイムマーカーで部分を始めたり移動したりし、A–Bループで繰り返し練習しましょう。</p>
+
+  <p style="margin-top: 40px;"><a class="btn" href="/make/?lang=ja">今すぐ作る</a></p>
+</main>
+<footer class="wrap"><span>MPDF · 音楽が流れるPDF</span><nav><a data-route="guide" href="/ja/guide">ガイド</a><a data-route="terms" href="/ja/terms">利用規約</a><a data-route="report" href="/ja/report">報告</a></nav></footer>
+
+</body>
+</html>

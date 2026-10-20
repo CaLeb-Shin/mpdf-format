@@ -37,4 +37,6 @@ const kr = await (await view({ env, params: { id }, request: new Request('https:
 assert.match(kr, /4쪽 · 2곡/); assert.match(kr, /og-ko.png/)
 assert.match(html, /<title>Sample: YouTube links only · MPDF<\/title>/)
 r = await view({ env, params: { id: 'zzzzzzzzzz' }, request: new Request('https://mpdf.example/v/zzzzzzzzzz') }); assert.equal(r.status, 404)
+const jp = await (await view({ env, params: { id }, request: new Request('https://mpdf.example/v/' + id, { headers: { 'accept-language': 'ja-JP,ja;q=0.9' } }) })).text()
+assert.match(jp, /4ページ · 2曲/); assert.match(jp, /og-ja.png/); assert.match(jp, /ja_JP/)
 console.log('functions: all ok (' + id + ')')

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YouTubeリンクが再生されないとき · MPDF</title>
+  <meta name="description" content="MPDFのYouTubeトラックが鳴らないときに考えられる原因と、それぞれの対処法のチェックリスト。">
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/guides/youtube-links">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/guides/youtube-links">
+  <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/guides/youtube-links">
+  <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/guides/youtube-links">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/guides/youtube-links">
+  <link rel="canonical" href="https://mpdf.pages.dev/ja/guides/youtube-links">
+  <meta property="og:title" content="YouTubeリンクが再生されないとき">
+  <meta property="og:description" content="MPDFのYouTubeトラックが鳴らないときに考えられる原因と、それぞれの対処法のチェックリスト。">
+  <meta property="og:image" content="https://mpdf.pages.dev/og-ja.png">
+  <meta property="og:type" content="記事">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@800&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<header class="wrap nav"><a class="brand" href="/ja/">MPDF</a><nav><a class="keep" href="/guides/youtube-links" hreflang="en" lang="en">English</a><a class="keep" href="/ko/guides/youtube-links" hreflang="ko" lang="ko">한국어</a><a href="/v/?lang=ja">ビューアー</a><a data-route="guide" href="/ja/guide">ガイド</a><a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">仕様</a><a class="btn ghost small" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></nav></header>
+<main class="wrap doc">
+  <div class="draft" style="color: var(--faint);">ガイド · 2026-10-18</div>
+  <h1>YouTubeリンクが再生されないとき</h1>
+
+  <p>YouTubeのトラックはYouTubeの埋め込みプレーヤーで再生されるので、鳴らないときの原因はほぼ次のどれかです。上から順に確認してください。</p>
+
+  <h2>1. 再生リストやチャンネルのリンクだった</h2>
+  <p>作成ツールが受け付けるのは動画のリンクだけです:<code>youtube.com/watch?v=…</code>、<code>youtu.be/…</code>、ショート。動画そのものを開いて、そのアドレスをコピーしてください。再生リストのリンクは「YouTubeのリンクではありません」と表示されます。</p>
+
+  <h2>2. プレーヤーに「この動画は再生できません」と出る</h2>
+  <p>アップロードした人が埋め込みを無効にしているか、動画が非公開・削除済み・お住まいの国でブロックされています。こちらからは解除できません。同じ曲の別のアップロードを探してください。公式チャンネルはたいてい埋め込みを許可しています。</p>
+
+  <h2>3. ページを開いても何も起きない</h2>
+  <p>仕様どおりです。ブラウザーは何かをタップするまで音を出させないので、最初のページのトラックは準備されるだけです。再生を一度押してください。ページキューがページ移動でトラックを選ぶのは、「ページに合わせる」がオンのときだけです。</p>
+
+  <h2>4. プレーヤーが見えていて、隠したい</h2>
+  <p>ウェブビューアーは再生中、YouTubeの公式動画を表示したままにします。YouTubeのトラックは音声ファイルとして取り出されず、インターネット接続が必要です。</p>
+
+  <h2>5. 年齢制限のある動画</h2>
+  <p>YouTubeへのサインインが必要で、埋め込みでは再生できないことが多いです。別のアップロードを選んでください。</p>
+
+  <h2>6. ファイルがプレーヤーのない通常のPDFとして開く</h2>
+  <p>再生リストは添付ファイルとしてPDFの中に入っています。ファイルが「PDFとして印刷」、スクリーンショット、一部の圧縮・書き込みツールを通ると、添付が失われてページだけが残ります。送った人に元のファイルかリンクをもらってください。</p>
+
+  <h2>7. ウェブビューアーでは鳴るが、ほかのアプリでは鳴らない</h2>
+  <p>そのアプリはまだMPDFに対応していません。通常のPDFとして開くのは、このフォーマットが約束しているとおりの動作です。ファイルを<a href="/v/?lang=ja">ウェブビューアー</a>で開くか、アプリの開発者に<a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">仕様</a>を伝えてください。対応の追加は小さな作業です。</p>
+
+  <h2>8. スマートフォンで音が出ない</h2>
+  <p>音量を確認し、iPhoneならマナーモードのスイッチも確認してください。別の端末につながったBluetoothスピーカーもよくある原因です。</p>
+
+  <p style="margin-top: 40px;"><a class="btn" href="/make/?lang=ja">今すぐ作る</a></p>
+</main>
+<footer class="wrap"><span>MPDF · 音楽が流れるPDF</span><nav><a data-route="guide" href="/ja/guide">ガイド</a><a data-route="terms" href="/ja/terms">利用規約</a><a data-route="report" href="/ja/report">報告</a></nav></footer>
+
+</body>
+</html>

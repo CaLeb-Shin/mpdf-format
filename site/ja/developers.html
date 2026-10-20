@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>開発者ガイド · MPDF</title>
+  <meta name="description" content="MPDFの基本フォーマット、任意の拡張、オリジナルファイルの保持、SEETOの作成者確認、ウェブへの組み込み。">
+  <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/developers">
+  <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/developers">
+  <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/developers">
+  <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/developers">
+  <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/developers">
+  <link rel="canonical" href="https://mpdf.pages.dev/ja/developers">
+  <meta property="og:title" content="開発者ガイド · MPDF">
+  <meta property="og:description" content="MPDFの基本フォーマット、任意の拡張、オリジナルファイルの保持、SEETOの作成者確認、ウェブへの組み込み。">
+  <meta property="og:image" content="https://mpdf.pages.dev/og-ja.png">
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/site.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
+</head>
+<body>
+<header class="wrap nav"><a class="brand" href="/ja/"><span class="brand-mark" aria-hidden="true">♪</span>MPDF</a><nav aria-label="メインナビゲーション"><a href="/make/?lang=ja">作る</a><a href="/v/?lang=ja">開く</a><a data-route="guide" href="/ja/guide">ガイド</a><a class="keep" href="/developers" hreflang="en" lang="en">English</a><a class="keep" href="/ko/developers" hreflang="ko" lang="ko">한국어</a></nav></header>
+<main class="wrap doc">
+<div class="eyebrow">開発者向け</div><h1>アプリにMPDFを組み込む</h1>
+  <p>MPDFは標準のPDF添付ファイルで音楽情報を運びます。基本フォーマットと任意の拡張を分けて実装すれば、既存のPDF表示はそのままに再生機能を追加できます。</p>
+  <p><a class="btn" href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/SPEC.md" rel="noopener">仕様を読む</a> <a class="btn ghost" href="https://github.com/CaLeb-Shin/mpdf-format" rel="noopener">GitHub</a></p>
+  <h2>基本フォーマット: mpdf.json</h2>
+  <p>PDFのEmbeddedFiles名前ツリーから<code>mpdf.json</code>を読み込みます。MPDF 1.xの基本フォーマットは、トラック、ページキュー、再生オプションを記述します。埋め込み音源は別のPDF添付で、次の形式で参照されます:<code>file:</code>。</p>
+  <div class="code"><div class="code-head"><span>mpdf.json · 基本の例</span><button class="btn ghost small copy-btn" type="button">コピー</button></div><pre><code>{
+  &quot;mpdf&quot;: &quot;1.0&quot;,
+  &quot;title&quot;: &quot;Practice score&quot;,
+  &quot;tracks&quot;: [
+    { &quot;id&quot;: &quot;backing&quot;, &quot;title&quot;: &quot;Backing track&quot;, &quot;src&quot;: &quot;file:backing.m4a&quot;, &quot;start&quot;: 10, &quot;end&quot;: 70 }
+  ],
+  &quot;cues&quot;: [ { &quot;page&quot;: 1, &quot;track&quot;: &quot;backing&quot;, &quot;at&quot;: 10 } ],
+  &quot;options&quot;: { &quot;autoplay&quot;: false, &quot;followPage&quot;: false, &quot;loop&quot;: false }
+}</code></pre></div>
+  <p>ページは1から数えます。<code>start</code>と<code>end</code>は元の録音での秒数です。キューの<code>at</code>も同じ元録音の絶対時間を使います。この例では、<code>at: 10</code>は元の録音の10秒目を意味します。任意の<code>timeMarkers.seconds</code>はトラックの開始からの相対時間です。</p>
+  <h2>任意の拡張: 読み取って保持する</h2>
+  <table><thead><tr><th>データ</th><th>用途</th></tr></thead><tbody>
+    <tr><td><code>buttons</code></td><td>ページ上の再生ボタンの位置とトラック参照</td></tr>
+    <tr><td><code>timeMarkers</code></td><td>ページ上の位置とトラック内の相対時間</td></tr>
+    <tr><td><code>seetogether-mpdf.json</code></td><td>SEETOの制作メタデータ、再生の選択肢、作成者の申告、共有状態</td></tr>
+    <tr><td><code>seetogether-score.json</code></td><td>含まれるCopy Noteの楽譜・コード再生データ</td></tr>
+    <tr><td>編集用の元データと書き込みの添付</td><td>作成者のリビジョン用資料(公開共有用コピーからは除外)</td></tr>
+  </tbody></table>
+  <p>これらの拡張は基本的なMPDF再生には必要ありません。読み込むときは未対応のフィールドを無視し、編集するときは保持してください。変更していないオリジナルをダウンロードさせるときは、PDFを書き換えずに元のバイトを返してください。共有用コピーは、受け取る人向けのデータだけを残す、明示的な別の書き出しです。</p>
+  <h2>読み込みと再生</h2>
+  <div class="code"><div class="code-head"><span>JavaScript · pdf.js</span><button class="btn ghost small copy-btn" type="button">コピー</button></div><pre><code>const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise
+const attachments = (await pdf.getAttachments()) || {}
+const raw = attachments[&#x27;mpdf.json&#x27;]
+if (raw) {
+  const manifest = JSON.parse(new TextDecoder().decode(raw.content))
+  // Validate version, size limits, unique IDs, page ranges and track references.
+  // Render text with textContent, never as HTML. Keep unknown extension fields.
+  // Resolve file: names against attachments; never treat them as filesystem paths.
+  // Retain `bytes` for an unchanged download; rewriting changes the file hash.
+}</code></pre></div>
+  <ul>
+    <li>再生:<code>youtube:</code>は表示した公式プレーヤーで、<code>file:</code>は対応するPDF添付で、<code>https:</code>は有効な外部音声URLで再生します。外部再生はサーバーのCORS、形式、アクセス設定に左右されます。</li>
+    <li>ユーザーの操作前に自動再生しないでください。ページに合わせる設定は読み手の選択に従います。キューのないページでは現在のトラックの再生を続けます。</li>
+    <li>ボタンとマーカーはPDFページを書き換えず、別の操作レイヤーとして表示してください。プレーヤーは折りたためるようにするか、楽譜の領域の外に置いてください。</li>
+    <li>Unicodeのファイル名は保持しつつ、パスや予約されたメタデータ名を音源として扱うことは拒否してください。サイズ、ページ範囲、時間、ID、参照を検証してください。</li>
+  </ul>
+  <h2>新しいMPDFを作る</h2>
+  <div class="code"><div class="code-head"><span>Python · pypdf</span><button class="btn ghost small copy-btn" type="button">コピー</button></div><pre><code>from pypdf import PdfWriter
+import json
+
+# Create a NEW MPDF from a plain PDF; do not overwrite the input.
+w = PdfWriter(clone_from=&quot;score.pdf&quot;)
+w.add_attachment(&quot;mpdf.json&quot;, json.dumps(manifest).encode(&quot;utf-8&quot;))
+w.add_attachment(&quot;backing.m4a&quot;, audio_bytes)
+w.write(&quot;score-with-music.pdf&quot;)</code></pre></div>
+  <p>通常のPDFから新しいファイルを作る最小の例です。既存のMPDFを編集するには、名前ツリー、未知の添付、拡張の扱いも必要です。リポジトリの<a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/js/mpdf.js" rel="noopener">JavaScript</a>と<a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/python/mpdf.py" rel="noopener">Python</a>の基本リファレンスは、ウェブサイトの互換レイヤーとは別のものです:<code>site/mpdf-browser.js</code>。</p>
+  <h2>作成者の申告は所有の証明ではありません</h2>
+  <p>SEETOの作成者リビジョンは、匿名でないアカウントとファイル全体のSHA-256を使います。変更できない登録簿のファイルハッシュ、公開ID、所有者UIDがすべて一致する必要があります。埋め込まれた<code>creatorUID</code>だけで編集を許可してはいけません。<code>sharedReadOnly: true</code>は作成者本人にとっても読み取り専用です。登録済みの作成者オリジナルを提供する前に、確定したファイルを登録してください。</p>
+  <h2>公開リンクは別のサービスです</h2>
+  <p>このウェブサイトのCloudflare Pages Functionsが共有用PDFを保存します。埋め込み音源、編集用の元データ、未対応の添付は拒否し、作成から90日でリンクの提供を停止します。このホスティングの方針とSEETOアカウント連携は、MPDF基本フォーマットの必須要素ではありません。</p>
+  <p>コードはMITライセンス、仕様の文章はCC BY 4.0です。技術的な提案は<a href="https://github.com/CaLeb-Shin/mpdf-format/issues" rel="noopener">GitHub Issues</a>へ、非公開の資料や削除の依頼は<a data-route="report" href="/ja/report">サポートのメール</a>へお送りください。</p>
+</main>
+<footer class="wrap"><span>MPDF · 楽譜を見ながら、音楽を。</span><nav><a data-route="guide" href="/ja/guide">ガイド</a><a data-route="developers" href="/ja/developers">開発者</a><a data-route="terms" href="/ja/terms">利用規約</a><a data-route="report" href="/ja/report">報告・削除</a></nav></footer>
+<script type="module">
+  for (const button of document.querySelectorAll('.copy-btn')) button.addEventListener('click', async () => {
+    const ko = document.documentElement.lang === 'ko'
+    try { await navigator.clipboard.writeText(button.closest('.code').querySelector('code').textContent); button.textContent = ko ? '복사됨' : 'コピーしました' }
+    catch { button.textContent = ko ? '코드를 선택해 복사하세요' : 'Select the code to copy' }
+    setTimeout(() => { button.textContent = ko ? '복사' : 'コピー' }, 2000)
+  })
+</script>
+</body>
+</html>

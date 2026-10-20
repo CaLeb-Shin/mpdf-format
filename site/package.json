@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler pages dev . --r2=MPDF_FILES --port 8788",
-    "deploy": "python3 build-ko.py && wrangler pages deploy .",
+    "deploy": "python3 build-ko.py && python3 build-ja.py && python3 build-ja-pages.py && wrangler pages deploy .",
     "test": "node functions/test.mjs",
-    "build": "python3 build-ko.py"
+    "build": "python3 build-ko.py && python3 build-ja.py && python3 build-ja-pages.py"
   },
   "dependencies": {
     "pdf-lib": "^1.17.1"

@@ -49,6 +49,36 @@ const MESSAGES = {
     'auth/too-many-requests': '로그인 요청이 많습니다. 잠시 후 다시 시도해 주세요.',
     unavailable: '계정 연결을 불러오지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
   },
+  ja: {
+    signIn: 'SEETOアカウント', signedIn: 'アカウント', title: 'SEETOアカウントを連携', close: '閉じる',
+    intro: 'SEETOで使っているGoogleアカウントでサインインしてください。作成者オリジナルの確認と、新しいMPDFの作成者情報の登録ができます。',
+    providerNote: 'ウェブではGoogle連携アカウントに対応しています。Appleのみのアカウントでは、SEETOアプリでオリジナルを編集してください。',
+    privacy: '作成者登録ではファイルのSHA-256ハッシュとアカウントIDを保存します。この手順で楽譜や音源はアップロードされません。',
+    readOnly: '受け取った共有用コピーは、サインインしても読み取り専用のままです。',
+    google: 'Googleで続ける', apple: 'Appleで続ける', signOut: 'サインアウト',
+    preparing: 'アカウント連携を準備しています…', working: 'アカウントを連携しています…',
+    connected: 'SEETOアカウントを連携しました。', signedOut: 'サインアウトしました。',
+    accountName: 'SEETOユーザー', retry: '再接続',
+    'sign-in-required': '作成者登録やオリジナルの編集には、SEETOアカウントへのサインインが必要です。',
+    'unknown-creator': '作成者情報を確認できない以前のMPDFです。読み取り専用で開きます。',
+    'not-creator': 'このMPDFを作成したSEETOアカウントでサインインしてください。',
+    'invalid-publication': 'このファイルは作成者登録と一致しません。オリジナルはそのまま保持されます。',
+    'shared-read-only': '共有用MPDFは読み取り専用です。編集するには作成者オリジナルを開いてください。',
+    'account-changed': 'サインイン中のアカウントが変わりました。現在のアカウントでもう一度お試しください。',
+    'verification-unavailable': '作成者情報を確認できませんでした。インターネット接続を確認して、もう一度お試しください。',
+    'auth/unauthorized-domain': 'このサイトのSEETOサインイン連携はまだ承認されていません。作成者登録は設定後に使えます。',
+    'auth/operation-not-allowed': 'このサインイン方法はウェブ用に設定されていません。別の方法をお試しください。',
+    'auth/invalid-oauth-client-id': 'Appleのウェブサインインの設定確認が必要です。別のサインイン方法をお試しください。',
+    'auth/invalid-credential': 'サインインを完了できませんでした。もう一度お試しいただくか、別の方法を使ってください。',
+    'auth/popup-blocked': 'ブラウザーでサインインのポップアップを許可してから、もう一度押してください。',
+    'auth/popup-closed-by-user': 'サインインが完了する前にウィンドウとの接続が切れました。もう一度連携してください。',
+    'auth/cancelled-popup-request': '別のサインイン要求が始まりました。開いているサインイン画面を確認してください。',
+    'auth/account-exists-with-different-credential': 'このメールアドレスは別のサインイン方法で登録されています。SEETOで使っている方法でサインインしてください。',
+    'auth/network-request-failed': 'サインインサーバーに接続できません。インターネット接続を確認してください。',
+    'auth/web-storage-unsupported': 'このブラウザーではアカウントの保存領域を使えません。通常のブラウザーウィンドウでお試しください。',
+    'auth/too-many-requests': 'サインインの試行が多すぎます。しばらくしてからお試しください。',
+    unavailable: 'アカウント連携を読み込めませんでした。インターネット接続を確認して、もう一度お試しください。',
+  },
   en: {
     signIn: 'SEETO account', signedIn: 'Account', title: 'Connect your SEETO account', close: 'Close',
     intro: 'Sign in with the Google account you use in SEETO to verify creator originals and register new MPDF publications.',
@@ -139,8 +169,8 @@ export async function sha256Bytes(bytes) {
  * permission based only on embedded metadata. Always await register before
  * offering the finished creator file for download.
  */
-export function createSeetoAccount({ lang = document.documentElement.lang.startsWith('ko') ? 'ko' : 'en' } = {}) {
-  lang = lang === 'ko' ? 'ko' : 'en'
+export function createSeetoAccount({ lang = document.documentElement.lang } = {}) {
+  lang = MESSAGES[lang] ? lang : 'en'
   let text = MESSAGES[lang]
   const listeners = new Set(), languageViews = new Set()
   let sdk, auth, db, loading, user = null, epoch = 0, lastIdentity = null, authChanging = false
@@ -298,7 +328,7 @@ export function createSeetoAccount({ lang = document.documentElement.lang.starts
     }
   }
   function setLang(value) {
-    lang = value === 'ko' ? 'ko' : 'en'
+    lang = MESSAGES[value] ? value : 'en'
     text = MESSAGES[lang]
     if (auth) auth.languageCode = lang
     for (const refresh of languageViews) refresh()

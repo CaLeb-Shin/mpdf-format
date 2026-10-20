@@ -14,12 +14,19 @@ export async function onRequestGet({ params, env, request }) {
   }
   const m = head.customMetadata || {}, origin = new URL(request.url).origin
   const title = m.title || 'MPDF'
-  const ko = /\bko\b/i.test(request.headers.get('accept-language') || '')
-  const desc = ko ? `${m.pages || '?'}쪽 · ${m.tracks || '?'}곡 · 악보를 보면서 듣는 PDF` : `${m.pages || '?'} pages · ${m.tracks || '?'} tracks · a PDF that plays music`
+  const al = (request.headers.get('accept-language') || '').toLowerCase()
+  const langOf = (code) => ({ ko: 'ko', ja: 'ja' })[code] || 'en'
+  const lang = langOf(new URL(request.url).searchParams.get('lang') || (al.match(/^\s*([a-z]{2})/) || [])[1])
+  const ko = lang === 'ko'
+  const desc = ({
+    ko: `${m.pages || '?'}쪽 · ${m.tracks || '?'}곡 · 악보를 보면서 듣는 PDF`,
+    ja: `${m.pages || '?'}ページ · ${m.tracks || '?'}曲 · 楽譜を見ながら聴けるPDF`,
+    en: `${m.pages || '?'} pages · ${m.tracks || '?'} tracks · a PDF that plays music`,
+  })[lang]
   const og = [
     '<meta property="og:type" content="website">', `<meta property="og:title" content="${esc(title)}">`,
-    `<meta property="og:description" content="${esc(desc)}">`, `<meta property="og:image" content="${origin}/${ko ? 'og-ko.png' : 'og.png'}">`,
-    `<meta property="og:locale" content="${ko ? 'ko_KR' : 'en_US'}">`, `<meta property="og:url" content="${origin}/v/${id}">`,
+    `<meta property="og:description" content="${esc(desc)}">`, `<meta property="og:image" content="${origin}/${({ ko: 'og-ko.png', ja: 'og-ja.png', en: 'og.png' })[lang]}">`,
+    `<meta property="og:locale" content="${({ ko: 'ko_KR', ja: 'ja_JP', en: 'en_US' })[lang]}">`, `<meta property="og:url" content="${origin}/v/${id}">`,
     '<meta name="twitter:card" content="summary_large_image">', `<meta name="description" content="${esc(desc)}">`,
   ].join('')
   html = html.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)} · MPDF</title>`).replace('<!--og-->', og)
