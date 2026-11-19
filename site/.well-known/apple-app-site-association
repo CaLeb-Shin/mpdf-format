@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "details": [{
+      "appIDs": ["BL85BRP77C.com.seetogether.app"],
+      "components": [
+        { "/": "/v/", "exclude": true },
+        { "/": "/v/????????*" }
+      ]
+    }]
+  }
+}

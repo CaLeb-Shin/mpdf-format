@@ -25,3 +25,7 @@
 .position-preview canvas{display:block;width:100%;height:auto;cursor:crosshair;border:1px solid var(--line);margin-top:10px}
 .page-control:not(.marker):not(.locked){border:none;background:transparent;color:#7033d1;font-weight:700;font-size:clamp(6px,1vw,10px);gap:2px;padding:0;justify-content:flex-start}
 .page-control:not(.marker):not(.locked)::before{content:"";background:center/contain no-repeat url('/assets/seetogether-brand.png');width:100%;aspect-ratio:1;border-radius:22%;display:block}
+.drag-export{display:inline-flex;align-items:center;gap:9px;max-width:225px;min-width:0;padding:6px 10px;border:1px dashed #9a87b6;border-radius:10px;color:#453652;background:#faf7fe;cursor:grab}
+.drag-export:hover{text-decoration:none;background:#f1eafa}.drag-export:active{cursor:grabbing}
+.drag-export img{border-radius:8px}.drag-export>span{min-width:0}.drag-export strong,.drag-export small{display:block;line-height:1.45}.drag-export strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.drag-export small{font-size:10px}
+@media(pointer:coarse){.drag-export{display:none}}

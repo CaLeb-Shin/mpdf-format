@@ -2,3 +2,7 @@
 # Other origins opening the maker remain isolated.
 /make/*
   Cross-Origin-Opener-Policy: same-origin-allow-popups
+
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600

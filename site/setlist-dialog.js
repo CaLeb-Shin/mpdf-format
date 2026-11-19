@@ -173,7 +173,7 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
       }
       if (listOnly.checked) {
         const name = title || L('콘티','Setlist','セットリスト')
-        await openFile(await makeSetlistFile(name,songs,safeTitle(name)))
+        await openFile(await makeSetlistFile(name,songs,safeTitle(name)), {exportShared:true})
       } else {
         if (sourceFile && loadedFile !== sourceFile) { await openFile(sourceFile); loadedFile = sourceFile }
         signal.throwIfAborted()
