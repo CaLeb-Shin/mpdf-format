@@ -1,3 +1,4 @@
+import {mountInk,annotatedPDF} from './reader-ink.js'
 import {scoreFile,shareableScore} from './seetogether-file.js'
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
 import { readMpdf, fmtTime, TRACK_COLORS, mimeOf } from './mpdf-browser.js'
@@ -19,6 +20,11 @@ const state = {
   markersVisible: true, yt: null, ytPromise: null, ytCancel: null, ytDeferred: null, ytReady: false, ytWantPlay: false, ytSeekUntil: 0,
   seeking: false, scrubPosition: null, lastPersist: 0, remoteAbort: null, pageFollowSuppressed: false,
 }
+const ink=mountInk({
+  pages, button:$('#pen'), tools:$('#ink-tools'), undo:$('#ink-undo'), eraser:$('#ink-eraser'), download:$('#save-ink'), say, notice,
+  onDraw:()=>{ cancelPlacement(); if(!player.classList.contains('hidden'))setOpen(false) }
+})
+let preparedInkFile=null
 const skipOptions = [3, 5, 10], skipStorageKey = 'mpdf:seekSeconds'
 try {
   const saved = Number(localStorage.getItem(skipStorageKey))
@@ -83,6 +89,9 @@ async function fetchFile(url, filename = 'MPDF.mpdf') {
   }
 }
 async function resetDocument() {
+  ink.reset()
+  if ($('#send-ink').open) $('#send-ink').close()
+  preparedInkFile=null
   persistPractice(); pause(); state.selectionGeneration++
   state.ytCancel?.(); state.ytDeferred = null
   state.engine?.destroy(); state.engine = null
@@ -169,6 +178,9 @@ async function openFile(file, fetched = false) {
         restoreMarkers()
       } catch {}
     }
+    await ink.open(state.hash)
+    if (generation!==state.openGeneration) return
+    if (params.get('tool')==='pen') ink.start()
     renderList(); renderMarkers(); renderOverlays()
     if (state.choices.length) {
       player.classList.remove('hidden'); setOpen(!matchMedia('(max-width: 720px)').matches)
@@ -211,7 +223,42 @@ $('#edit-score').onclick = async () => {
     notice(say('원본을 저장한 뒤 제작 화면에서 열어 주세요.','Save the original and open it in the maker.','原本を保存して作成画面で開いてください。'),true)
   }
 }
+function downloadInkFile(file) {
+  const url=URL.createObjectURL(file), link=document.createElement('a')
+  link.href=url;link.download=file.name;link.click()
+  setTimeout(()=>URL.revokeObjectURL(url),60000)
+}
+async function exportInk(forApp=false) {
+  try {
+    await ink.export(async (strokes,current)=>{
+      notice(say('필기본 만드는 중…','Preparing your annotated copy…','書き込み版を作成中…'))
+      const stem=(state.manifest?.title || state.filename || 'MPDF').replace(/\.(m?pdf)$/i,'').replace(/[\\/:*?"<>|]/g,'_').slice(0,155)
+      const extension=state.manifest?'mpdf':'pdf'
+      const bytes=await annotatedPDF(state.bytes,state.pdf,strokes,state.manifest,state.files)
+      if(!current())return
+      const file=scoreFile(bytes,stem+'.'+say('필기','annotated','書き込み'),extension)
+      if(forApp && navigator.canShare?.({files:[file]})){
+        preparedInkFile=file
+        $('#send-ink').showModal()
+      } else downloadInkFile(file)
+      notice()
+    })
+  } catch {
+    notice(say('필기본을 만들지 못했어요. 연결을 확인하고 다시 저장해 주세요.','Could not create the annotated copy. Check your connection and try again.','書き込み版を作成できませんでした。接続を確認して再度保存してください。'),true)
+  }
+}
+$('#save-ink').onclick=()=>exportInk()
+$('#share-ink-now').onclick=async()=>{
+  const file=preparedInkFile
+  if(!file)return
+  try{await navigator.share({files:[file]})}
+  catch(error){if(error.name==='AbortError')return;downloadInkFile(file)}
+  $('#send-ink').close()
+}
+$('#send-ink').onclose=()=>{preparedInkFile=null}
+$('#close-ink').onclick=()=>$('#send-ink').close()
 $('#share-file').onclick = async () => {
+  if(ink.hasStrokes)return exportInk(true)
   if (!state.bytes) return
   const name = (state.manifest?.title || state.filename || 'MPDF').replace(/\.(m?pdf)$/i, '').replace(/[\\/:*?"<>|]/g, '_').slice(0, 160)
   const file = shareableScore(state.bytes, name)
@@ -264,6 +311,7 @@ async function renderPage(number) {
     await job.promise
     if (generation !== state.openGeneration || !paper.isConnected || Math.abs(number - state.page) > 2) { canvas.width = 0; return }
     paper.querySelector('canvas')?.remove(); paper.prepend(canvas)
+    ink.render(paper)
     paper.querySelector('.page-status')?.remove(); state.rendered.add(number); renderPageOverlays(number)
   } catch (error) {
     if (generation === state.openGeneration && error.name !== 'RenderingCancelledException') {
@@ -614,6 +662,7 @@ function renderMarkers() {
 function playMarker(mark) { const choice = choiceForTrack(mark.track, mark.choice); if (choice) { clearLoop(); selectChoice(choice.id, mark.seconds, true) } }
 $('#mark-add').onclick = () => {
   if (!state.ready || !duration()) return
+  ink.stop()
   state.placing = { id: crypto.randomUUID(), track: state.current.track.id, choice: state.current.id, seconds: Math.round(position() * 10) / 10, local: true }
   pages.classList.add('placing'); $('#mark-cancel').classList.remove('hidden')
   notice(say(`${fmtTime(state.placing.seconds)} · 악보의 원하는 위치를 눌러 주세요.`, `${fmtTime(state.placing.seconds)} · Tap a spot on your score.`, `${fmtTime(state.placing.seconds)} · 楽譜の位置をタップしてください。`))

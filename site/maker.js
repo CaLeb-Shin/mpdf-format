@@ -84,7 +84,15 @@ async function loadDocument(file){if(file.size>256*1024*1024)throw new Error(L('
  setMobilePanel('score');setupThumbnails();renderAll();await renderPage();await updateOwnership();status(state.locked?L('받은 파일을 그대로 열었습니다. 원본 다운로드와 미리보기를 사용할 수 있어요.', 'Original loaded. Preview and unchanged download are available.', 'オリジナルを読み込みました。プレビューと無変更のダウンロードが使えます。'):L('음원을 연결하고 악보 위에 재생 버튼을 놓아보세요.', 'Connect a track and place a playback button on the score.', 'トラックを接続し、楽譜に再生ボタンを置いてください。'));
 }
 async function updateOwnership(){const gen=state.generation,version=++state.ownershipVersion,box=$('#ownership'),p=state.publication;box.replaceChildren();box.classList.toggle('hidden',!p&&!state.manifest.web?.sharedReadOnly);if(!p&&!state.manifest.web?.sharedReadOnly){state.locked=false;controls();return;}
- state.locked=true;state.verifiedUID=null;controls();if(p?.sharedReadOnly||state.manifest.web?.sharedReadOnly){box.textContent=L('공유용 MPDF는 보기·재생 전용입니다. 수정하려면 제작자 원본을 열어 주세요.', 'Sharing copies are read-only. Open your editable original to revise.', '共有用コピーは読み取り専用です。編集するには編集可能なオリジナルを開いてください。');return;}
+ state.locked=true;state.verifiedUID=null;controls();if(p?.sharedReadOnly||state.manifest.web?.sharedReadOnly){box.textContent=L('공유 악보에 바로 필기할 수 있어요. 곡 연결을 바꾸려면 제작자 원본을 여세요.','Write directly on this score. Open your creator original to change music connections.','共有楽譜に書き込めます。曲の接続を変更するには作成者原本を開いてください。');
+   const pen=document.createElement('button');
+   pen.type='button';pen.className='btn ghost small';pen.textContent=L('펜으로 필기','Write on score','楽譜に書き込む');
+   pen.onclick=()=>run(async()=>{
+     const session=await storeFile(new File([state.original],state.originalName,{type:'application/pdf'}));
+     location.href='/v/?'+new URLSearchParams({session,lang:getLang(),tool:'pen'});
+   });
+   box.append(pen);
+   return;}
  if(!account.user){box.textContent=L('SEETogether 제작자 원본입니다. 같은 Google 계정으로 로그인하면 수정 권한을 확인합니다.', 'SEETogether original. Sign in with the same Google account to verify revision access.', 'SEETogetherのオリジナルです。編集権限を確認するには同じGoogleアカウントでサインインしてください。');return;}
  box.textContent=L('서버에서 제작자를 확인하고 있어요…', 'Verifying the creator with the server…', 'サーバーで作成者を確認しています…');try{const receipt=await account.verify(state.original,p);if(gen!==state.generation||version!==state.ownershipVersion||account.user?.uid!==receipt.ownerUID)return;state.verifiedUID=receipt.ownerUID;state.locked=false;box.textContent=state.geometryLocked?L('제작자 확인 완료 · 악보에 이미 그려진 버튼 위치와 필기는 보존합니다. 음원 구간·시간 표시는 수정할 수 있어요.', 'Creator verified. Baked buttons and markup stay in place; audio ranges and time markers can be revised.', '作成者を確認しました。焼き込まれたボタンと書き込みはそのまま残り、音源の範囲とタイムマーカーは編集できます。'):L('제작자 확인 완료 · 수정본은 새 파일로 등록하며 받은 원본은 유지됩니다.', 'Creator verified. Revisions are registered as a new file; your original is preserved.', '作成者を確認しました。編集内容は新しいファイルとして登録され、オリジナルは保持されます。');}catch(e){if(gen===state.generation&&version===state.ownershipVersion)box.textContent=account.errorMessage(e);}if(gen===state.generation&&version===state.ownershipVersion){controls();renderControls();}}
 account.onChange(()=>{if(state.publication){if(drag?.moved)state.dirty=true;drag=null;state.placement=null;state.locked=true;state.verifiedUID=null;controls();renderControls();updateOwnership();}});

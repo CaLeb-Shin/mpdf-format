@@ -32,7 +32,13 @@
       <nav class="page-navigation" aria-label="Pages"><button id="pageprev" aria-label="Previous page">‹</button><label><span data-ja="ページ" data-en="Page" data-ko="페이지">Page</span> <input id="pagenumber" type="number" min="1" value="1" aria-label="Current page"> <span id="pagecount">/ 1</span></label><button id="pagenext" aria-label="Next page">›</button></nav>
       <label class="follow-label"><input id="follow" type="checkbox" checked><span data-ja="ページに合わせる" data-en="Follow page cues" data-ko="페이지별 음원 연결">Follow page cues</span></label>
       <button id="marker-toggle" class="text-action" aria-pressed="true" data-ja="タイムマーク オン" data-en="Time marks on" data-ko="시간 표시 켜짐">Time marks on</button>
+      <button id="pen" class="text-action" type="button" aria-pressed="false" aria-controls="ink-tools" disabled data-en="Pen" data-ko="펜" data-ja="ペン">Pen</button>
       <button id="show-player" class="text-action" data-ja="プレーヤー" data-en="Player" data-ko="재생창">Player</button>
+    </div>
+    <div id="ink-tools" hidden>
+      <button id="ink-eraser" type="button" aria-pressed="false" data-en="Eraser" data-ko="지우개" data-ja="消しゴム">Eraser</button>
+      <button id="ink-undo" type="button" data-en="Undo" data-ko="되돌리기" data-ja="取り消す">Undo</button>
+      <button id="save-ink" type="button" data-en="Save annotated copy" data-ko="필기본 저장" data-ja="書き込み版を保存">Save annotated copy</button>
     </div>
     <p class="practice-notice hidden" id="notice" role="status" aria-live="polite"></p>
     <div class="practice-pages" id="pages" tabindex="0" aria-label="Score pages">
@@ -80,6 +86,11 @@
       <p class="player-message hidden" id="player-message" role="status" aria-live="polite"></p>
     </div>
   </section>
+  <dialog id="send-ink">
+    <p data-en="Your annotated copy is ready." data-ko="필기한 악보를 준비했어요." data-ja="書き込み版を用意しました。">Your annotated copy is ready.</p>
+    <button type="button" class="btn primary" id="share-ink-now" data-en="Choose app" data-ko="보낼 앱 선택" data-ja="アプリを選ぶ">Choose app</button>
+    <button type="button" class="btn ghost" id="close-ink" data-en="Close" data-ko="닫기" data-ja="閉じる">Close</button>
+  </dialog>
   <script type="module" src="/viewer.js"></script>
 </body>
 </html>

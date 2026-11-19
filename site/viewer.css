@@ -227,3 +227,16 @@
   .practice-player:not(.collapsed) > * { flex-shrink: 0; }
   .practice-player:has(.practice-video:not(.hidden)):not(.collapsed) .practice-transport { display: flex; }
 }
+
+#pen[aria-pressed="true"], #ink-eraser[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+#ink-tools:not([hidden]) { display: flex; flex-shrink: 0; gap: 4px; align-items: center; border-bottom: 1px solid var(--line); padding: 2px max(10px,env(safe-area-inset-right)) 2px max(10px,env(safe-area-inset-left)); background: var(--panel); }
+#ink-tools button { background: transparent; border: 0; border-radius: 8px; color: var(--ink); padding: 5px 11px; min-height: 44px; font-size: 13px; }
+#ink-tools #save-ink { margin-left: auto; color: var(--accent); font-weight: 600; }
+#ink-tools button:disabled { opacity: .45; }
+.reader-ink { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.inking .practice-paper { touch-action: none; cursor: crosshair; user-select: none; -webkit-user-select: none; }
+.inking .practice-page-controls button { pointer-events: none; }
+.erasing .reader-ink path { pointer-events: stroke; }
+#send-ink { margin: auto; width: min(360px,92vw); border: 1px solid var(--line); border-radius: 16px; padding: 20px; color: var(--ink); }
+#send-ink p { margin-bottom: 14px; }
+#send-ink::backdrop { background: #21152a66; }
