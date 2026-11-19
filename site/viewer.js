@@ -95,7 +95,7 @@ async function resetDocument() {
   for (const url of state.urls.values()) URL.revokeObjectURL(url)
   state.urls.clear()
   Object.assign(state, { bytes: null, filename: '', manifest: null, publication: null, files: {}, tracks: [], choices: [], current: null, page: 1, pageCount: 0, ready: false, hash: null, localMarkers: [], placing: null, pitch: 0, seeking: false, scrubPosition: null })
-  clearLoop(); cancelPlacement(); player.classList.add('hidden'); $('#yt').classList.add('hidden'); $('#toolbar').classList.add('hidden'); $('#dl').classList.add('hidden')
+  clearLoop(); cancelPlacement(); player.classList.add('hidden'); $('#yt').classList.add('hidden'); $('#toolbar').classList.add('hidden'); $('#dl').classList.add('hidden'); $('#share-file').classList.add('hidden')
   pages.replaceChildren(); notice(); message()
   if (previous) await previous.destroy().catch(() => {})
   else if (previousLoading) await previousLoading.destroy().catch(() => {})
@@ -128,6 +128,7 @@ async function openFile(file, fetched = false) {
     $('#meta').removeAttribute('data-en'); $('#meta').removeAttribute('data-ko')
     updateMeta()
     document.title = `${$('#title').textContent} · MPDF`
+    if (navigator.canShare?.({files:[new File([], 'setlist.pdf', {type:'application/pdf'})]})) $('#share-file').classList.remove('hidden')
     $('#dl').classList.remove('hidden'); $('#toolbar').classList.remove('hidden')
     $('#follow').checked = state.manifest?.options?.followPage !== false
     $('#follow').disabled = !state.manifest
@@ -168,6 +169,13 @@ async function openFile(file, fetched = false) {
 }
 function updateMeta() {
   $('#meta').textContent = say(`${state.pageCount}쪽 · ${state.tracks.length ? `${state.tracks.length}개 음원` : '일반 PDF'}`, `${state.pageCount} pages · ${state.tracks.length ? `${state.tracks.length} audio tracks` : 'plain PDF'}`, `${state.pageCount}ページ · ${state.tracks.length ? `音源${state.tracks.length}件` : '通常のPDF'}`)
+}
+$('#share-file').onclick = async () => {
+  if (!state.bytes) return
+  const name = (state.manifest?.title || state.filename || 'MPDF').replace(/\.(m?pdf)$/i, '').replace(/[\\/:*?"<>|]/g, '_').slice(0, 160)
+  const file = new File([state.bytes], name + '.pdf', {type:'application/pdf'})
+  try { await navigator.share({files:[file]}) }
+  catch (e) { if (e.name !== 'AbortError') notice(say('원본을 저장한 뒤 공유 메뉴에서 SEETO를 선택하세요.', 'Save the original, then select SEETO in the share menu.', 'オリジナルを保存し、共有メニューでSEETOを選んでください。')) }
 }
 $('#dl').onclick = () => {
   if (!state.bytes) return

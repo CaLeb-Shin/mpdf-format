@@ -177,3 +177,5 @@
 @media (max-height: 500px) {
   .practice-player:has(.practice-video:not(.hidden)):not(.collapsed) .practice-transport { display: none; }
 }
+
+@media(max-width:650px){.practice-actions{flex-wrap:wrap}}
