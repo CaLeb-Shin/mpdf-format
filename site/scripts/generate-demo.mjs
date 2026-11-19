@@ -1,6 +1,6 @@
 // Original MPDF practice material. No downloaded music, recordings, or notation.
 // Rebuild: cd site && node scripts/generate-demo.mjs
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import * as PDFLib from 'pdf-lib'
 import { createMpdf, renderPageButtons } from '../mpdf-browser.js'
 
@@ -120,7 +120,7 @@ const manifest={
   ],
   web:{buttonRendering:'baked'},
 }
-const drawn=await renderPageButtons(clean,manifest.buttons)
+const drawn=await renderPageButtons(clean,manifest.buttons,{logoBytes:await readFile(new URL('../assets/seetogether-brand.png',import.meta.url))})
 const publication={
   version:1,id:'36262f42-728d-40dd-893a-06543ee0487d',sourceNoteID:'mpdf-original-practice',
   createdAt:814060800,tempo,sourceStartSeconds:0,

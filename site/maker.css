@@ -23,3 +23,5 @@
 #setlist-current{display:block;overflow-wrap:anywhere;margin-top:12px}
 #position-dialog{width:min(640px,95vw);max-height:92dvh;overflow:auto}
 .position-preview canvas{display:block;width:100%;height:auto;cursor:crosshair;border:1px solid var(--line);margin-top:10px}
+.page-control:not(.marker):not(.locked){border:none;background:transparent;color:#7033d1;font-weight:700;font-size:clamp(6px,1vw,10px);gap:2px;padding:0;justify-content:flex-start}
+.page-control:not(.marker):not(.locked)::before{content:"";background:center/contain no-repeat url('/assets/seetogether-brand.png');width:100%;aspect-ratio:1;border-radius:22%;display:block}

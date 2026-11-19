@@ -1,3 +1,4 @@
+import {scoreFile,shareableScore} from './seetogether-file.js'
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
 import { readMpdf, fmtTime, TRACK_COLORS, mimeOf } from './mpdf-browser.js'
 import { getLang, mountLangButton } from './i18n.js'
@@ -128,7 +129,15 @@ async function openFile(file, fetched = false) {
     $('#meta').removeAttribute('data-en'); $('#meta').removeAttribute('data-ko')
     updateMeta()
     document.title = `${$('#title').textContent} · MPDF`
-    if (navigator.canShare?.({files:[new File([], 'setlist.pdf', {type:'application/pdf'})]})) $('#share-file').classList.remove('hidden')
+    if (state.manifest) {
+      const button = $('#share-file')
+      const canShare = !!shareableScore(new Uint8Array(), 'setlist')
+      button.dataset.en = canShare ? 'Open in SEETogether' : 'Save for SEETogether'
+      button.dataset.ko = canShare ? 'SEETogether로 열기' : 'SEETogether용 저장'
+      button.dataset.ja = canShare ? 'SEETogetherで開く' : 'SEETogether用に保存'
+      button.textContent = button.dataset[getLang()] || button.dataset.en
+      button.classList.remove('hidden')
+    }
     $('#dl').classList.remove('hidden'); $('#toolbar').classList.remove('hidden')
     $('#follow').checked = state.manifest?.options?.followPage !== false
     $('#follow').disabled = !state.manifest
@@ -173,9 +182,16 @@ function updateMeta() {
 $('#share-file').onclick = async () => {
   if (!state.bytes) return
   const name = (state.manifest?.title || state.filename || 'MPDF').replace(/\.(m?pdf)$/i, '').replace(/[\\/:*?"<>|]/g, '_').slice(0, 160)
-  const file = new File([state.bytes], name + '.pdf', {type:'application/pdf'})
-  try { await navigator.share({files:[file]}) }
-  catch (e) { if (e.name !== 'AbortError') notice(say('원본을 저장한 뒤 공유 메뉴에서 SEETO를 선택하세요.', 'Save the original, then select SEETO in the share menu.', 'オリジナルを保存し、共有メニューでSEETOを選んでください。')) }
+  const file = shareableScore(state.bytes, name)
+  if (file) {
+    try { await navigator.share({files:[file]}); return }
+    catch (e) { if (e.name==='AbortError') return }
+  }
+  const saved = scoreFile(state.bytes,name), url = URL.createObjectURL(saved)
+  const link = document.createElement('a')
+  link.href=url; link.download=saved.name; link.click(); setTimeout(()=>URL.revokeObjectURL(url),60000)
+  notice(say('저장한 파일을 SEETogether에서 열어 주세요.','Open the downloaded file in SEETogether.','保存したファイルをSEETogetherで開いてください。'))
+
 }
 $('#dl').onclick = () => {
   if (!state.bytes) return
@@ -536,7 +552,7 @@ function renderPageOverlays(number) {
   for (const control of (state.manifest?.buttons || []).filter(button => button.page === number && positive(button.x) && button.x <= 1 && positive(button.y) && button.y <= 1)) {
     const choice = choiceForTrack(control.track)
     if (!choice) continue
-    const button = document.createElement('button'); button.className = `page-mpdf${baked ? ' baked' : ''}`; button.textContent = '▶ MPDF'
+    const button = document.createElement('button'); button.className = `page-mpdf${baked ? ' baked' : ''}`; button.textContent = 'MPDF'
     button.style.left = `${control.x * 100}%`; button.style.top = `${control.y * 100}%`
     if (baked) { button.style.width = '6.5%'; button.style.height = `${paper.clientWidth * .065 * 1.38}px` }
     button.setAttribute('aria-label', say(`${number}쪽 ${choiceLabel(choice)} 재생창 열기`, `Open ${choiceLabel(choice)} player on page ${number}`, `${number}ページで${choiceLabel(choice)}のプレーヤーを開く`))

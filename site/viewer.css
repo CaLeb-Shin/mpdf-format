@@ -179,3 +179,5 @@
 }
 
 @media(max-width:650px){.practice-actions{flex-wrap:wrap}}
+.practice-page-controls .page-mpdf:not(.baked){width:6.5%;aspect-ratio:1/1.38;padding:0;color:#7033d1;background:transparent;box-shadow:none}
+.practice-page-controls .page-mpdf:not(.baked)::before{content:"";background:center/contain no-repeat url('/assets/seetogether-brand.png');width:100%;aspect-ratio:1;border-radius:22%;display:block}

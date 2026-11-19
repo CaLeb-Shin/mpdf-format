@@ -19,6 +19,12 @@ export function safeAttachmentName(original = 'audio.m4a') {
   return `audio-${crypto.randomUUID()}.${/^[a-z0-9]{1,8}$/.test(extension) ? extension : 'bin'}`
 }
 
+// The native Codable model calls the MPDF version "version".
+export function normalizeManifest(value) {
+  if (record(value) && value.mpdf == null && typeof value.version === 'string') return {...value,mpdf:value.version}
+  return value
+}
+
 // Validation is shared with the upload API. Reading never replaces unknown fields.
 // Unsupported future URI schemes can be retained on reads; writing refuses them.
 export function validate(m, fileNames, { pageCount, forWriting = false } = {}) {
@@ -172,11 +178,13 @@ export function prepareSharedFiles(manifest, files = {}) {
   const removed = [...info.privateFileNames]
   for (const key of removed) delete kept[key]
   if ((next.tracks || []).some(t => t.src?.startsWith('file:') && removed.includes(t.src.slice(5)))) throw new Error('편집 원본을 음원으로 사용할 수 없습니다.')
-  if (info.publication) {
-    const p = { ...info.publication, id: crypto.randomUUID(), createdAt: Date.now() / 1000 - 978307200, sharedReadOnly: true }
-    delete p.sourcePDFKey; delete p.editableMarkupKey
-    kept[PUBLICATION] = encoder.encode(JSON.stringify(p))
+  const publication = info.publication || {
+    version:1, sourceNoteID:'pdf-'+crypto.randomUUID(), tempo:80, sourceStartSeconds:0, tags:next.web?.tags || [],
   }
+  const shared = {...publication, id:crypto.randomUUID(), createdAt:Date.now()/1000-978307200, sharedReadOnly:true}
+  delete shared.sourcePDFKey
+  delete shared.editableMarkupKey
+  kept[PUBLICATION] = encoder.encode(JSON.stringify(shared))
   next.web = { ...(record(next.web) ? next.web : {}), sharedReadOnly: true }
   delete next.web.sourcePDFKey
   return { manifest: next, files: kept, removed }
@@ -260,7 +268,7 @@ export async function exportPlainPdf(bytes) { return (await pagesOnly(bytes, pdf
 // remain in the serialized PDF. Always pass it after prepareSharedFiles too.
 export async function createMpdf(pdfBytes, manifest, files = {}, { replace = false, removeFiles = [], shared = false } = {}) {
   const lib = pdfLib(), { PDFDocument, PDFName, PDFDict, PDFArray, PDFHexString } = lib
-  let nextManifest = manifest, nextFiles = Object.assign(Object.create(null), files)
+  let nextManifest = normalizeManifest(manifest), nextFiles = Object.assign(Object.create(null), files)
   let doc = await PDFDocument.load(pdfBytes, { updateMetadata: false })
   if (doc.isEncrypted) throw new Error('암호화된 PDF는 먼저 암호를 해제해 주세요.')
   let existing = attachmentEntries(doc, lib)
@@ -300,6 +308,7 @@ export async function createMpdf(pdfBytes, manifest, files = {}, { replace = fal
   const fileNames = [...new Set([...kept.map(e => e.key), ...Object.keys(nextFiles)])]
   const errors = validate(nextManifest, fileNames, { pageCount: doc.getPageCount(), forWriting: true })
   if (errors.length) throw new Error(errors.join('; '))
+  nextManifest = {...nextManifest, version:nextManifest.mpdf}
   if (encoder.encode(JSON.stringify(nextManifest)).length > 1024 * 1024) throw new Error('MPDF 재생 정보가 너무 큽니다.')
   for (const key of Object.keys(nextFiles)) if (key === MANIFEST || !safeKey(key)) throw new Error(`첨부 파일 이름을 확인해 주세요: ${key}`)
   // Drop replaced streams physically, while preserving any stream still used by
@@ -337,7 +346,7 @@ export async function readMpdf(pdfjsDoc) {
   if (!raw) return null
   if (raw.content.byteLength > 1024 * 1024) throw new Error('MPDF 재생 정보가 너무 큽니다.')
   let manifest
-  try { manifest = JSON.parse(decoder.decode(raw.content)) } catch { throw new Error('MPDF 재생 정보를 읽을 수 없습니다.') }
+  try { manifest = normalizeManifest(JSON.parse(decoder.decode(raw.content))) } catch { throw new Error('MPDF 재생 정보를 읽을 수 없습니다.') }
   if (!record(manifest) || typeof manifest.mpdf !== 'string' || !manifest.mpdf.startsWith('1.')) throw new Error('지원하지 않는 MPDF 버전입니다.')
   const files = Object.create(null)
   for (const [name, f] of Object.entries(attachments)) if (name !== MANIFEST) files[name] = f.content
@@ -347,11 +356,18 @@ export async function readMpdf(pdfjsDoc) {
 
 // Draw printable controls once onto the clean source. Coordinates use PDF.js's
 // rotated crop-box viewport, matching normalized native MPDF page coordinates.
-export async function renderPageButtons(bytes, buttons = [], { guideURL = 'https://mpdf.pages.dev/v/' } = {}) {
+export async function renderPageButtons(bytes, buttons = [], { guideURL = 'https://seetogether-viewer.web.app/mpdf/', logoBytes } = {}) {
   const lib = pdfLib(), { PDFDocument, PDFName, PDFArray, rgb } = lib
   const doc = await PDFDocument.load(bytes, { updateMetadata: false })
   const destination = new URL(guideURL)
   if (destination.protocol !== 'https:') throw new Error('재생 안내 주소는 HTTPS여야 합니다.')
+  if (!buttons.length) return doc.save()
+  if (!logoBytes) {
+    const response = await fetch(new URL('./assets/seetogether-brand.png', import.meta.url))
+    if (!response.ok) throw new Error('SEETogether logo could not be loaded')
+    logoBytes = await response.arrayBuffer()
+  }
+  const logo = await doc.embedPng(logoBytes)
   const font = await doc.embedFont(lib.StandardFonts.HelveticaBold)
   for (const b of buttons) {
     if (!Number.isInteger(b.page) || b.page < 1 || b.page > doc.getPageCount() || !finite(b.x) || !finite(b.y)) throw new Error('재생 버튼 위치를 확인해 주세요.')
@@ -370,9 +386,18 @@ export async function renderPageButtons(bytes, buttons = [], { guideURL = 'https
     const [x1, y1] = point(cx + size / 2, glyphY + size / 2)
     const [x2, y2] = point(cx - size / 2, glyphY - size / 2)
     page.pushOperators(lib.pushGraphicsState(), lib.concatTransformationMatrix((x1-x0)/size, (y1-y0)/size, (x2-x0)/size, (y2-y0)/size, x0, y0))
-    page.drawCircle({ x: size / 2, y: size / 2, size: size / 2, color: rgb(1, .93, .86), borderColor: rgb(.92, .40, .09), borderWidth: .8 })
-    page.drawSvgPath(`M ${size*.40} ${size*.25} L ${size*.40} ${size*.69} L ${size*.76} ${size*.47} Z`, { x: 0, y: size, color: rgb(.86, .31, .055) })
-    page.drawText('MPDF', { x: size*.03, y: -size*.32, size: size*.28, font, color: rgb(.68,.25,.055) })
+    // Match SEETogether MPDFMakerService.drawMark's rounded icon and purple caption.
+    const r = size*.22, k = r*.552285, end = size-r
+    page.pushOperators(lib.pushGraphicsState(),lib.moveTo(r,0),lib.lineTo(end,0),
+      lib.appendBezierCurve(end+k,0,size,r-k,size,r),lib.lineTo(size,end),
+      lib.appendBezierCurve(size,end+k,end+k,size,end,size),lib.lineTo(r,size),
+      lib.appendBezierCurve(r-k,size,0,end+k,0,end),lib.lineTo(0,r),
+      lib.appendBezierCurve(0,r-k,r-k,0,r,0),lib.closePath(),lib.clip(),lib.endPath())
+    page.drawImage(logo,{x:0,y:0,width:size,height:size})
+    page.pushOperators(lib.popGraphicsState())
+    const captionSize = size*.23
+    page.drawText('MPDF',{x:(size-font.widthOfTextAtSize('MPDF',captionSize))/2,y:-size*.27,
+      size:captionSize,font,color:rgb(.44,.20,.82)})
     page.pushOperators(lib.popGraphicsState())
     const corners = [point(cx-size/2, cy-size*.69), point(cx+size/2, cy+size*.69)]
     const rect = [Math.min(corners[0][0],corners[1][0]), Math.min(corners[0][1],corners[1][1]), Math.max(corners[0][0],corners[1][0]), Math.max(corners[0][1],corners[1][1])]

@@ -5,6 +5,10 @@ import { onRequestPost as upload } from './api/upload.js'
 import { onRequestGet as file } from './f/[id].js'
 import { onRequestGet as view } from './v/[id].js'
 
+import {inspect} from './_lib.js'
+import * as PDFLib from 'pdf-lib'
+import {createMpdf,readMpdf,PUBLICATION} from '../mpdf-browser.js'
+
 const store = new Map()
 const env = {
   MPDF_FILES: {
@@ -17,6 +21,21 @@ const env = {
 const post = (bytes) => upload({ env, request: new Request('https://mpdf.example/api/upload', { method: 'POST', body: bytes, headers: { 'content-type': 'application/pdf' } }) })
 const sample = (n) => readFileSync(new URL('../../samples/' + n, import.meta.url))
 
+// Swift's native encoder writes version rather than mpdf.
+const nativeManifest = {version:'1.0',title:'Practice',tracks:[{id:'t1',src:'youtube:AAAAAAAAAAA'}]}
+const nativeJSON = new TextEncoder().encode(JSON.stringify(nativeManifest))
+const parsed = await readMpdf({numPages:1, getAttachments:async()=>({'mpdf.json':{content:nativeJSON}})})
+assert.equal(parsed.manifest.mpdf,'1.0')
+const nativePDF = await PDFLib.PDFDocument.load(sample('score.pdf'))
+await nativePDF.attach(nativeJSON,'mpdf.json')
+assert.equal((await post(await nativePDF.save())).status,200)
+globalThis.PDFLib = PDFLib
+const shared = await createMpdf(sample('score.pdf'),{mpdf:'1.0',tracks:nativeManifest.tracks},{},{shared:true})
+const generated = await inspect(shared)
+assert.equal(generated.manifest.version,'1.0')
+assert.equal(generated.privateOriginal,false)
+assert.ok(generated.fileNames.includes(PUBLICATION))
+assert.equal((await post(shared)).status,200)
 let r = await post(sample('score.pdf')); assert.equal(r.status, 400); assert.equal((await r.json()).error, 'not_mpdf')
 r = await post(sample('mixed.mpdf')); assert.equal(r.status, 400); assert.equal((await r.json()).error, 'embedded_audio')
 r = await post(new TextEncoder().encode('hello')); assert.equal((await r.json()).error, 'not_pdf')

@@ -1,6 +1,6 @@
 // Shared by Pages Functions. Runs on Cloudflare Workers (no Node APIs).
 import { PDFDocument, PDFName, PDFDict, PDFArray, PDFStream, decodePDFRawStream } from 'pdf-lib'
-import { validate, inspectPublication, PUBLICATION, SCORE } from '../mpdf-browser.js'
+import { normalizeManifest, validate, inspectPublication, PUBLICATION, SCORE } from '../mpdf-browser.js'
 
 const ALPHABET = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 export function newId(len = 10) { const a = new Uint8Array(len); crypto.getRandomValues(a); return Array.from(a, b => ALPHABET[b % ALPHABET.length]).join('') }
@@ -48,7 +48,7 @@ export async function inspect(bytes) {
     if (declared > limit) throw new Error('metadata too large')
     const content = decodePDFRawStream(stream).decode()
     if (content.byteLength > limit) throw new Error('metadata too large')
-    if (name === 'mpdf.json') { try { manifest = JSON.parse(new TextDecoder().decode(content)) } catch {} }
+    if (name === 'mpdf.json') { try { manifest = normalizeManifest(JSON.parse(new TextDecoder().decode(content))) } catch {} }
     else files[name] = content
   }
   if (!manifest || typeof manifest.mpdf !== 'string' || !manifest.mpdf.startsWith('1.')) manifest = null

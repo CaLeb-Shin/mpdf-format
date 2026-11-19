@@ -1,3 +1,4 @@
+import {shareableScore} from './seetogether-file.js';
 import * as pdfjs from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
 import {readMpdf,createMpdf,inspectPublication,prepareSharedFiles,normalizeAttachmentNames,renderPageButtons,exportPlainPdf,safeAttachmentName,parseYouTube,parseTime,fmtTime,TRACK_COLORS,mimeOf} from './mpdf-browser.js';
 import {mountLangButton,getLang} from './i18n.js';
@@ -102,7 +103,7 @@ mountSetlist({safeTitle,L,
       m.cues.sort((a,b)=>a.page-b.page);
       if(!hadTracks){m.options.followPage=true;$('#follow-page').checked=true;}
       const bytes=await assemble('shared');
-      download(bytes,safeTitle($('#title').value)+'.pdf');
+      download(bytes,safeTitle($('#title').value)+'.'+$('#extension').value);
       state.dirty=true;
       status(L('제목 옆에 로고를 연결해 공유용 MPDF를 만들었습니다.','Your sharing MPDF is ready with play logos beside the titles.','曲名の横にロゴを付けた共有用MPDFを作成しました。'));
     }catch(e){state.manifest=before;state.track=priorTrack;state.dirty=priorDirty;$('#title').value=priorTitle;$('#follow-page').checked=before.options?.followPage!==false;throw e;}
@@ -138,7 +139,7 @@ async function assemble(mode){if(!state.pdf)throw new Error(L('PDF를 먼저 선
  let owner=null,accountVersion=null;const checkAccount=async()=>{if(!owner)return;await account.requireAccount(owner);if(account.sessionVersion!==accountVersion)throw new Error(L('로그인 계정이 바뀌었습니다. 현재 제작자 계정으로 다시 저장해 주세요.', 'Your sign-in changed. Save again with the current creator account.', 'サインイン状態が変わりました。現在の作成者アカウントでもう一度保存してください。'));};
  if(shouldRegister||protectedRevision){if(state.publication&&!state.verifiedUID)throw new Error(L('먼저 제작자 원본의 수정 권한을 확인해 주세요.', 'Verify access to this creator original first.', '先にこの作成者オリジナルへのアクセスを確認してください。'));owner=await account.requireAccount(state.publication?state.verifiedUID:undefined);accountVersion=account.sessionVersion;if(state.publication){const receipt=await account.verify(state.original,state.publication);if(receipt.ownerUID!==owner)throw new Error(L('제작자 계정이 일치하지 않습니다.', 'The creator account does not match.', '作成者アカウントが一致しません。'));}await checkAccount();}
  if(!state.locked){const norm=normalizeAttachmentNames(m,files);m=norm.manifest;files=norm.files;removed.push(...norm.removed);if(!state.geometryLocked){files['mpdf-web-source.pdf']=await exportPlainPdf(state.base);m.web={...m.web,sourcePDFKey:'mpdf-web-source.pdf',buttonRendering:'baked'};}}
- let bytes=state.geometryLocked||state.locked?state.original:await renderPageButtons(state.base,m.buttons||[],{guideURL:'https://mpdf.pages.dev/v/'});
+ let bytes=state.geometryLocked||state.locked?state.original:await renderPageButtons(state.base,m.buttons||[]);
  if(shouldRegister){await checkAccount();const publication=await account.createPublication({...state.publication,sourceNoteID:state.publication?.sourceNoteID||'pdf-'+crypto.randomUUID(),tempo:state.publication?.tempo||80,sourceStartSeconds:state.publication?.sourceStartSeconds||0,sourcePDFKey:state.geometryLocked?state.publication?.sourcePDFKey:'mpdf-web-source.pdf',tags:tags(),sharedReadOnly:false});await checkAccount();if(publication.creatorUID!==owner)throw new Error(L('제작자 계정이 바뀌었습니다. 다시 저장해 주세요.', 'The creator account changed. Save again.', '作成者アカウントが変わりました。もう一度保存してください。'));files['seetogether-mpdf.json']=enc(publication);}
  if(files['seetogether-mpdf.json']&&!state.locked){const publication=JSON.parse(new TextDecoder().decode(files['seetogether-mpdf.json']));const ids=new Set(m.tracks.map(t=>t.id));for(const role of ['scoreTrackID','chordTrackID','sourceTrackID'])if(publication[role]&&!ids.has(publication[role])){delete publication[role];if(role==='sourceTrackID')delete publication.audioSyncMap;}files['seetogether-mpdf.json']=enc(publication);}
  if(mode==='shared'||mode==='link'){const prepared=prepareSharedFiles(m,files);m=prepared.manifest;files=prepared.files;removed=[...new Set([...removed,...prepared.removed])];}
@@ -151,13 +152,14 @@ function download(bytes,name){const url=URL.createObjectURL(new Blob([bytes],{ty
 $('#download-original').onclick=()=>state.original&&download(state.original,state.originalName);
 $('#save-original').onclick=()=>run(async()=>{status(L('원본을 만들고 제작자 정보를 확인하고 있어요…', 'Preparing the original and creator registration…', 'オリジナルと作成者登録を準備しています…'));const out=await assemble('original');download(out,safeTitle($('#title').value)+'.original.'+$('#extension').value);state.dirty=false;$('#save-menu').open=false;status(L('편집용 원본을 저장했습니다. 다른 사람에게는 공유용 MPDF를 보내세요.', 'Editable original saved. Send a sharing MPDF to others.', '編集可能なオリジナルを保存しました。ほかの人には共有用MPDFを送ってください。'));});
 $('#save-shared').onclick=()=>run(async()=>{status(L('편집용 자료를 제외한 공유본을 만들고 있어요…', 'Preparing a sharing copy without editing sources…', '編集用データを除いた共有用コピーを準備しています…'));const out=await assemble('shared');download(out,safeTitle($('#title').value)+'.'+$('#extension').value);status(L('음원이 포함된 공유용 MPDF를 저장했습니다. 받은 사람은 보고 재생할 수 있어요.', 'Sharing MPDF saved with music. Recipients can read and play it.', '音楽付きの共有用MPDFを保存しました。受け取った人は楽譜を見ながら再生できます。'));});
-if(navigator.canShare?.({files:[new File([], 'setlist.pdf', {type:'application/pdf'})]})){
+if(shareableScore(new Uint8Array(), 'setlist')){
   let sharingFile;
   const dialog=$('#send-dialog');
   $('#prepare-file-share').classList.remove('hidden');
   $('#prepare-file-share').onclick=()=>run(async()=>{
     const bytes=await assemble('shared');
-    sharingFile=new File([bytes],safeTitle($('#title').value)+'.pdf',{type:'application/pdf'});
+    sharingFile=shareableScore(bytes,safeTitle($('#title').value));
+    if(!sharingFile){download(bytes,safeTitle($('#title').value)+'.mpdf');return;}
     $('#send-name').textContent=sharingFile.name;
     dialog.showModal();
   });
