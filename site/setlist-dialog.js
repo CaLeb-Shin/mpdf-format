@@ -2,12 +2,32 @@ import {parseSetlist, makeSetlistFile} from './setlist.js'
 import {parseYouTube} from './mpdf-browser.js'
 import {getLang} from './i18n.js'
 
-export function mountSetlist({openFile, safeTitle, L}) {
+import {findPositions} from './score-titles.js'
+import {pickScorePosition} from './score-position-dialog.js'
+
+export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L}) {
   const el = id => document.getElementById(id)
   const dialog = el('setlist-dialog'), input = el('setlist-text'), rows = el('setlist-songs')
   const message = el('setlist-message'), submit = el('setlist-create')
   const analyze = el('setlist-analyze')
-  let draft, controller, creating = false
+  const upload = el('setlist-pdf'), listOnly = el('list-only')
+  let draft, controller, operation, loadedFile, creating = false
+  function openDialog() {
+    const score = currentScore()
+    el('setlist-source').hidden = !!score
+    el('setlist-current').hidden = !score
+    el('setlist-current').textContent = score?.name || ''
+    listOnly.checked = false
+    upload.value = ''
+    upload.disabled = false
+    loadedFile = null
+    if (creating) return
+    dialog.showModal()
+    input.focus()
+  }
+  upload.onchange = () => { listOnly.checked = false; clearReview() }
+  listOnly.onchange = () => { upload.disabled = listOnly.checked; clearReview() }
+
   const show = text => { message.textContent = text }
   function clearReview() {
     controller?.abort()
@@ -18,9 +38,9 @@ export function mountSetlist({openFile, safeTitle, L}) {
     show('')
   }
   function refresh() { submit.disabled = creating || !draft?.songs.every(song => song.video) }
-  el('welcome-setlist').onclick = () => { dialog.showModal(); input.focus() }
-  el('setlist-close').onclick = () => dialog.close()
-  dialog.addEventListener('cancel', event => { if (creating) event.preventDefault() })
+  el('welcome-setlist').onclick = el('connect-setlist').onclick = openDialog
+  el('setlist-close').onclick = () => { operation?.abort(); dialog.close() }
+  dialog.addEventListener('cancel', () => operation?.abort())
   dialog.addEventListener('close', clearReview)
   input.oninput = clearReview
   function anchor(url, label) {
@@ -106,6 +126,11 @@ export function mountSetlist({openFile, safeTitle, L}) {
   }
   analyze.onclick = async () => {
     clearReview()
+    if (!currentScore() && !upload.files[0] && !listOnly.checked) {
+      show(L('콘티 악보 PDF를 먼저 선택해 주세요.','Choose your score PDF first.','楽譜PDFを選んでください。'))
+      upload.focus()
+      return
+    }
     try { draft = parseSetlist(input.value) }
     catch (error) {
       show(error.message === 'ambiguous-link'
@@ -128,19 +153,56 @@ export function mountSetlist({openFile, safeTitle, L}) {
   async function create() {
     if (creating || !draft?.songs.every(song => song.video)) return
     creating = true
-    input.disabled = el('setlist-close').disabled = true
+    operation = new AbortController()
+    const {signal} = operation
+    const {title,songs} = draft
+    const sourceFile = upload.files[0]
+    input.disabled = listOnly.disabled = upload.disabled = true
     rows.inert = true
     refresh()
     show(L('콘티 MPDF 만드는 중…','Creating your setlist MPDF…','セットリストMPDFを作成中…'))
     try {
-      const title = draft.title || L('콘티','Setlist','セットリスト')
-      const file = await makeSetlistFile(title, draft.songs, safeTitle(title))
-      await openFile(file)
+      for (const song of songs.filter(s=>s.fromLink)) {
+        signal.throwIfAborted()
+        try {
+          const endpoint = new URL('https://www.youtube.com/oembed')
+          endpoint.search = new URLSearchParams({url:'https://www.youtube.com/watch?v='+song.video, format:'json'})
+          const response = await fetch(endpoint, {signal:AbortSignal.any([signal,AbortSignal.timeout(5000)])})
+          if (response.ok) song.name = (await response.json()).title?.slice(0,200) || song.name
+        } catch { signal.throwIfAborted() }
+      }
+      if (listOnly.checked) {
+        const name = title || L('콘티','Setlist','セットリスト')
+        await openFile(await makeSetlistFile(name,songs,safeTitle(name)))
+      } else {
+        if (sourceFile && loadedFile !== sourceFile) { await openFile(sourceFile); loadedFile = sourceFile }
+        signal.throwIfAborted()
+        const score = currentScore()
+        if (!score?.editable) throw new Error(L('편집 가능한 원본 악보 PDF를 선택해 주세요.','Choose an editable original score PDF.','編集可能な元の楽譜PDFを選んでください。'))
+        const positions = await findPositions(score.pdf,songs,score.buttons,signal,(n,total,ocr)=>{
+          const text = ocr ? L('스캔 악보에서 제목 읽는 중','Reading scanned titles','スキャンした曲名を認識中') : L('악보에서 제목 찾는 중','Locating score titles','楽譜の曲名を検索中')
+          show(text+' · '+n+' / '+total)
+        })
+        for (const [i,places] of positions.entries()) {
+          signal.throwIfAborted()
+          if (!places.length) {
+            const previous = positions[i-1]?.at(-1)?.page || 0
+            places.push(await pickScorePosition(score.pdf,songs[i],Math.min(previous+1,score.pdf.numPages),signal))
+          }
+        }
+        signal.throwIfAborted()
+        el('setlist-close').disabled = true
+        await applyScore(score.pdf,title,songs,positions)
+      }
       dialog.close()
-    } catch (e) { show(e.message || String(e)) }
-    finally {
+    } catch (e) {
+      if (e.name==='AbortError') show(L('위치 선택을 취소했습니다.','Placement cancelled.','位置指定をキャンセルしました。'))
+      else show(e.message || String(e))
+    } finally {
       creating = false
-      rows.inert = input.disabled = el('setlist-close').disabled = false
+      operation = null
+      rows.inert = input.disabled = listOnly.disabled = el('setlist-close').disabled = false
+      upload.disabled = listOnly.checked
       refresh()
     }
   }

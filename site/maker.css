@@ -18,3 +18,8 @@
 .setlist-option button[aria-pressed=true]{border-color:#945521;background:#fcf1e6}
 .setlist-option a{flex:none}.setlist-actions{position:sticky;bottom:-1px;padding:10px 0;background:white}
 #setlist-dialog [hidden]{display:none}
+#setlist-source .check-row{display:flex;align-items:center;gap:8px;font-size:12px}
+#setlist-source input[type=checkbox]{width:auto}
+#setlist-current{display:block;overflow-wrap:anywhere;margin-top:12px}
+#position-dialog{width:min(640px,95vw);max-height:92dvh;overflow:auto}
+.position-preview canvas{display:block;width:100%;height:auto;cursor:crosshair;border:1px solid var(--line);margin-top:10px}

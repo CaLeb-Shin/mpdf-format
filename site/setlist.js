@@ -6,6 +6,15 @@ const urlPattern = /https?:\/\/[^\s<>]+/gi
 export function parseSetlist(input) {
   const lines = input.replace(/&#x20;|&nbsp;/gi, ' ').replace(/\\:/g, ':')
     .split(/\r?\n/).map(line => line.trim().replace(/\\+$/, '').trim()).filter(Boolean)
+  // A batch of bare video links can also be paired with printed titles.
+  const linkId = line => parseYouTube(line.replace(numberPrefix, ''))
+  const firstIsLink = /^(?:\d{1,3}[.)]\s*)?https?:\/\//i.test(lines[0] || '') && linkId(lines[0])
+  const links = firstIsLink ? lines : (!numberPrefix.test(lines[0] || '') && lines.length>2 ? lines.slice(1) : [])
+  if (links.length && links.every(line => /^https?:\/\//i.test(line.replace(numberPrefix,'')) && linkId(line))) {
+    const title = links===lines ? '' : lines[0]
+    if (links.length>60 || title.length>200) throw new Error('size')
+    return {title,songs:links.map((line,i)=>({name:'YouTube '+(i+1),note:'',url:line.replace(numberPrefix,''),video:linkId(line),fromLink:true}))}
+  }
   const numbered = lines.findIndex(line => numberPrefix.test(line))
   // Without numbering, every non-link line is a song unless a blank line separates the heading.
   const hasHeading = numbered > 0 || (numbered < 0 && /^\s*[^\n]+\n\s*\n/.test(input.trim()) && !/^https?:/i.test(lines[0]))

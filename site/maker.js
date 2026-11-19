@@ -21,7 +21,7 @@ function controls(){
   $('#edit-fields').disabled=!canEdit();$('#title').disabled=!canEdit();
   for(const el of document.querySelectorAll('[data-edit]'))el.disabled=!canEdit()||(el.id==='place-button'&&state.geometryLocked);
   for(const id of ['preview','save-plain','save-shared','prepare-file-share'])$('#'+id).disabled=!state.pdf||state.busy;
-  $('#save-original').disabled=!canEdit();$('#choose-pdf').disabled=state.busy;$('#welcome-pick').disabled=state.busy;$('#welcome-setlist').disabled=state.busy;
+  $('#save-original').disabled=!canEdit();$('#choose-pdf').disabled=state.busy;$('#welcome-pick').disabled=state.busy;$('#welcome-setlist').disabled=state.busy;$('#connect-setlist').disabled=!canEdit()||state.geometryLocked;
   $('#create-link').disabled=!state.pdf||state.busy||!state.manifest.tracks.length||state.manifest.tracks.some(t=>t.src.startsWith('file:'));
   $('#create-link').title=state.manifest.tracks.some(t=>t.src.startsWith('file:'))?L('파일 음원이 들어 있으면 공유용 MPDF로 보내세요.', 'Use a sharing MPDF for embedded audio.', '埋め込み音源には共有用MPDFを使ってください。'):L('누구나 열 수 있는 링크 · 90일', 'Public link · 90 days', '公開リンク · 90日間');
   $('#previous-page').disabled=!state.pdf||state.page<=1||state.busy;$('#next-page').disabled=!state.pdf||state.page>=state.pdf.numPages||state.busy;
@@ -72,12 +72,43 @@ async function updateOwnership(){const gen=state.generation,version=++state.owne
  box.textContent=L('서버에서 제작자를 확인하고 있어요…', 'Verifying the creator with the server…', 'サーバーで作成者を確認しています…');try{const receipt=await account.verify(state.original,p);if(gen!==state.generation||version!==state.ownershipVersion||account.user?.uid!==receipt.ownerUID)return;state.verifiedUID=receipt.ownerUID;state.locked=false;box.textContent=state.geometryLocked?L('제작자 확인 완료 · 악보에 이미 그려진 버튼 위치와 필기는 보존합니다. 음원 구간·시간 표시는 수정할 수 있어요.', 'Creator verified. Baked buttons and markup stay in place; audio ranges and time markers can be revised.', '作成者を確認しました。焼き込まれたボタンと書き込みはそのまま残り、音源の範囲とタイムマーカーは編集できます。'):L('제작자 확인 완료 · 수정본은 새 파일로 등록하며 받은 원본은 유지됩니다.', 'Creator verified. Revisions are registered as a new file; your original is preserved.', '作成者を確認しました。編集内容は新しいファイルとして登録され、オリジナルは保持されます。');}catch(e){if(gen===state.generation&&version===state.ownershipVersion)box.textContent=account.errorMessage(e);}if(gen===state.generation&&version===state.ownershipVersion){controls();renderControls();}}
 account.onChange(()=>{if(state.publication){if(drag?.moved)state.dirty=true;drag=null;state.placement=null;state.locked=true;state.verifiedUID=null;controls();renderControls();updateOwnership();}});
 $('#welcome-pick').onclick=$('#choose-pdf').onclick=()=>$('#pdf-input').click();$('#pdf-input').onchange=e=>open(e.target.files[0]);
-mountSetlist({safeTitle,L,openFile:async file=>{
-  if(state.busy)throw new Error(L('잠시 후 다시 시도해 주세요.','Try again shortly.','少し待ってからもう一度お試しください。'));
-  state.busy=true;controls();
-  try{await loadDocument(file);status(L('콘티가 준비됐어요. 공유용 MPDF를 저장하거나 링크를 만들어 보내세요.','Your setlist is ready. Save a sharing MPDF or create a link.','セットリストができました。共有用MPDFを保存するか、リンクを作成してください。'));}
-  finally{state.busy=false;controls();}
-}});
+mountSetlist({safeTitle,L,
+  currentScore:()=>state.pdf ? {pdf:state.pdf,name:state.originalName,buttons:state.manifest.buttons,editable:canEdit()&&!state.geometryLocked} : null,
+  openFile:async file=>{
+    if(state.busy)throw new Error(L('잠시 후 다시 시도해 주세요.','Try again shortly.','少し待ってください。'));
+    state.busy=true;controls();
+    try{await loadDocument(file);}finally{state.busy=false;controls();}
+  },
+  applyScore:async(doc,title,songs,positions)=>{
+    if(!canEdit()||state.geometryLocked||state.pdf!==doc)throw new Error(L('편집할 악보를 다시 열어 주세요.','Reopen your editable score.','編集用の楽譜を開き直してください。'));
+    const m=state.manifest;
+    if(m.tracks.length+songs.length>60)throw new Error(L('음원은 최대 60개까지 연결할 수 있어요.','Up to 60 tracks per score.','音源は60曲までです。'));
+    const before=clone(m), priorTitle=$('#title').value, priorTrack=state.track, priorDirty=state.dirty;
+    state.busy=true;controls();
+    try{
+      m.version=m.mpdf;
+      if(title){m.title=title;$('#title').value=title;}
+      m.cues??=[];
+      const hadTracks=m.tracks.length>0;
+      for(const [i,song] of songs.entries()){
+        const id='t_'+crypto.randomUUID();
+        m.tracks.push({id,title:song.name,src:'youtube:'+song.video});
+        if(i===0)state.track=id;
+        for(const position of positions[i]){
+          m.buttons.push({id:crypto.randomUUID(),track:id,...position});
+          if(!m.cues.some(c=>c.page===position.page))m.cues.push({page:position.page,track:id,at:0});
+        }
+      }
+      m.cues.sort((a,b)=>a.page-b.page);
+      if(!hadTracks){m.options.followPage=true;$('#follow-page').checked=true;}
+      const bytes=await assemble('shared');
+      download(bytes,safeTitle($('#title').value)+'.pdf');
+      state.dirty=true;
+      status(L('제목 옆에 로고를 연결해 공유용 MPDF를 만들었습니다.','Your sharing MPDF is ready with play logos beside the titles.','曲名の横にロゴを付けた共有用MPDFを作成しました。'));
+    }catch(e){state.manifest=before;state.track=priorTrack;state.dirty=priorDirty;$('#title').value=priorTitle;$('#follow-page').checked=before.options?.followPage!==false;throw e;}
+    finally{state.busy=false;renderAll();}
+  }
+});
 $('#load-sample').onclick=()=>loadURL('/samples/practice-original.pdf');
 async function loadURL(url){try{const u=new URL(url,location.href);if(!['http:','https:'].includes(u.protocol))throw new Error('Unsupported URL');const response=await fetch(u);if(!response.ok)throw new Error(L('파일을 불러오지 못했습니다.', 'Could not load the file.', 'ファイルを読み込めませんでした。'));await open(new File([await response.blob()],decodeURIComponent(u.pathname.split('/').pop()||'score.pdf'),{type:'application/pdf'}));}catch(e){fail(e);}}
 for(const b of document.querySelectorAll('[data-source]'))b.onclick=()=>{for(const x of document.querySelectorAll('[data-source]'))x.classList.toggle('active',x===b);$('#audio-source').hidden=b.dataset.source!=='file';$('#youtube-source').hidden=b.dataset.source!=='youtube';};

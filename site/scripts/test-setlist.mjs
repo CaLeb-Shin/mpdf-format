@@ -2,6 +2,11 @@ import assert from 'node:assert/strict'
 import {parseSetlist} from '../setlist.js'
 import {onRequestGet} from '../functions/api/references.js'
 
+import {locateTitles} from '../score-titles.js'
+const heading = (text,top=.09) => ({text,top,bottom:top+.03,left:.3,right:.65,priority:1})
+const printed = [[heading('첫 곡')],[heading('주는 나를 기르시는 목자')],[heading('주는 나름 기르시는 목자')],[heading('마지막 곡')]]
+assert.deepEqual(locateTitles([{name:'첫 곡'},{name:'주는 나를 기르시는 목자요'},{name:'마지막 곡'}],printed).map(group=>group.map(m=>m.page)), [[1],[2,3],[4]])
+assert.deepEqual(locateTitles([{name:'없는 제목'}],printed),[[]])
 const text = `260101_합주 연습
 
 1.캐논(전주만 연습)
@@ -21,7 +26,10 @@ assert.equal(parsed.songs[4].name, '작은 별 + 환희의 송가')
 assert.equal(parseSetlist('Canon\nArirang').songs.length, 2)
 assert.equal(parseSetlist('Rehearsal\n\nCanon\nArirang').title, 'Rehearsal')
 assert.equal(parseSetlist('1) Canon https://www.youtube.com/watch?v=AAAAAAAAAAA').songs[0].video, 'AAAAAAAAAAA')
-assert.throws(() => parseSetlist('https://youtu.be/AAAAAAAAAAA'), /ambiguous-link/)
+assert.equal(parseSetlist('https://youtu.be/AAAAAAAAAAA').songs[0].fromLink,true)
+assert.equal(parseSetlist('1. Canon\nhttps://youtu.be/AAAAAAAAAAA').songs[0].name,'Canon')
+assert.equal(parseSetlist('Canon\nhttps://youtu.be/AAAAAAAAAAA').songs[0].name,'Canon')
+assert.deepEqual(parseSetlist('Rehearsal\n1. https://youtu.be/AAAAAAAAAAA\n2. https://youtu.be/BBBBBBBBBBB').songs.map(s=>s.video),['AAAAAAAAAAA','BBBBBBBBBBB'])
 assert.throws(() => parseSetlist(Array(61).fill('Arirang').join('\n')), /size/)
 const request = new Request('https://example.org/api/references?q=Arirang')
 assert.equal((await onRequestGet({request, env:{}})).status, 503)
