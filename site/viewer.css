@@ -242,12 +242,3 @@
 #send-ink::backdrop { background: #21152a66; }
 
 #ink-tools { flex-wrap: wrap; }
-#ink-tools #ink-link { color: var(--accent); font-weight: 600; }
-#score-link-dialog { margin: auto; width: min(430px,calc(100vw - 24px)); border: 1px solid var(--line); border-radius: 16px; padding: 20px; color: var(--ink); }
-#score-link-dialog::backdrop { background: #21152a66; }
-#score-link-dialog h2 { margin: 0; font-size: 20px; }
-#score-link-dialog p { margin: 10px 0; color: var(--muted); font-size: 14px; }
-#score-link-url { width: 100%; min-height: 44px; font-size: 16px; }
-.score-link-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
-.score-link-actions .btn { min-height: 44px; }
-#score-link-feedback:not(:empty) { margin-top: 10px; font-size: 13px; }

@@ -1,4 +1,3 @@
-import {uploadSharingCopy} from './share-link.js'
 import {mountInk,annotatedPDF} from './reader-ink.js'
 import {scoreFile,shareableScore} from './seetogether-file.js'
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
@@ -22,11 +21,11 @@ const state = {
   seeking: false, scrubPosition: null, lastPersist: 0, remoteAbort: null, pageFollowSuppressed: false,
 }
 const ink=mountInk({
-  pages, button:$('#pen'), tools:$('#ink-tools'), undo:$('#ink-undo'), eraser:$('#ink-eraser'), download:$('#save-ink'), share:$('#ink-link'), say, notice,
+  pages, button:$('#pen'), tools:$('#ink-tools'), undo:$('#ink-undo'), eraser:$('#ink-eraser'), download:$('#save-ink'), say, notice,
   onDraw:()=>{ cancelPlacement(); if(!player.classList.contains('hidden'))setOpen(false) }
 })
 let preparedInkFile=null
-let sourceLink=null, cachedLink=null, linkRequest=null
+let sourceLink=null
 const skipOptions = [3, 5, 10], skipStorageKey = 'mpdf:seekSeconds'
 try {
   const saved = Number(localStorage.getItem(skipStorageKey))
@@ -92,11 +91,8 @@ async function fetchFile(url, filename = 'MPDF.mpdf', sharedID = null) {
 }
 async function resetDocument() {
   ink.reset()
-  linkRequest?.abort()
-  linkRequest=null; sourceLink=null; cachedLink=null
-  if ($('#score-link-dialog').open) $('#score-link-dialog').close()
+  sourceLink=null
   $('#sharebtn').classList.add('hidden')
-  $('#ink-link').hidden=true
   if ($('#send-ink').open) $('#send-ink').close()
   preparedInkFile=null
   persistPractice(); pause(); state.selectionGeneration++
@@ -187,11 +183,9 @@ async function openFile(file, fetched = false, sharedID = null) {
     }
     await ink.open(state.hash)
     if (generation!==state.openGeneration) return
-    if (state.manifest) {
-      sourceLink=sharedID ? new URL('/v/'+sharedID,location.origin).href : null
+    if (sharedID && state.manifest) {
+      sourceLink=new URL('/v/'+sharedID,location.origin).href
       $('#sharebtn').classList.remove('hidden')
-      $('#sharebtn').disabled=false
-      $('#ink-link').hidden=false
     }
     if (params.get('tool')==='pen') ink.start()
     renderList(); renderMarkers(); renderOverlays()
@@ -260,59 +254,14 @@ async function exportInk(forApp=false) {
     notice(say('필기본을 만들지 못했어요. 연결을 확인하고 다시 저장해 주세요.','Could not create the annotated copy. Check your connection and try again.','書き込み版を作成できませんでした。接続を確認して再度保存してください。'),true)
   }
 }
-function showScoreLink(url) {
-  $('#score-link-url').value=url
-  $('#score-link-feedback').textContent=''
-  $('#score-link-share').hidden=!navigator.share
-  $('#score-link-dialog').showModal()
-}
-
-async function shareScoreLink() {
-  await ink.export(async (strokes,current)=>{
-    const signature=strokes.map(stroke=>stroke.id).join(',')
-    if (!strokes.length && sourceLink) { showScoreLink(sourceLink); return }
-    if (cachedLink?.signature===signature && Date.parse(cachedLink.expiresAt)>Date.now()) {
-      showScoreLink(cachedLink.url); return
-    }
-    if (state.manifest.tracks.some(track=>track.src.startsWith('file:'))) {
-      notice(say('파일 음원이 포함되어 있어요. 필기본을 저장해 파일로 보내 주세요.','This score has embedded audio. Save and send the annotated file.','音源を埋め込んだ楽譜です。書き込み版を保存してファイルで送ってください。'),true)
-      return
-    }
-    const request=new AbortController()
-    linkRequest=request
-    $('#sharebtn').disabled=true
-    try {
-      notice(say('필기와 레퍼런스를 담은 공유본을 만드는 중…','Preparing the score with its notes and references…','書き込みと参考音源をまとめています…'))
-      const bytes=await annotatedPDF(state.bytes,state.pdf,strokes,state.manifest,state.files)
-      if (!current())return
-      notice(say('악보를 올리고 공유 링크를 만드는 중…','Uploading the score and creating its link…','楽譜をアップロードしてリンクを作成中…'))
-      const {url,expiresAt}=await uploadSharingCopy(bytes,say,request.signal)
-      if (!current())return
-      cachedLink={signature,url,expiresAt}
-      notice()
-      showScoreLink(url)
-    } catch(error) {
-      if(current() && !request.signal.aborted)notice(error instanceof TypeError ? say('연결을 확인하고 링크 공유를 다시 눌러 주세요.','Check your connection and try sharing again.','接続を確認してもう一度共有してください。') : error.message,true)
-    } finally {
-      if(linkRequest===request){linkRequest=null;$('#sharebtn').disabled=false}
-    }
-  },{allowEmpty:true})
-}
-$('#ink-link').onclick=$('#sharebtn').onclick=shareScoreLink
-$('#score-link-close').onclick=()=>$('#score-link-dialog').close()
-$('#score-link-copy').onclick=async()=>{
-  const field=$('#score-link-url')
+$('#sharebtn').onclick=async () => {
+  if (!sourceLink) return
   try {
-    await navigator.clipboard.writeText(field.value)
-    $('#score-link-feedback').textContent=say('링크를 복사했어요. 채팅방에 붙여 넣으세요.','Link copied. Paste it into your chat.','リンクをコピーしました。チャットに貼り付けてください。')
+    await navigator.clipboard.writeText(sourceLink)
+    notice(say('원래 악보 링크를 복사했어요.', 'Original score link copied.', '元の楽譜リンクをコピーしました。'))
   } catch {
-    field.focus();field.select()
-    $('#score-link-feedback').textContent=say('선택한 링크를 복사해 주세요.','Copy the selected link.','選択したリンクをコピーしてください。')
+    notice(say('주소창의 악보 링크를 복사해 주세요.', 'Copy the score link from the address bar.', 'アドレスバーの楽譜リンクをコピーしてください。'))
   }
-}
-$('#score-link-share').onclick=async()=>{
-  try { await navigator.share({title:state.manifest?.title || 'MPDF',url:$('#score-link-url').value}) }
-  catch(error){if(error.name!=='AbortError')$('#score-link-copy').click()}
 }
 $('#save-ink').onclick=()=>exportInk()
 $('#share-ink-now').onclick=async()=>{
