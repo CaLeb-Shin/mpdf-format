@@ -1,50 +1,56 @@
-// Each illustration runs once on selection. Automatic playback advances only while the guide is on screen.
+// The progress line is the scene clock, so pausing it also pauses the next cut.
 export function mountScoreTour(tour) {
-  if (!tour) return
+  if (!tour || !tour.animate) return
   const scenes = [...tour.querySelectorAll('.tour-scene')]
   const navigation = tour.querySelector('.tour-steps')
   const steps = [...navigation.querySelectorAll('button')]
   const toggle = tour.querySelector('.tour-toggle')
   const labels = toggle.querySelectorAll('[data-tour-label]')
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
-  const duration = 8500
+  const meter = document.createElement('span')
+  meter.className = 'tour-meter'
   let mode = reducedMotion.matches ? 'manual' : 'auto'
   let visible = false
   let index = 0
-  let timer = null
-  let started = 0
-  let remaining = duration
+  let clock = null
 
-  function stopClock() {
-    if (timer === null) return
-    clearTimeout(timer)
-    timer = null
-    remaining = Math.max(0, remaining - (performance.now() - started))
-  }
   function update() {
-    stopClock()
     const offscreen = !visible || document.hidden
     tour.toggleAttribute('data-idle', offscreen || mode === 'paused')
-    const label = mode === 'auto' ? 'pause' : mode === 'ended' ? 'replay' : 'play'
-    for (const item of labels) item.hidden = item.dataset.tourLabel !== label
-    if (offscreen || mode !== 'auto') return
-    started = performance.now()
-    timer = setTimeout(() => {
-      timer = null
-      if (index + 1 < scenes.length) show(index + 1)
-      else { mode = 'ended'; update() }
-    }, remaining)
+    meter.hidden = mode === 'manual' || reducedMotion.matches
+    for (const item of labels) item.hidden = item.dataset.tourLabel !== (mode === 'auto' ? 'pause' : 'play')
+    if (offscreen || mode !== 'auto') {
+      clock?.pause()
+      return
+    }
+    if (clock) {
+      clock.play()
+      return
+    }
+    clock = meter.animate(
+      [{transform: 'scaleX(0)'}, {transform: 'scaleX(1)'}],
+      {duration: Number(scenes[index].dataset.duration) || 3000, fill: 'both'}
+    )
+    clock.onfinish = () => {
+      if (mode === 'auto' && visible && !document.hidden) show((index + 1) % scenes.length)
+    }
   }
+
   function show(next) {
-    stopClock()
+    if (clock) {
+      clock.onfinish = null
+      clock.cancel()
+      clock = null
+    }
     index = next
-    remaining = duration
     scenes.forEach((scene, i) => {
       scene.toggleAttribute('data-active', i === index)
       scene.inert = i !== index
       if (i === index) steps[i].setAttribute('aria-current', 'step')
       else steps[i].removeAttribute('aria-current')
     })
+    const scene = scenes[index]
+    scene.querySelector('.tour-art').append(meter)
     update()
   }
 
@@ -53,7 +59,6 @@ export function mountScoreTour(tour) {
     show(i)
   }))
   toggle.addEventListener('click', () => {
-    if (mode === 'ended') { mode = 'auto'; show(0); return }
     mode = mode === 'auto' ? 'paused' : 'auto'
     update()
   })
@@ -67,9 +72,9 @@ export function mountScoreTour(tour) {
   show(0)
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting
+      visible = entry.intersectionRatio >= 0.35
       update()
-    }, {threshold: 0.2})
+    }, {threshold: 0.35})
     observer.observe(tour.querySelector('.tour-scenes'))
   } else {
     visible = true

@@ -34,14 +34,13 @@
     <button type="button" class="tour-toggle" hidden>
       <span data-tour-label="pause"><i class="tour-pause-bars" aria-hidden="true"></i> <span data-l="ko">일시정지</span><span data-l="en">Pause</span><span data-l="ja">一時停止</span></span>
       <span data-tour-label="play" hidden><i class="tour-triangle" aria-hidden="true"></i> <span data-l="ko">자동 재생</span><span data-l="en">Play</span><span data-l="ja">自動再生</span></span>
-      <span data-tour-label="replay" hidden><i aria-hidden="true">↺</i> <span data-l="ko">다시 보기</span><span data-l="en">Replay</span><span data-l="ja">もう一度見る</span></span>
     </button>
   </div>
   <div class="tour-scenes">
-    <article class="tour-scene" id="tour-step-1" aria-labelledby="tour-title-1">
+    <article class="tour-scene" id="tour-step-1" data-duration="2500" aria-labelledby="tour-title-1">
       <div class="tour-caption">
         <h3 id="tour-title-1"><span data-l="ko">콘티를 만들어요</span><span data-l="en">Write your setlist</span><span data-l="ja">曲順を決める</span></h3>
-        <p><span data-l="ko">연습할 곡을 순서대로 적으세요. 한 줄에 한 곡씩 쓰면 그 순서가 MPDF에 그대로 담겨요.</span><span data-l="en">Write one song title per line, in the order you want to rehearse. Your MPDF will follow that order.</span><span data-l="ja">練習する曲名を、演奏する順に1行ずつ書きます。この曲順がそのままMPDFに入ります。</span></p>
+        <p><span data-l="ko">연습할 순서대로 곡명을 한 줄씩 적으세요.</span><span data-l="en">Write one song per line in rehearsal order.</span><span data-l="ja">練習する順に、曲名を1行ずつ書きます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-note tour-paper">
@@ -52,10 +51,10 @@
         </div>
       </div>
     </article>
-    <article class="tour-scene" id="tour-step-2" aria-labelledby="tour-title-2">
+    <article class="tour-scene" id="tour-step-2" data-duration="3000" aria-labelledby="tour-title-2">
       <div class="tour-caption">
         <h3 id="tour-title-2"><span data-l="ko">링크는 있으면 넣어요</span><span data-l="en">Add links if you have them</span><span data-l="ja">リンクはあれば追加</span></h3>
-        <p><span data-l="ko">원하는 버전이 있다면 곡명 아래에 유튜브 링크를 붙이세요. 링크를 미리 찾지 않아도 돼요. 제작기가 곡명으로 찾은 후보를 들어 보고 고를 수 있어요.</span><span data-l="en">Paste a YouTube link below the song if you have a version in mind. You can also skip the search and choose from the recordings the maker finds by title.</span><span data-l="ja">使いたい動画があれば、曲名の下にYouTubeリンクを貼ります。事前に探さなくても、作成画面で曲名から見つかった候補を試聴して選べます。</span></p>
+        <p><span data-l="ko">유튜브 링크를 붙이세요. 곡명만 넣어도 추천 영상에서 고를 수 있어요.</span><span data-l="en">Paste a YouTube link, or pick a recording the maker finds by song title.</span><span data-l="ja">YouTubeリンクを貼るか、曲名から見つかった候補を選びます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-search tour-paper">
@@ -65,10 +64,10 @@
         </div>
       </div>
     </article>
-    <article class="tour-scene" id="tour-step-3" aria-labelledby="tour-title-3">
+    <article class="tour-scene" id="tour-step-3" data-duration="2800" aria-labelledby="tour-title-3">
       <div class="tour-caption">
         <h3 id="tour-title-3"><span data-l="ko">여기서 MPDF를 만들어요</span><span data-l="en">Make the MPDF here</span><span data-l="ja">ここでMPDFを作る</span></h3>
-        <p><span data-l="ko">이 사이트에 콘티를 붙여 넣고, 악보 PDF가 있으면 함께 첨부하세요. 곡별 레퍼런스를 확인한 뒤 ‘MPDF 만들기’를 누르면 악보와 음악이 연결돼요.</span><span data-l="en">Paste the setlist here and attach your score PDF if you have one. Check the recordings and choose Make MPDF to connect them to your score.</span><span data-l="ja">このサイトに曲順を貼り付け、楽譜PDFがあれば添付します。曲ごとの参考動画を確認して「MPDFを作成」を押すと、楽譜と音楽がつながります。</span></p>
+        <p><span data-l="ko">콘티를 붙여 넣고 악보 PDF가 있으면 첨부하세요. ‘MPDF 만들기’를 누르면 완성!</span><span data-l="en">Paste your setlist, add a score PDF if you have one, then choose Make MPDF.</span><span data-l="ja">曲順を貼り、楽譜PDFがあれば添付。「MPDFを作成」を押せば完成です。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-studio tour-paper">
@@ -78,10 +77,10 @@
         </div>
       </div>
     </article>
-    <article class="tour-scene" id="tour-step-4" aria-labelledby="tour-title-4">
+    <article class="tour-scene" id="tour-step-4" data-duration="2400" aria-labelledby="tour-title-4">
       <div class="tour-caption">
         <h3 id="tour-title-4"><span data-l="ko">함께 연습할 사람에게 보내요</span><span data-l="en">Share with your team</span><span data-l="ja">メンバーに送る</span></h3>
-        <p><span data-l="ko">완성한 MPDF 파일을 보내거나, ‘링크 만들기’로 주소를 복사해 공유하세요. 레퍼런스를 따로 보낼 필요 없이 악보와 함께 전달돼요.</span><span data-l="en">Send the finished MPDF file, or use Create link and send the address to your team. The recordings travel with the score.</span><span data-l="ja">完成したMPDFファイルを送るか、「リンク作成」でアドレスをコピーして共有します。参考音源も楽譜と一緒に届きます。</span></p>
+        <p><span data-l="ko">완성된 파일이나 공유 링크를 보내세요. 레퍼런스도 함께 열려요.</span><span data-l="en">Send the file or its share link. The score and recordings open together.</span><span data-l="ja">ファイルか共有リンクを送ると、楽譜と参考音源が一緒に開きます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-message tour-paper">
@@ -91,10 +90,10 @@
         </div>
       </div>
     </article>
-    <article class="tour-scene" id="tour-step-5" aria-labelledby="tour-title-5">
+    <article class="tour-scene" id="tour-step-5" data-duration="3400" aria-labelledby="tour-title-5">
       <div class="tour-caption">
         <h3 id="tour-title-5"><span data-l="ko">SEETogether에서 열어요</span><span data-l="en">Open it in SEETogether</span><span data-l="ja">SEETogetherで開く</span></h3>
-        <p><span data-l="ko">iPhone·iPad에서 받은 MPDF 파일의 공유 메뉴를 열고 SEETogether를 선택하세요. 링크로 받았다면 악보 화면의 ‘SEETogether로 열기’를 먼저 누르세요.</span><span data-l="en">On iPhone or iPad, open the MPDF file’s share menu and choose SEETogether. If you received a link, choose Open in SEETogether in the web reader first.</span><span data-l="ja">iPhone・iPadで受け取ったMPDFファイルの共有メニューからSEETogetherを選びます。リンクで受け取ったら、楽譜画面の「SEETogetherで開く」を先に押します。</span></p>
+        <p><span data-l="ko">iPhone·iPad의 파일 공유 메뉴에서 SEETogether를 선택하세요. 링크는 ‘SEETogether로 열기’를 누르세요.</span><span data-l="en">On iPhone or iPad, share the file to SEETogether. For a link, tap Open in SEETogether first.</span><span data-l="ja">iPhone・iPadでは共有メニューでSEETogetherを選びます。リンクなら先に「SEETogetherで開く」をタップ。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-device tour-open">
@@ -104,10 +103,10 @@
         </div>
       </div>
     </article>
-    <article class="tour-scene" id="tour-step-6" aria-labelledby="tour-title-6">
+    <article class="tour-scene" id="tour-step-6" data-duration="3500" aria-labelledby="tour-title-6">
       <div class="tour-caption">
         <h3 id="tour-title-6"><span data-l="ko">악보를 보며 연습해요</span><span data-l="en">Practise with the score</span><span data-l="ja">楽譜を見ながら練習</span></h3>
-        <p><span data-l="ko">곡 제목 옆 로고를 눌러 레퍼런스를 재생하세요. 다시 듣고 싶은 부분은 A와 B로 구간을 정해 반복 연습할 수 있어요.</span><span data-l="en">Tap the logo beside a song to play its reference. Set A and B around a passage to hear it again while you practise.</span><span data-l="ja">曲名の横のロゴを押して参考音源を再生します。練習したい部分の始点と終点にAとBを設定すると、繰り返し聴けます。</span></p>
+        <p><span data-l="ko">곡 옆 로고를 눌러 재생하고, 연습할 구간은 A–B로 반복하세요.</span><span data-l="en">Tap the logo beside the song to play it. Loop a passage with A–B.</span><span data-l="ja">曲名の横のロゴで再生。練習したい区間はA–Bで繰り返せます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-device tour-practice">
