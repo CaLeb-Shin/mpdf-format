@@ -1,3 +1,4 @@
+import {uploadSharingCopy} from './share-link.js';
 import {mountDragExport} from './drag-export.js';
 import {shareableScore} from './seetogether-file.js';
 import * as pdfjs from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
@@ -237,7 +238,8 @@ $('#create-link').onclick=()=>run(async()=>{status(L('공유본을 준비하고 
     original=new File([pair.original],safeTitle($('#title').value)+'.original.mpdf',{type:'application/pdf'});
     sharing=pair.sharing;
   }else sharing=await assemble('link');
-  const response=await fetch('/api/upload',{method:'POST',headers:{'content-type':'application/pdf'},body:sharing});const data=await response.json();if(!response.ok){const errors={link_disabled:L('링크 저장소를 아직 사용할 수 없어요. 공유용 MPDF로 저장해 보내 주세요.', 'Link storage is unavailable. Save and send a sharing MPDF.', 'リンクの保存先が使えません。共有用MPDFを保存して送ってください。'),embedded_audio:L('파일 음원은 링크 대신 공유용 MPDF로 보내 주세요.', 'Send embedded audio as a sharing MPDF.', '埋め込み音源は共有用MPDFとして送ってください。'),private_original:L('편집용 원본은 공개할 수 없습니다. 공유본을 저장해 주세요.', 'An editable original cannot be public. Save a sharing copy.', '編集可能なオリジナルは公開できません。共有用コピーを保存してください。'),unsupported_attachment:L('지원하지 않는 첨부가 있습니다. 파일로 공유해 주세요.', 'Unsupported attachments. Share this file directly.', '対応していない添付があります。このファイルを直接共有してください。'),too_large:L('링크 공유는 20MB까지입니다. 파일로 공유해 주세요.', 'Link sharing supports up to 20 MB.', 'リンク共有は20 MBまでです。')};throw new Error(errors[data.error]||data.error||'Link creation failed');}const localMessage=$('#link-original-hint');
+  const data=await uploadSharingCopy(sharing,L);
+  const localMessage=$('#link-original-hint');
   localMessage.hidden=true;
   if(original){
     try{await rememberOriginal(data.id,original,data.expiresAt);localMessage.hidden=false;}catch{}

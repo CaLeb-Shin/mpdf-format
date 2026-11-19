@@ -42,7 +42,7 @@ function pathFor(stroke, ratio) {
   return path
 }
 
-export function mountInk({pages, button, tools, undo, eraser, download, say, notice, onDraw}) {
+export function mountInk({pages, button, tools, undo, eraser, download, share, say, notice, onDraw}) {
   let score=null, version=0, strokes=[], active=null, drawing=false, erase=false, ready=false, exporting=false
   let history=[]
   const saveProblem = () => notice(say('이 브라우저에 필기를 저장하지 못했어요. ‘필기본 저장’으로 파일을 보관하세요.','Browser storage is unavailable. Download your annotated copy to keep it.','ブラウザに保存できません。書き込み版をダウンロードしてください。'),true)
@@ -53,6 +53,7 @@ export function mountInk({pages, button, tools, undo, eraser, download, say, not
     tools.hidden=!drawing
     undo.disabled=!history.length&&!strokes.length
     download.disabled=!strokes.length||exporting
+    share.disabled=!ready||exporting||!strokes.length
     pages.classList.toggle('inking',drawing)
     pages.classList.toggle('erasing',drawing&&erase)
   }
@@ -193,9 +194,9 @@ export function mountInk({pages, button, tools, undo, eraser, download, say, not
     },
     get hasStrokes(){return strokes.length>0},
     render, start:()=>setDrawing(true), stop:()=>setDrawing(false),
-    async export(action) {
+    async export(action, {allowEmpty=false}={}) {
       finish()
-      if(exporting||!strokes.length)return
+      if(!ready||exporting||(!allowEmpty&&!strokes.length))return
       const current=version
       exporting=true;controls()
       try{await action(strokes.slice(),()=>current===version)}

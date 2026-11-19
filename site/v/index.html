@@ -18,7 +18,7 @@
       <button id="reader-menu" type="button" class="btn ghost small" aria-controls="reader-actions" aria-expanded="false" data-ja="メニュー" data-en="Menu" data-ko="메뉴">Menu</button>
       <div class="practice-actions" id="reader-actions">
         <button class="btn ghost small" id="openfile" data-ja="ファイルを開く" data-en="Open file" data-ko="파일 열기">Open file</button>
-        <button class="btn ghost small hidden" id="sharebtn" data-ja="リンクをコピー" data-en="Copy link" data-ko="링크 복사">Copy link</button>
+        <button class="btn ghost small hidden" id="sharebtn" data-ja="リンクを共有" data-en="Share link" data-ko="링크 공유">Share link</button>
         <button class="btn ghost small hidden" id="share-file" data-ja="SEETogetherで開く" data-en="Open in SEETogether" data-ko="SEETogether로 열기">Open in SEETogether</button>
         <button class="btn primary small hidden" id="edit-score" data-ja="原本を編集" data-en="Edit original" data-ko="원본 수정">Edit original</button>
         <button class="btn ghost small hidden" id="dl" data-ja="オリジナルを保存" data-en="Save original" data-ko="원본 저장">Save original</button>
@@ -39,6 +39,7 @@
       <button id="ink-eraser" type="button" aria-pressed="false" data-en="Eraser" data-ko="지우개" data-ja="消しゴム">Eraser</button>
       <button id="ink-undo" type="button" data-en="Undo" data-ko="되돌리기" data-ja="取り消す">Undo</button>
       <button id="save-ink" type="button" data-en="Save annotated copy" data-ko="필기본 저장" data-ja="書き込み版を保存">Save annotated copy</button>
+      <button id="ink-link" type="button" hidden data-en="Share ink link" data-ko="필기 링크 공유" data-ja="書き込みリンクを共有">Share ink link</button>
     </div>
     <p class="practice-notice hidden" id="notice" role="status" aria-live="polite"></p>
     <div class="practice-pages" id="pages" tabindex="0" aria-label="Score pages">
@@ -86,6 +87,17 @@
       <p class="player-message hidden" id="player-message" role="status" aria-live="polite"></p>
     </div>
   </section>
+  <dialog id="score-link-dialog" aria-labelledby="score-link-heading">
+    <h2 id="score-link-heading" data-ko="악보 링크 공유" data-en="Share score link" data-ja="楽譜リンクを共有">Share score link</h2>
+    <p data-ko="링크를 받은 사람은 악보와 필기를 보며 곡별 레퍼런스를 들을 수 있어요. 링크는 만든 날부터 90일간 열립니다." data-en="Anyone with the link can see the score and its notes and play the references for 90 days from creation." data-ja="リンクを受け取った人は、作成から90日間、楽譜と書き込みを見ながら参考音源を再生できます。">Anyone with the link can see the score and its notes and play the references for 90 days from creation.</p>
+    <input id="score-link-url" type="url" readonly aria-labelledby="score-link-heading">
+    <div class="score-link-actions">
+      <button id="score-link-share" type="button" class="btn primary" data-ko="카톡·다른 앱에 공유" data-en="Share to an app" data-ja="アプリで共有">Share to an app</button>
+      <button id="score-link-copy" type="button" class="btn ghost" data-ko="링크 복사" data-en="Copy link" data-ja="リンクをコピー">Copy link</button>
+      <button id="score-link-close" type="button" class="btn ghost" data-ko="닫기" data-en="Close" data-ja="閉じる">Close</button>
+    </div>
+    <div id="score-link-feedback" role="status"></div>
+  </dialog>
   <dialog id="send-ink">
     <p data-en="Your annotated copy is ready." data-ko="필기한 악보를 준비했어요." data-ja="書き込み版を用意しました。">Your annotated copy is ready.</p>
     <button type="button" class="btn primary" id="share-ink-now" data-en="Choose app" data-ko="보낼 앱 선택" data-ja="アプリを選ぶ">Choose app</button>

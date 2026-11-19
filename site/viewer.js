@@ -1,3 +1,4 @@
+import {uploadSharingCopy} from './share-link.js'
 import {mountInk,annotatedPDF} from './reader-ink.js'
 import {scoreFile,shareableScore} from './seetogether-file.js'
 import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs'
@@ -21,10 +22,11 @@ const state = {
   seeking: false, scrubPosition: null, lastPersist: 0, remoteAbort: null, pageFollowSuppressed: false,
 }
 const ink=mountInk({
-  pages, button:$('#pen'), tools:$('#ink-tools'), undo:$('#ink-undo'), eraser:$('#ink-eraser'), download:$('#save-ink'), say, notice,
+  pages, button:$('#pen'), tools:$('#ink-tools'), undo:$('#ink-undo'), eraser:$('#ink-eraser'), download:$('#save-ink'), share:$('#ink-link'), say, notice,
   onDraw:()=>{ cancelPlacement(); if(!player.classList.contains('hidden'))setOpen(false) }
 })
 let preparedInkFile=null
+let sourceLink=null, cachedLink=null, linkRequest=null
 const skipOptions = [3, 5, 10], skipStorageKey = 'mpdf:seekSeconds'
 try {
   const saved = Number(localStorage.getItem(skipStorageKey))
@@ -74,7 +76,7 @@ document.addEventListener('dragover', event => { event.preventDefault(); pages.c
 document.addEventListener('dragleave', event => { if (!event.relatedTarget) pages.classList.remove('dragover') })
 document.addEventListener('drop', event => { event.preventDefault(); pages.classList.remove('dragover'); const file = event.dataTransfer.files[0]; if (file) openFile(file) })
 
-async function fetchFile(url, filename = 'MPDF.mpdf') {
+async function fetchFile(url, filename = 'MPDF.mpdf', sharedID = null) {
   state.remoteAbort?.abort()
   const controller = new AbortController(); state.remoteAbort = controller
   notice(say('파일을 여는 중…', 'Opening file…', 'ファイルを開いています…'))
@@ -83,13 +85,18 @@ async function fetchFile(url, filename = 'MPDF.mpdf') {
     if (!response.ok) throw new Error(response.status === 404 ? 'expired' : 'fetch')
     if (Number(response.headers.get('content-length')) > 512 * 1024 * 1024) throw new Error('large')
     const blob = await response.blob()
-    if (!controller.signal.aborted) await openFile(new File([blob], filename), true)
+    if (!controller.signal.aborted) await openFile(new File([blob], filename), true, sharedID)
   } catch (error) {
     if (error.name !== 'AbortError') notice(error.message === 'expired' ? say('없는 링크이거나 보관 기간이 지났습니다.', 'This link does not exist or has expired.', 'このリンクは存在しないか、期限が切れています。') : say('파일을 열지 못했습니다. 파일을 내려받아 직접 열어 주세요.', 'The file could not be opened. Download it and open the local file.', 'ファイルを開けませんでした。ダウンロードしてから、そのファイルを開いてください。'), true)
   }
 }
 async function resetDocument() {
   ink.reset()
+  linkRequest?.abort()
+  linkRequest=null; sourceLink=null; cachedLink=null
+  if ($('#score-link-dialog').open) $('#score-link-dialog').close()
+  $('#sharebtn').classList.add('hidden')
+  $('#ink-link').hidden=true
   if ($('#send-ink').open) $('#send-ink').close()
   preparedInkFile=null
   persistPractice(); pause(); state.selectionGeneration++
@@ -112,7 +119,7 @@ async function resetDocument() {
   if (previous) await previous.destroy().catch(() => {})
   else if (previousLoading) await previousLoading.destroy().catch(() => {})
 }
-async function openFile(file, fetched = false) {
+async function openFile(file, fetched = false, sharedID = null) {
   if (!fetched) state.remoteAbort?.abort()
   const generation = ++state.openGeneration
   await resetDocument()
@@ -143,8 +150,8 @@ async function openFile(file, fetched = false) {
     if (state.manifest) {
       const original = !state.manifest.web?.sharedReadOnly && !state.publication?.sharedReadOnly
       if (original) state.editableFile=file
-      else if (fetched && idMatch) {
-        const localOriginal=await originalForLink(idMatch[1]).catch(()=>null)
+      else if (sharedID) {
+        const localOriginal=await originalForLink(sharedID).catch(()=>null)
         if (generation !== state.openGeneration) return
         state.editableFile=localOriginal
       }
@@ -180,6 +187,12 @@ async function openFile(file, fetched = false) {
     }
     await ink.open(state.hash)
     if (generation!==state.openGeneration) return
+    if (state.manifest) {
+      sourceLink=sharedID ? new URL('/v/'+sharedID,location.origin).href : null
+      $('#sharebtn').classList.remove('hidden')
+      $('#sharebtn').disabled=false
+      $('#ink-link').hidden=false
+    }
     if (params.get('tool')==='pen') ink.start()
     renderList(); renderMarkers(); renderOverlays()
     if (state.choices.length) {
@@ -246,6 +259,60 @@ async function exportInk(forApp=false) {
   } catch {
     notice(say('필기본을 만들지 못했어요. 연결을 확인하고 다시 저장해 주세요.','Could not create the annotated copy. Check your connection and try again.','書き込み版を作成できませんでした。接続を確認して再度保存してください。'),true)
   }
+}
+function showScoreLink(url) {
+  $('#score-link-url').value=url
+  $('#score-link-feedback').textContent=''
+  $('#score-link-share').hidden=!navigator.share
+  $('#score-link-dialog').showModal()
+}
+
+async function shareScoreLink() {
+  await ink.export(async (strokes,current)=>{
+    const signature=strokes.map(stroke=>stroke.id).join(',')
+    if (!strokes.length && sourceLink) { showScoreLink(sourceLink); return }
+    if (cachedLink?.signature===signature && Date.parse(cachedLink.expiresAt)>Date.now()) {
+      showScoreLink(cachedLink.url); return
+    }
+    if (state.manifest.tracks.some(track=>track.src.startsWith('file:'))) {
+      notice(say('파일 음원이 포함되어 있어요. 필기본을 저장해 파일로 보내 주세요.','This score has embedded audio. Save and send the annotated file.','音源を埋め込んだ楽譜です。書き込み版を保存してファイルで送ってください。'),true)
+      return
+    }
+    const request=new AbortController()
+    linkRequest=request
+    $('#sharebtn').disabled=true
+    try {
+      notice(say('필기와 레퍼런스를 담은 공유본을 만드는 중…','Preparing the score with its notes and references…','書き込みと参考音源をまとめています…'))
+      const bytes=await annotatedPDF(state.bytes,state.pdf,strokes,state.manifest,state.files)
+      if (!current())return
+      notice(say('악보를 올리고 공유 링크를 만드는 중…','Uploading the score and creating its link…','楽譜をアップロードしてリンクを作成中…'))
+      const {url,expiresAt}=await uploadSharingCopy(bytes,say,request.signal)
+      if (!current())return
+      cachedLink={signature,url,expiresAt}
+      notice()
+      showScoreLink(url)
+    } catch(error) {
+      if(current() && !request.signal.aborted)notice(error instanceof TypeError ? say('연결을 확인하고 링크 공유를 다시 눌러 주세요.','Check your connection and try sharing again.','接続を確認してもう一度共有してください。') : error.message,true)
+    } finally {
+      if(linkRequest===request){linkRequest=null;$('#sharebtn').disabled=false}
+    }
+  },{allowEmpty:true})
+}
+$('#ink-link').onclick=$('#sharebtn').onclick=shareScoreLink
+$('#score-link-close').onclick=()=>$('#score-link-dialog').close()
+$('#score-link-copy').onclick=async()=>{
+  const field=$('#score-link-url')
+  try {
+    await navigator.clipboard.writeText(field.value)
+    $('#score-link-feedback').textContent=say('링크를 복사했어요. 채팅방에 붙여 넣으세요.','Link copied. Paste it into your chat.','リンクをコピーしました。チャットに貼り付けてください。')
+  } catch {
+    field.focus();field.select()
+    $('#score-link-feedback').textContent=say('선택한 링크를 복사해 주세요.','Copy the selected link.','選択したリンクをコピーしてください。')
+  }
+}
+$('#score-link-share').onclick=async()=>{
+  try { await navigator.share({title:state.manifest?.title || 'MPDF',url:$('#score-link-url').value}) }
+  catch(error){if(error.name!=='AbortError')$('#score-link-copy').click()}
 }
 $('#save-ink').onclick=()=>exportInk()
 $('#share-ink-now').onclick=async()=>{
@@ -829,9 +896,7 @@ document.addEventListener('visibilitychange', () => {
 const idMatch = location.pathname.match(/\/v\/([A-Za-z0-9]{8,16})\/?$/)
 const params = new URLSearchParams(location.search)
 if (idMatch) {
-  $('#sharebtn').classList.remove('hidden')
-  $('#sharebtn').onclick = async () => { try { await navigator.clipboard.writeText(location.href); notice(say('링크를 복사했습니다.', 'Link copied.', 'リンクをコピーしました。')) } catch { notice(say('주소창의 링크를 복사해 주세요.', 'Copy the link from your address bar.', 'アドレスバーからリンクをコピーしてください。')) } }
-  fetchFile(new URL(`f/${idMatch[1]}`, ROOT).href)
+  fetchFile(new URL('f/'+idMatch[1], ROOT).href, 'MPDF.mpdf', idMatch[1])
 } else if (params.has('session')) {
   loadFile(params.get('session')).then(file => file ? openFile(file) : notice(say('미리보기 보관 시간이 지났습니다. 제작 화면에서 다시 미리보기를 열어 주세요.', 'This preview has expired. Open a new preview from the maker.', 'このプレビューは期限切れです。作成ツールから新しいプレビューを開いてください。'), true)).catch(() => notice(say('미리보기를 열지 못했습니다. 파일을 저장해 직접 열어 주세요.', 'The preview could not open. Save the file and open it directly.', 'プレビューを開けませんでした。ファイルを保存して直接開いてください。'), true))
 } else if (params.has('file')) {
