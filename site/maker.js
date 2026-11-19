@@ -224,7 +224,7 @@ if(shareableScore(new Uint8Array(), 'setlist')){
   });
   $('#send-file').onclick=async()=>{
     try{await navigator.share({files:[sharingFile]});dialog.close();}
-    catch(e){if(e.name!=='AbortError'){dialog.close();status(L('공유용 MPDF를 저장한 뒤 카톡에 첨부해 주세요.','Save a sharing MPDF and attach it to your chat.','共有用MPDFを保存してチャットに添付してください。'),true);}}
+    catch(e){if(e.name!=='AbortError'){dialog.close();status(L('공유용 MPDF를 저장한 뒤 대화방에 첨부해 주세요.','Save a sharing MPDF and attach it to your chat.','共有用MPDFを保存してチャットに添付してください。'),true);}}
   };
   $('#close-send').onclick=()=>dialog.close();
   dialog.onclose=()=>{sharingFile=null;};

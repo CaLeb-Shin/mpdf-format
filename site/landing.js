@@ -1,7 +1,9 @@
+import {mountScoreTour} from './score-tour.js'
 import {storeSetlist} from './file-session.js'
 import {isScorePDF, mountScoreDrop} from './score-drop.js'
 import {mountLangButton,getLang} from './i18n.js';
 mountLangButton();
+mountScoreTour(document.querySelector('.score-tour'));
 const file=new URLSearchParams(location.search).get('file');
 if(file){const url=new URL(file,location.href);location.replace('/make/?file='+encodeURIComponent(url.href));}
 if(location.hash==='#tool')location.replace('/make/');
