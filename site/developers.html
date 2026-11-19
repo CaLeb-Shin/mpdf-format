@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Developer guide · MPDF</title>
-  <meta name="description" content="MPDF base format, optional extensions, original-file preservation, SEETO creator verification and web integration.">
+  <meta name="description" content="MPDF base format, optional extensions, original-file preservation, SEETogether creator verification and web integration.">
   <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/developers">
   <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/developers">
   <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/developers">
   <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/developers">
   <link rel="canonical" href="https://mpdf.pages.dev/developers">
   <meta property="og:title" content="Developer guide · MPDF">
-  <meta property="og:description" content="MPDF base format, optional extensions, original-file preservation, SEETO creator verification and web integration.">
+  <meta property="og:description" content="MPDF base format, optional extensions, original-file preservation, SEETogether creator verification and web integration.">
   <meta property="og:image" content="https://mpdf.pages.dev/og.png">
-  <link rel="icon" href="/favicon.svg">
+  <link rel="icon" href="/assets/seetogether-brand.png">
   <link rel="stylesheet" href="/site.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
 </head>
-<body>
-<header class="wrap nav"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">♪</span>MPDF</a><nav aria-label="Main navigation"><a href="/make/?lang=en">Make</a><a href="/v/?lang=en">Open</a><a data-route="guide" href="/guide">Guide</a><a class="keep" href="/ko/developers" hreflang="ko">한국어</a><a class="keep" href="/ja/developers" hreflang="ja" lang="ja">日本語</a></nav></header>
+<body class="reading-page">
+<header class="wrap nav"><a class="brand" href="/"><b class="product-name">MPDF</b> <small class="app-name"><img src="/assets/seetogether-brand.png" width="19" height="19" alt="">SEETogether</small></a><nav aria-label="Main navigation"><a href="/make/?lang=en">Make</a><a href="/v/?lang=en">Open</a><a data-route="guide" href="/guide">Guide</a><a class="keep" href="/ko/developers" hreflang="ko">한국어</a><a class="keep" href="/ja/developers" hreflang="ja" lang="ja">日本語</a></nav></header>
 <main class="wrap doc">
 <div class="eyebrow">FOR DEVELOPERS</div><h1>Add MPDF to your app</h1>
   <p>MPDF carries music information in standard PDF attachments. Implement the base format separately from optional extensions to add playback while retaining your existing PDF rendering.</p>
@@ -38,7 +38,7 @@
   <table><thead><tr><th>Data</th><th>Purpose</th></tr></thead><tbody>
     <tr><td><code>buttons</code></td><td>On-page playback button positions and track references</td></tr>
     <tr><td><code>timeMarkers</code></td><td>Page positions and relative times within tracks</td></tr>
-    <tr><td><code>seetogether-mpdf.json</code></td><td>SEETO production metadata, playback choices, creator claims, and sharing state</td></tr>
+    <tr><td><code>seetogether-mpdf.json</code></td><td>SEETogether production metadata, playback choices, creator claims, and sharing state</td></tr>
     <tr><td><code>seetogether-score.json</code></td><td>Included Copy Note score and chord playback data</td></tr>
     <tr><td>Editable source and markup attachments</td><td>Creator revision material, excluded from public sharing copies</td></tr>
   </tbody></table>
@@ -71,9 +71,9 @@ w.add_attachment(&quot;backing.m4a&quot;, audio_bytes)
 w.write(&quot;score-with-music.pdf&quot;)</code></pre></div>
   <p>This is a minimal example for producing a new file from a plain PDF. Revising existing MPDFs also requires handling name trees, unknown attachments, and extensions. The repository's <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/js/mpdf.js" rel="noopener">JavaScript</a> and <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/python/mpdf.py" rel="noopener">Python</a> base references are distinct from the website's compatibility layer in <code>site/mpdf-browser.js</code>.</p>
   <h2>A creator claim is not proof of ownership</h2>
-  <p>SEETO creator revisions use a non-anonymous account and SHA-256 of the entire file. The immutable registry's file hash, publication ID, and owner UID must all match. Embedded <code>creatorUID</code> alone must never unlock editing. <code>sharedReadOnly: true</code> remains read-only for the creator as well. Register the finalized file before offering its registered creator original.</p>
+  <p>SEETogether creator revisions use a non-anonymous account and SHA-256 of the entire file. The immutable registry's file hash, publication ID, and owner UID must all match. Embedded <code>creatorUID</code> alone must never unlock editing. <code>sharedReadOnly: true</code> remains read-only for the creator as well. Register the finalized file before offering its registered creator original.</p>
   <h2>Public links are a separate service</h2>
-  <p>This website's Cloudflare Pages Functions store sharing PDFs. They reject embedded audio, editable sources, and unsupported attachments, and stop serving links 90 days after creation. This hosting policy and SEETO account integration are not mandatory parts of the MPDF base format.</p>
+  <p>This website's Cloudflare Pages Functions store sharing PDFs. They reject embedded audio, editable sources, and unsupported attachments, and stop serving links 90 days after creation. This hosting policy and SEETogether account integration are not mandatory parts of the MPDF base format.</p>
   <p>Code is MIT licensed; specification text is CC BY 4.0. Use <a href="https://github.com/CaLeb-Shin/mpdf-format/issues" rel="noopener">GitHub Issues</a> for technical proposals and <a data-route="report" href="/report">support email</a> for private material or removal requests.</p>
 </main>
 <footer class="wrap"><span>MPDF · Read your score. Play your music.</span><nav><a data-route="guide" href="/guide">Guide</a><a data-route="developers" href="/developers">Developers</a><a data-route="terms" href="/terms">Terms</a><a data-route="report" href="/report">Report / removal</a></nav></footer>
@@ -85,5 +85,6 @@ w.write(&quot;score-with-music.pdf&quot;)</code></pre></div>
     setTimeout(() => { button.textContent = ko ? '복사' : 'Copy' }, 2000)
   })
 </script>
+<script type="module" src="/reading.js"></script>
 </body>
 </html>

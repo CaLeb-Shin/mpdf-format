@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>앱 개발자 안내 · MPDF</title>
-  <meta name="description" content="MPDF 기본 형식, 선택 확장, 원본 보존, SEETO 제작자 확인과 웹 통합 안내.">
+  <meta name="description" content="MPDF 기본 형식, 선택 확장, 원본 보존, SEETogether 제작자 확인과 웹 통합 안내.">
   <link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/developers">
   <link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/developers">
   <link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/developers">
   <link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/developers">
   <link rel="canonical" href="https://mpdf.pages.dev/ko/developers">
   <meta property="og:title" content="앱 개발자 안내 · MPDF">
-  <meta property="og:description" content="MPDF 기본 형식, 선택 확장, 원본 보존, SEETO 제작자 확인과 웹 통합 안내.">
+  <meta property="og:description" content="MPDF 기본 형식, 선택 확장, 원본 보존, SEETogether 제작자 확인과 웹 통합 안내.">
   <meta property="og:image" content="https://mpdf.pages.dev/og-ko.png">
-  <link rel="icon" href="/favicon.svg">
+  <link rel="icon" href="/assets/seetogether-brand.png">
   <link rel="stylesheet" href="/site.css">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4493654380629025" crossorigin="anonymous"></script>
 </head>
-<body>
-<header class="wrap nav"><a class="brand" href="/ko/"><span class="brand-mark" aria-hidden="true">♪</span>MPDF</a><nav aria-label="주 메뉴"><a href="/make/?lang=ko">만들기</a><a href="/v/?lang=ko">열기</a><a data-route="guide" href="/ko/guide">가이드</a><a class="keep" href="/developers" hreflang="en">English</a><a class="keep" href="/ja/developers" hreflang="ja" lang="ja">日本語</a></nav></header>
+<body class="reading-page">
+<header class="wrap nav"><a class="brand" href="/ko/"><b class="product-name">MPDF</b> <small class="app-name"><img src="/assets/seetogether-brand.png" width="19" height="19" alt="">SEETogether</small></a><nav aria-label="주 메뉴"><a href="/make/?lang=ko">만들기</a><a href="/v/?lang=ko">열기</a><a data-route="guide" href="/ko/guide">가이드</a><a class="keep" href="/developers" hreflang="en">English</a><a class="keep" href="/ja/developers" hreflang="ja" lang="ja">日本語</a></nav></header>
 <main class="wrap doc">
 <div class="eyebrow">FOR DEVELOPERS</div><h1>앱에 MPDF 연결하기</h1>
   <p>MPDF는 표준 PDF 첨부파일로 음악 정보를 전달합니다. 기본 형식과 선택 확장을 구분해서 구현하면 기존 PDF 표시 기능을 유지하면서 필요한 재생 기능을 추가할 수 있습니다.</p>
@@ -38,7 +38,7 @@
   <table><thead><tr><th>정보</th><th>역할</th></tr></thead><tbody>
     <tr><td><code>buttons</code></td><td>페이지 위 재생 버튼의 위치와 연결된 트랙</td></tr>
     <tr><td><code>timeMarkers</code></td><td>페이지 위치와 트랙 내 상대 시간 표시</td></tr>
-    <tr><td><code>seetogether-mpdf.json</code></td><td>SEETO 제작 정보, 선택 재생 트랙, 제작자 표시, 공유본 상태</td></tr>
+    <tr><td><code>seetogether-mpdf.json</code></td><td>SEETogether 제작 정보, 선택 재생 트랙, 제작자 표시, 공유본 상태</td></tr>
     <tr><td><code>seetogether-score.json</code></td><td>포함된 카피 노트 악보·코드 재생 데이터</td></tr>
     <tr><td>편집용 원본·필기 첨부</td><td>제작자 수정용 자료. 공개 공유본에서는 제외</td></tr>
   </tbody></table>
@@ -71,9 +71,9 @@ w.add_attachment(&quot;backing.m4a&quot;, audio_bytes)
 w.write(&quot;score-with-music.pdf&quot;)</code></pre></div>
   <p>이 예시는 일반 PDF로 새 파일을 만드는 최소 예시입니다. 기존 MPDF를 수정할 때는 중복 이름 트리와 알려지지 않은 첨부·확장을 고려해야 합니다. 저장소의 <a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/js/mpdf.js" rel="noopener">JavaScript</a>·<a href="https://github.com/CaLeb-Shin/mpdf-format/blob/main/python/mpdf.py" rel="noopener">Python</a> 기본 레퍼런스와 <code>site/mpdf-browser.js</code>의 웹 호환 계층을 구분해 참고하세요.</p>
   <h2>제작자 표시는 권한 증명이 아닙니다</h2>
-  <p>SEETO 원본 수정은 비익명 계정과 파일 전체의 SHA-256을 사용합니다. 불변 제작자 레지스트리의 파일 해시·발행 ID·소유자 UID가 모두 일치해야 합니다. 메타데이터의 <code>creatorUID</code>만으로 편집을 허용하면 안 됩니다. <code>sharedReadOnly: true</code>는 제작자 본인에게도 읽기 전용입니다. 등록은 완성 파일을 만든 뒤 수행하고, 등록이 성공한 뒤 제공해야 합니다.</p>
+  <p>SEETogether 원본 수정은 비익명 계정과 파일 전체의 SHA-256을 사용합니다. 불변 제작자 레지스트리의 파일 해시·발행 ID·소유자 UID가 모두 일치해야 합니다. 메타데이터의 <code>creatorUID</code>만으로 편집을 허용하면 안 됩니다. <code>sharedReadOnly: true</code>는 제작자 본인에게도 읽기 전용입니다. 등록은 완성 파일을 만든 뒤 수행하고, 등록이 성공한 뒤 제공해야 합니다.</p>
   <h2>공개 링크 서비스는 별도입니다</h2>
-  <p>이 웹사이트의 Cloudflare Pages Functions는 공유용 PDF만 저장합니다. 내장 음원, 편집 원본 및 허용되지 않은 첨부를 거부하고 링크 생성 후 90일이 지나면 제공을 중단합니다. 이 정책과 SEETO 계정 연동은 MPDF 기본 파일 규격의 필수 요소가 아닙니다.</p>
+  <p>이 웹사이트의 Cloudflare Pages Functions는 공유용 PDF만 저장합니다. 내장 음원, 편집 원본 및 허용되지 않은 첨부를 거부하고 링크 생성 후 90일이 지나면 제공을 중단합니다. 이 정책과 SEETogether 계정 연동은 MPDF 기본 파일 규격의 필수 요소가 아닙니다.</p>
   <p>코드 라이선스는 MIT, 사양 문서는 CC BY 4.0입니다. 기술 제안은 <a href="https://github.com/CaLeb-Shin/mpdf-format/issues" rel="noopener">GitHub Issues</a>, 비공개 자료·삭제 요청은 <a data-route="report" href="/ko/report">지원 이메일</a>을 이용하세요.</p>
 </main>
 <footer class="wrap"><span>MPDF · 음악을 들으며, 악보를 함께.</span><nav><a data-route="guide" href="/ko/guide">가이드</a><a data-route="developers" href="/ko/developers">개발자</a><a data-route="terms" href="/ko/terms">이용약관</a><a data-route="report" href="/ko/report">신고·삭제</a></nav></footer>
@@ -85,5 +85,6 @@ w.write(&quot;score-with-music.pdf&quot;)</code></pre></div>
     setTimeout(() => { button.textContent = ko ? '복사' : 'Copy' }, 2000)
   })
 </script>
+<script type="module" src="/reading.js"></script>
 </body>
 </html>

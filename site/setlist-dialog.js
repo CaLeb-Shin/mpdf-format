@@ -10,23 +10,25 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
   const dialog = el('setlist-dialog'), input = el('setlist-text'), rows = el('setlist-songs')
   const message = el('setlist-message'), submit = el('setlist-create')
   const analyze = el('setlist-analyze')
-  const upload = el('setlist-pdf'), listOnly = el('list-only')
-  let draft, controller, operation, loadedFile, creating = false
+  const upload = el('setlist-pdf')
+  let draft, controller, operation, loadedFile, homeScore, creating = false
   function openDialog() {
     const score = currentScore()
     el('setlist-source').hidden = !!score
     el('setlist-current').hidden = !score
     el('setlist-current').textContent = score?.name || ''
-    listOnly.checked = false
     upload.value = ''
     upload.disabled = false
-    loadedFile = null
+    loadedFile = homeScore = null
     if (creating) return
     dialog.showModal()
     input.focus()
   }
-  upload.onchange = () => { listOnly.checked = false; clearReview() }
-  listOnly.onchange = () => { upload.disabled = listOnly.checked; clearReview() }
+  upload.onchange = () => {
+    homeScore = null
+    el('setlist-current').hidden = true
+    clearReview()
+  }
 
   const show = text => { message.textContent = text }
   function clearReview() {
@@ -126,11 +128,6 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
   }
   analyze.onclick = async () => {
     clearReview()
-    if (!currentScore() && !upload.files[0] && !listOnly.checked) {
-      show(L('콘티 악보 PDF를 먼저 선택해 주세요.','Choose your score PDF first.','楽譜PDFを選んでください。'))
-      upload.focus()
-      return
-    }
     try { draft = parseSetlist(input.value) }
     catch (error) {
       show(error.message === 'ambiguous-link'
@@ -156,8 +153,8 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     operation = new AbortController()
     const {signal} = operation
     const {title,songs} = draft
-    const sourceFile = upload.files[0]
-    input.disabled = listOnly.disabled = upload.disabled = true
+    const sourceFile = upload.files[0] || homeScore
+    input.disabled = upload.disabled = true
     rows.inert = true
     refresh()
     show(L('콘티 MPDF 만드는 중…','Creating your setlist MPDF…','セットリストMPDFを作成中…'))
@@ -171,7 +168,7 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
           if (response.ok) song.name = (await response.json()).title?.slice(0,200) || song.name
         } catch { signal.throwIfAborted() }
       }
-      if (listOnly.checked) {
+      if (!currentScore() && !sourceFile) {
         const name = title || L('콘티','Setlist','セットリスト')
         await openFile(await makeSetlistFile(name,songs,safeTitle(name)), {exportShared:true})
       } else {
@@ -201,10 +198,23 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     } finally {
       creating = false
       operation = null
-      rows.inert = input.disabled = listOnly.disabled = el('setlist-close').disabled = false
-      upload.disabled = listOnly.checked
+      rows.inert = input.disabled = upload.disabled = el('setlist-close').disabled = false
       refresh()
     }
   }
   submit.onclick = create
+  return async function startFromHome(saved) {
+    openDialog()
+    if (!saved) {
+      show(L('홈에서 입력한 콘티를 다시 붙여 넣어 주세요.','Paste your setlist again to continue.','曲順をもう一度貼り付けてください。'))
+      return
+    }
+    input.value = saved.text
+    if (saved.score) {
+      homeScore = saved.score
+      el('setlist-current').hidden = false
+      el('setlist-current').textContent = saved.score.name
+    }
+    if (dialog.open) await analyze.onclick()
+  }
 }

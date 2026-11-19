@@ -6,14 +6,14 @@
   <meta name="description" content="Open your MPDF, listen to its music, repeat a passage, and practise directly on your score.">
   <title>MPDF · Listen & practise</title>
   <!--og-->
-  <link rel="icon" href="/favicon.svg">
+  <link rel="icon" href="/assets/seetogether-brand.png">
   <link rel="stylesheet" href="/site.css">
   <link rel="stylesheet" href="/viewer.css">
 </head>
 <body class="practice-viewer">
   <main class="practice-shell">
     <header class="practice-header">
-      <a class="brand" href="/" aria-label="MPDF home">MPDF<span> / </span><small data-ja="練習" data-en="PRACTISE" data-ko="연습하기">PRACTISE</small></a>
+      <a class="brand" href="/" data-route="" aria-label="MPDF"><b class="product-name">MPDF</b> <small class="app-name"><img src="/assets/seetogether-brand.png" width="19" height="19" alt="">SEETogether</small></a>
       <div class="document-heading"><h1 id="title" data-ja="楽譜を、その音楽といっしょに。" data-en="Your score, with its music." data-ko="악보와 음악을 함께.">Your score, with its music.</h1><p id="meta" data-ja="ファイルを開いて始めましょう。" data-en="Open a file to begin." data-ko="파일을 열고 연습을 시작하세요.">Open a file to begin.</p></div>
       <div class="practice-actions">
         <button class="btn ghost small" id="openfile" data-ja="ファイルを開く" data-en="Open file" data-ko="파일 열기">Open file</button>
@@ -35,11 +35,10 @@
     <p class="practice-notice hidden" id="notice" role="status" aria-live="polite"></p>
     <div class="practice-pages" id="pages" tabindex="0" aria-label="Score pages">
       <section class="practice-empty" id="drop">
-        <div class="empty-symbol" aria-hidden="true">♫<span>PDF</span></div>
-        <p class="eyebrow" data-ja="どこでも、ちょっと練習" data-en="A LITTLE PRACTICE, ANYWHERE" data-ko="어디에서나, 가볍게 연습">A LITTLE PRACTICE, ANYWHERE</p>
-        <h2 data-ja="開いて、聴いて、もう一度。" data-en="Open. Listen. Play it again." data-ko="열고, 듣고, 다시 연습하세요.">Open. Listen. Play it again.</h2>
+        <div class="reader-score-art" aria-hidden="true"></div>
+        <h2 data-ja="受け取ったMPDFを開く" data-en="Open your rehearsal score" data-ko="받은 MPDF로 연습하세요">Open your rehearsal score</h2>
         <p data-ja="MPDFをここにドロップしてください。楽譜・音楽・タイムマークがいっしょに開きます。通常のPDFも開けます。" data-en="Drop your MPDF here. Its score, music and time marks open together. A regular PDF opens too." data-ko="MPDF를 여기에 놓아 보세요. 악보와 음악, 시간 표시를 함께 엽니다. 일반 PDF도 볼 수 있어요.">Drop your MPDF here. Its score, music and time marks open together. A regular PDF opens too.</p>
-        <div class="empty-actions"><button class="btn" id="empty-open" data-ja="MPDFを開く" data-en="Open an MPDF" data-ko="MPDF 열기">Open an MPDF</button><button class="btn ghost" id="sample" data-ja="完成例を試す ↗" data-en="Try a finished example ↗" data-ko="완성 예시 체험 ↗">Try a finished example ↗</button></div>
+        <div class="empty-actions"><button class="btn primary" id="empty-open" data-ja="MPDFを開く" data-en="Open an MPDF" data-ko="MPDF 열기">Open an MPDF</button><button class="btn ghost" id="sample" data-ja="完成例を試す ↗" data-en="Try a finished example ↗" data-ko="완성 예시 체험 ↗">Try a finished example ↗</button></div>
         <small data-ja="ローカルのファイルはこのブラウザーの中にとどまります。YouTubeとリンク音源にはインターネットが必要です。" data-en="Local files stay in this browser. YouTube and linked audio need the internet." data-ko="내 파일은 브라우저 안에서만 열립니다. YouTube·외부 음원은 인터넷이 필요합니다.">Local files stay in this browser. YouTube and linked audio need the internet.</small>
       </section>
     </div>

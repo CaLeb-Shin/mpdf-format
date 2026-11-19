@@ -9,7 +9,7 @@ SITE = "https://mpdf.pages.dev"
 missing = set()
 # Japanese sentences that continue after a link or code span
 FIX = [("開発者ガイド</a>.", "開発者ガイド</a>をお読みください。"), ("報告・削除</a>.", "報告・削除</a>をご利用ください。"),
-       ("SEETOサポート</a>.", "SEETOサポート</a>をご覧ください。"), ("GitHub Issues</a>.", "GitHub Issues</a>からも送れます。"),
+       ("SEETogetherサポート</a>.", "SEETogetherサポート</a>をご覧ください。"), ("GitHub Issues</a>.", "GitHub Issues</a>からも送れます。"),
        ("作成ツール</a>.", "作成ツール</a>にドロップします。"), ("</code>).", "</code>)。"), ("</code>, <code>", "</code>、<code>"),
        ("</code>.", "</code>。"), ("</a>.", "</a>。"), ('<a class="keep" href="/ja/' , '<a class="keep" data-self href="/ja/'), ("'Copied'", "'コピーしました'"), ("'Copy'", "'コピー'")]
 
@@ -48,6 +48,7 @@ for page in PAGES:
     s = s.replace('?lang=en', '?lang=ja').replace('&amp;lang=en', '&amp;lang=ja')
     s = re.sub(r'href="/(guide|terms|report|developers|guides/[a-z-]+)(\.html)?"', r'href="/ja/\1"', s)
     s = s.replace('<a class="brand" href="/">', '<a class="brand" href="/ja/">')
+    s = s.replace('href="/#home-text"', 'href="/ja/#home-text"')
     # language links: English + Korean instead of the Korean-only link
     s = re.sub(r'<a class="keep" href="/ja/([^"]*)" hreflang="ko"( lang="ko")?>한국어</a>|<a class="keep" href="/ko/([^"]*)" hreflang="ko"( lang="ko")?>한국어</a>',
                lambda m: f'<a class="keep" href="/{m.group(1) or m.group(3)}" hreflang="en" lang="en">English</a><a class="keep" href="/ko/{m.group(1) or m.group(3)}" hreflang="ko" lang="ko">한국어</a>', s)
