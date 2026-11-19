@@ -78,3 +78,4 @@
   .reading-page .nav nav { flex-wrap: wrap; row-gap: 4px; }
   .reading-page .nav nav > a { display: inline-flex; }
 }
+.score-dragging { outline: 3px dashed var(--accent); outline-offset: -3px; }

@@ -64,3 +64,5 @@
   .music-desk { max-width: 490px; width: 100%; justify-self: center; }
 }
 html[lang="ja"] :is(.studio-intro h1, .studio-intro p, .workflow p, .recipient p) { word-break: normal; }
+#home-preparing, #home-drop-error { display: block; padding-top: 8px; font-size: 13px; }
+#home-drop-error { color: #913b36; }

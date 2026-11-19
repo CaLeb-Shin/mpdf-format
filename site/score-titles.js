@@ -169,7 +169,7 @@ async function recognizeMissing(pdf, pages, songs, signal, progress) {
       if (!headerOnly && locateTitles(songs,pages).every(m=>m.length)) break
       for (let n=1; n<=pdf.numPages; n++) {
         signal.throwIfAborted()
-        progress(n, pdf.numPages, true)
+        progress(n, pdf.numPages, headerOnly ? 'headers' : 'full')
         const canvas = await scoreCanvas(pdf,n,1550)
         if (headerOnly) {
           const headers = await readHeaders(worker,canvas)
@@ -216,20 +216,22 @@ export async function findPositions(pdf, songs, existing, signal, progress) {
   const pages = []
   for (let n=1; n<=pdf.numPages; n++) {
     signal.throwIfAborted()
-    progress(n,pdf.numPages,false)
+    progress(n,pdf.numPages,'text')
     const page = await pdf.getPage(n)
     pages.push(textLines(page, (await page.getTextContent()).items))
   }
   let matches = locateTitles(songs,pages)
   if (matches.some(m=>!m.length)) {
-    progress(1,pdf.numPages,true)
+    progress(0,pdf.numPages,'ocr-setup')
     try { await recognizeMissing(pdf,pages,songs,signal,progress) }
     catch (error) { if (signal.aborted) throw error; console.warn('Score OCR unavailable', error.message) }
     matches = locateTitles(songs,pages)
   }
   const positions = songs.map(()=>[])
-  for (const page of new Set(matches.flat().map(m=>m.page))) {
+  const matchedPages = [...new Set(matches.flat().map(m=>m.page))]
+  for (const [index,page] of matchedPages.entries()) {
     signal.throwIfAborted()
+    progress(index+1,matchedPages.length,'positions')
     const canvas = await scoreCanvas(pdf,page,720)
     const occupied = existing.filter(b=>b.page===page)
     for (const [index, headings] of matches.entries()) {

@@ -83,7 +83,10 @@ const startFromHome=mountSetlist({safeTitle,L,
     state.busy=true;controls();
     try{
       await loadDocument(file);
-      if(exportShared)await saveSharingCopy();
+      if(exportShared){
+        await saveSharingCopy();
+        status(L('콘티 MPDF가 완성됐어요. 파일 다운로드를 시작했습니다.','Your setlist MPDF is ready. The download has started.','セットリストMPDFが完成し、ダウンロードが始まりました。'));
+      }
     }finally{state.busy=false;controls();}
   },
   applyScore:async(doc,title,songs,positions)=>{
@@ -110,7 +113,7 @@ const startFromHome=mountSetlist({safeTitle,L,
       if(!hadTracks){m.options.followPage=true;$('#follow-page').checked=true;}
       await saveSharingCopy();
       state.dirty=true;
-      status(L('제목 옆에 로고를 연결해 공유용 MPDF를 만들었습니다.','Your sharing MPDF is ready with play logos beside the titles.','曲名の横にロゴを付けた共有用MPDFを作成しました。'));
+      status(L('악보에 재생 버튼을 연결했어요. 완성된 MPDF 다운로드를 시작했습니다.','Your sharing MPDF is ready with play logos beside the titles.','曲名の横にロゴを付けた共有用MPDFを作成しました。'));
     }catch(e){state.manifest=before;state.track=priorTrack;state.dirty=priorDirty;$('#title').value=priorTitle;$('#follow-page').checked=before.options?.followPage!==false;throw e;}
     finally{state.busy=false;renderAll();}
   }
@@ -192,7 +195,7 @@ $('#open-link').ondragstart=event=>{
 };
 $('#copy-link').onclick=async()=>{try{await navigator.clipboard.writeText($('#share-url').value);$('#copy-link').textContent=L('복사했어요', 'Copied', 'コピーしました');}catch{$('#share-url').select();}};$('#close-link').onclick=()=>$('#link-dialog').close();
 window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue='';}});
-document.addEventListener('dragover',e=>e.preventDefault());document.addEventListener('drop',e=>{e.preventDefault();if(state.busy)return;const f=[...e.dataTransfer.files].find(f=>/\.(pdf|mpdf)$/i.test(f.name));if(f)open(f);});
+document.addEventListener('dragover',e=>{if(e.dataTransfer?.types.includes('Files'))e.preventDefault();});document.addEventListener('drop',e=>{if(!e.dataTransfer?.files.length)return;e.preventDefault();if(state.busy||document.querySelector('dialog[open]'))return;const f=[...e.dataTransfer.files].find(f=>/\.(pdf|mpdf)$/i.test(f.name));if(f)open(f);});
 document.addEventListener('langchange',()=>{renderAll();renderConnections();});
 const params=new URLSearchParams(location.search);if(params.get('file'))loadURL(params.get('file'));controls();if(params.get('account')==='1')$('#account-host .account-trigger')?.click();
 
@@ -201,6 +204,6 @@ if(params.get('start')==='setlist'&&!params.has('file')){
     const id=params.get('draft');
     params.delete('draft');
     history.replaceState(history.state,'',location.pathname+'?'+params);
-    takeSetlist(id).then(startFromHome,()=>startFromHome(null)).catch(fail);
+    startFromHome(takeSetlist(id)).catch(fail);
   }else $('#welcome-setlist').click();
 }

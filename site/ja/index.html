@@ -9,9 +9,11 @@
   <textarea id="home-text" rows="3" maxlength="50000" required placeholder="1. Amazing Grace&#10;2. How Great Thou Art" data-ko-placeholder="1. 저 높은 곳을 향하여&#10;2. 주가 일하시네" data-ja-placeholder="1. アメイジング・グレイス&#10;2. 主をたたえよ"></textarea>
   <div class="composer-actions"><div class="attachment">
     <input type="file" id="home-pdf" accept="application/pdf,.pdf">
-    <label for="home-pdf"><span aria-hidden="true">＋</span> <span class="attach-label"><span data-l="en">Add score PDF</span><span data-l="ko">악보 PDF 추가</span><span data-l="ja">楽譜PDFを追加</span></span><strong id="home-filename" hidden></strong></label>
+    <label for="home-pdf"><span aria-hidden="true">＋</span> <span class="attach-label"><span data-l="en">Drop or choose a score PDF</span><span data-l="ko">악보 PDF 끌어 놓기 · 파일 선택</span><span data-l="ja">楽譜PDFをドロップ・選択</span></span><strong id="home-filename" hidden></strong></label>
     <button type="button" id="remove-pdf" hidden aria-label="Remove score" data-ko-aria="악보 첨부 취소" data-ja-aria="添付を解除">×</button>
   </div><button class="btn primary" type="submit"><span data-l="en">Make MPDF</span><span data-l="ko">MPDF 만들기</span><span data-l="ja">MPDFを作成</span> <span aria-hidden="true">→</span></button></div>
+  <small id="home-drop-error" role="alert" hidden><span data-l="ko">악보 PDF 한 개를 선택해 주세요.</span><span data-l="en">Choose one score PDF.</span><span data-l="ja">楽譜PDFを1つ選んでください。</span></small>
+  <small id="home-preparing" role="status" hidden><span data-l="ko">콘티를 제작기로 옮기는 중…</span><span data-l="en">Opening your setlist in the maker…</span><span data-l="ja">曲順を作成画面に引き継いでいます…</span></small>
   <div id="handoff-error" role="alert" hidden><span data-l="en">Your browser could not carry this draft over. Copy your text and continue in the maker.</span><span data-l="ko">입력 내용을 제작기로 옮길 수 없어요. 텍스트를 복사해 제작기에서 계속해 주세요.</span><span data-l="ja">入力内容を引き継げませんでした。テキストをコピーして作成画面に貼り付けてください。</span> <a href="/make/?start=setlist"><span data-l="en">Open maker</span><span data-l="ko">제작기 열기</span><span data-l="ja">作成画面へ</span> ↗</a></div>
 </form>
 <a class="open-received" href="/v/"><span data-l="en">Open a received MPDF</span><span data-l="ko">받은 MPDF 열기</span><span data-l="ja">受け取ったMPDFを開く</span> ↗</a>

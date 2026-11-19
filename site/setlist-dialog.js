@@ -4,6 +4,7 @@ import {getLang} from './i18n.js'
 
 import {findPositions} from './score-titles.js'
 import {pickScorePosition} from './score-position-dialog.js'
+import {isScorePDF, mountScoreDrop} from './score-drop.js'
 
 export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L}) {
   const el = id => document.getElementById(id)
@@ -11,23 +12,45 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
   const message = el('setlist-message'), submit = el('setlist-create')
   const analyze = el('setlist-analyze')
   const upload = el('setlist-pdf')
-  let draft, controller, operation, loadedFile, homeScore, creating = false
-  function openDialog() {
-    const score = currentScore()
-    el('setlist-source').hidden = !!score
-    el('setlist-current').hidden = !score
-    el('setlist-current').textContent = score?.name || ''
+  const supplied = el('supplied-references'), suppliedRows = supplied.querySelector('ol')
+  const fields = el('setlist-fields'), progress = el('setlist-progress'), meter = progress.querySelector('progress')
+  let draft, controller, operation, loadedFile, selectedFile, sourceDocument, creating = false
+  function displayAttachment() {
+    const name = selectedFile?.name || currentScore()?.name
+    el('setlist-current').textContent = name || ''
+    el('setlist-attached').hidden = el('setlist-replace').hidden = !name
+    el('setlist-add').hidden = !!name
+  }
+  function selectFile(file) {
+    selectedFile = file
     upload.value = ''
-    upload.disabled = false
-    loadedFile = homeScore = null
+    el('setlist-drop-error').hidden = true
+    displayAttachment()
+  }
+  const invalid = () => { el('setlist-drop-error').hidden = false }
+  mountScoreDrop(dialog, dialog, {select:selectFile, invalid, enabled:() => !creating && !fields.hidden})
+  el('setlist-choose').onclick = () => upload.click()
+  upload.onchange = () => {
+    if (isScorePDF(upload.files[0])) selectFile(upload.files[0])
+    else if (upload.files.length) invalid()
+  }
+  function openDialog() {
     if (creating) return
+    const pdf = currentScore()?.pdf
+    if (pdf !== sourceDocument) selectedFile = loadedFile = null
+    sourceDocument = pdf
+    displayAttachment()
+    el('setlist-drop-error').hidden = true
     dialog.showModal()
     input.focus()
   }
-  upload.onchange = () => {
-    homeScore = null
-    el('setlist-current').hidden = true
-    clearReview()
+  function stage(text, page, total) {
+    el('setlist-stage').textContent = text
+    if (total) { meter.max = total; meter.value = page }
+    else meter.removeAttribute('value')
+    fields.hidden = true
+    progress.hidden = false
+    dialog.scrollTop = 0
   }
 
   const show = text => { message.textContent = text }
@@ -35,14 +58,26 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     controller?.abort()
     draft = null
     rows.replaceChildren()
+    suppliedRows.replaceChildren()
+    supplied.hidden = true
+    supplied.open = false
+    el('setlist-count').textContent = ''
     submit.hidden = true
     analyze.hidden = false
     show('')
   }
-  function refresh() { submit.disabled = creating || !draft?.songs.every(song => song.video) }
+  function refresh() {
+    if (!draft) { submit.disabled = true; return }
+    const total = draft.songs.length, done = draft.songs.filter(song => song.video).length
+    submit.disabled = creating || done !== total
+    el('setlist-count').textContent = L(`${total}곡 중 ${done}곡 연결됨`,`${done} of ${total} references connected`,`${total}曲中${done}曲を接続済み`)
+  }
   el('welcome-setlist').onclick = el('connect-setlist').onclick = openDialog
   el('setlist-close').onclick = () => { operation?.abort(); dialog.close() }
-  dialog.addEventListener('cancel', () => operation?.abort())
+  dialog.addEventListener('cancel', event => {
+    if (el('setlist-close').disabled) event.preventDefault()
+    else operation?.abort()
+  })
   dialog.addEventListener('close', clearReview)
   input.oninput = clearReview
   function anchor(url, label) {
@@ -55,6 +90,8 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
   }
   function renderSong(song, index) {
     const row = document.createElement('li')
+    row.value = index + 1
+    const target = song.video ? suppliedRows : rows
     const heading = document.createElement('strong')
     heading.textContent = song.name
     row.append(heading)
@@ -74,7 +111,7 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     const direct = anchor('https://www.youtube.com/results?search_query=' + encodeURIComponent(song.name),
       L('YouTube에서 검색 ↗','Search on YouTube ↗','YouTubeで検索 ↗'))
     const listen = anchor('', L('선택한 영상 열기 ↗','Open selected video ↗','選択した動画を開く ↗'))
-    function sync() {
+    function sync(changed = false) {
       song.url = field.value.trim()
       song.video = parseYouTube(song.url)
       listen.hidden = !song.video
@@ -82,17 +119,20 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
       field.setAttribute('aria-invalid', String(!!song.url && !song.video))
       for (const button of choices.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.value === song.video))
       refresh()
+      if (changed) show(submit.disabled
+        ? L('남은 곡의 영상 제목을 눌러 선택하세요.','Select a video for the remaining songs.','残りの曲の動画を選んでください。')
+        : L('모든 곡이 연결됐어요. MPDF 만들기를 누르세요.','All references are connected. Click Create MPDF.','全曲の動画を選択しました。「MPDFを作成」を押してください。'))
     }
-    field.oninput = sync
+    field.oninput = () => sync(true)
     sync()
     const links = document.createElement('div')
     links.className = 'setlist-links'
     links.append(listen, direct)
     row.append(field, links, choices, feedback)
-    rows.append(row)
+    target.append(row)
     return {song, choices, feedback, choose(id) {
       field.value = 'https://youtu.be/' + id
-      sync()
+      sync(true)
     }, index}
   }
   async function fetchChoices(row, signal, requests) {
@@ -138,8 +178,9 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     analyze.hidden = true
     submit.hidden = false
     const pending = draft.songs.map(renderSong).filter(row => !row.song.video)
+    supplied.hidden = !suppliedRows.children.length
     if (!pending.length) { await create(); return }
-    show(L('곡마다 들을 영상을 선택해 주세요.','Choose a reference for each song.','各曲の参考動画を選んでください。'))
+    show(L('링크가 없는 곡은 아래 영상 제목을 눌러 선택하세요.','Choose a video title below for each missing link.','リンクのない曲は、下の動画タイトルを押して選んでください。'))
     controller = new AbortController()
     const {signal} = controller, requests = new Map()
     async function worker() {
@@ -153,14 +194,15 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     operation = new AbortController()
     const {signal} = operation
     const {title,songs} = draft
-    const sourceFile = upload.files[0] || homeScore
+    const sourceFile = selectedFile
     input.disabled = upload.disabled = true
     rows.inert = true
     refresh()
-    show(L('콘티 MPDF 만드는 중…','Creating your setlist MPDF…','セットリストMPDFを作成中…'))
+    stage(L('콘티 MPDF 만드는 중…','Creating your setlist MPDF…','セットリストMPDFを作成中…'))
     try {
       for (const song of songs.filter(s=>s.fromLink)) {
         signal.throwIfAborted()
+        stage(L('유튜브 영상 제목 확인 중','Reading video title','動画タイトルを確認中')+' · '+song.name)
         try {
           const endpoint = new URL('https://www.youtube.com/oembed')
           endpoint.search = new URLSearchParams({url:'https://www.youtube.com/watch?v='+song.video, format:'json'})
@@ -170,15 +212,31 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
       }
       if (!currentScore() && !sourceFile) {
         const name = title || L('콘티','Setlist','セットリスト')
-        await openFile(await makeSetlistFile(name,songs,safeTitle(name)), {exportShared:true})
+        stage(L('연습할 곡 목록 만드는 중…','Building the song list…','曲目表を作成中…'))
+        const file = await makeSetlistFile(name,songs,safeTitle(name))
+        signal.throwIfAborted()
+        el('setlist-close').disabled = true
+        stage(L('공유용 MPDF 저장 중…','Saving the sharing MPDF…','共有用MPDFを保存中…'))
+        await openFile(file, {exportShared:true})
       } else {
-        if (sourceFile && loadedFile !== sourceFile) { await openFile(sourceFile); loadedFile = sourceFile }
+        stage(L('악보 PDF 여는 중…','Opening the score PDF…','楽譜PDFを読み込み中…'))
+        if (sourceFile && loadedFile !== sourceFile) {
+          loadedFile = null
+          await openFile(sourceFile)
+          loadedFile = sourceFile
+        }
         signal.throwIfAborted()
         const score = currentScore()
         if (!score?.editable) throw new Error(L('편집 가능한 원본 악보 PDF를 선택해 주세요.','Choose an editable original score PDF.','編集可能な元の楽譜PDFを選んでください。'))
-        const positions = await findPositions(score.pdf,songs,score.buttons,signal,(n,total,ocr)=>{
-          const text = ocr ? L('스캔 악보에서 제목 읽는 중','Reading scanned titles','スキャンした曲名を認識中') : L('악보에서 제목 찾는 중','Locating score titles','楽譜の曲名を検索中')
-          show(text+' · '+n+' / '+total)
+        const positions = await findPositions(score.pdf,songs,score.buttons,signal,(n,total,phase)=>{
+          const labels = {
+            text:L('악보에서 곡 제목 찾는 중','Locating score titles','楽譜の曲名を検索中'),
+            headers:L('스캔 악보의 제목 읽는 중','Reading scanned titles','スキャンした曲名を認識中'),
+            full:L('스캔 악보 본문 확인 중','Reading scanned pages','スキャンした本文を認識中'),
+            positions:L('재생 버튼 위치 찾는 중','Positioning play buttons','再生ボタンの位置を確認中')
+          }
+          if (phase === 'ocr-setup') stage(L('스캔 악보 인식 준비 중…','Preparing to read the scanned score…','スキャン楽譜の認識を準備中…'))
+          else stage(labels[phase]+' · '+n+' / '+total,n,total)
         })
         for (const [i,places] of positions.entries()) {
           signal.throwIfAborted()
@@ -189,6 +247,7 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
         }
         signal.throwIfAborted()
         el('setlist-close').disabled = true
+        stage(L('레퍼런스를 연결하고 공유용 MPDF 저장 중…','Connecting references and saving the MPDF…','参考動画を接続してMPDFを保存中…'))
         await applyScore(score.pdf,title,songs,positions)
       }
       dialog.close()
@@ -198,23 +257,29 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     } finally {
       creating = false
       operation = null
+      fields.hidden = false
+      progress.hidden = true
       rows.inert = input.disabled = upload.disabled = el('setlist-close').disabled = false
       refresh()
+      if (dialog.open) message.scrollIntoView({block:'nearest'})
     }
   }
   submit.onclick = create
-  return async function startFromHome(saved) {
+  return async function startFromHome(readDraft) {
     openDialog()
+    stage(L('홈에서 입력한 콘티와 악보 여는 중…','Opening your setlist and score…','曲順と楽譜を読み込み中…'))
+    el('setlist-close').disabled = true
+    let saved
+    try { saved = await readDraft } catch { saved = null }
+    el('setlist-close').disabled = false
+    fields.hidden = false
+    progress.hidden = true
     if (!saved) {
       show(L('홈에서 입력한 콘티를 다시 붙여 넣어 주세요.','Paste your setlist again to continue.','曲順をもう一度貼り付けてください。'))
       return
     }
     input.value = saved.text
-    if (saved.score) {
-      homeScore = saved.score
-      el('setlist-current').hidden = false
-      el('setlist-current').textContent = saved.score.name
-    }
+    selectFile(saved.score)
     if (dialog.open) await analyze.onclick()
   }
 }
