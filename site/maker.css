@@ -87,3 +87,91 @@
 #setlist-progress { margin-block: 16px; padding: 18px; background: var(--accent-soft); border-radius: 12px; }
 #setlist-progress strong { display: block; overflow-wrap: anywhere; }
 #setlist-progress progress { display: block; width: 100%; height: 9px; margin-top: 14px; accent-color: var(--accent); }
+
+#mobile-panels, .mobile-export-title, #edit-setlist-input { display: none; }
+
+@media (max-width: 760px), (pointer: coarse) and (max-height: 500px) {
+  .maker-head { height: auto; min-height: 54px; padding: 4px max(10px,env(safe-area-inset-right)) 4px max(10px,env(safe-area-inset-left)); }
+  .maker-head :is(.lang,.account-trigger) { min-height: 44px; }
+  .maker-head .workspace-label, .maker-head nav > a { display: none; }
+  .editor { display: flex; min-height: 0; }
+  .editor > :is(.score-workspace,.settings-panel,.page-rail) { display: none; width: 100%; min-height: 0; }
+  [data-mobile-panel="score"] .score-workspace, [data-mobile-panel="pages"] .page-rail { display: flex; }
+  [data-mobile-panel="audio"] .settings-panel { display: block; border: 0; padding: 16px 18px 26px; }
+  [data-mobile-panel="export"] .editor { display: none; }
+  [data-mobile-panel="export"] .export-bar { flex: 1; min-height: 0; align-items: stretch; justify-content: flex-start; overflow: auto; padding: 20px 18px; gap: 14px; }
+  [data-mobile-panel="export"] .mobile-export-title { display: block; margin: 0; font-size: 23px; }
+  .export-bar { min-height: 0; flex-direction: column; padding: 5px 14px; }
+  .export-status { max-width: none; min-height: 20px; align-self: stretch; }
+  .export-status .status { font-size: 12px; overflow-wrap: anywhere; }
+  .export-bar :is(.export-actions,.drag-export) { display: none; }
+  [data-mobile-panel="export"] .export-actions { display: grid; align-items: start; gap: 10px; }
+  .export-actions .btn { width: 100%; min-height: 46px; font-size: 14px; }
+  .save-popover { position: static; width: 100%; max-width: none; margin-top: 6px; box-shadow: none; background: var(--bg); }
+  .save-popover p, .save-popover .check-row { font-size: 14px; }
+  #mobile-panels {
+    display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 3px; flex-shrink: 0;
+    padding: 5px max(6px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+    border-top: 1px solid var(--line); background: white;
+  }
+  #mobile-panels button { min-height: 44px; padding: 4px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font: 600 13px/1.2 var(--display); }
+  #mobile-panels button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+  .maker-body:has(#welcome:not([hidden])) #mobile-panels { display: none; }
+  .score-toolbar { padding: 4px 8px; gap: 4px; }
+  .doc-title input, .maker-body .settings-panel input:not([type="checkbox"]), .maker-body dialog :is(input,textarea,select) { font-size: 16px; }
+  .view-tools, .placement-bar { gap: 4px; }
+  .view-tools :is(#previous-page,#next-page) { display: inline-flex; min-width: 40px; font-size: 20px; }
+  .view-tools .btn, .placement-bar .btn, .rail-head .btn { min-height: 44px; }
+  .view-tools #preview { padding-inline: 8px; }
+  .score-scroll { padding: 10px max(6px,env(safe-area-inset-right)) 20px max(6px,env(safe-area-inset-left)); }
+  .placement-bar { padding: 3px 8px; }
+  .placement-bar .btn { font-size: 13px; }
+  .welcome { align-self: flex-start; padding: 23px 14px; }
+  .welcome .btn { min-height: 44px; }
+  .rail-head { flex-direction: row; font-size: 20px; padding: 12px 16px; }
+  .rail-head .sr-only { position: static; width: auto; height: auto; clip: auto; }
+  .thumbnails { display: grid; grid-template-columns: repeat(auto-fill,minmax(92px,1fr)); align-content: start; gap: 10px; padding: 0 16px 16px; }
+  .thumb { margin: 0; padding: 6px; align-self: start; }
+  .thumb span { font-size: 12px; }
+  .rail-foot { font-size: 12px; padding: 10px 16px; }
+  .settings-heading { display: block; }
+  .settings-heading h2 { margin: 0 0 5px; }
+  .settings-panel fieldset { display: block; margin-top: 16px; }
+  .source-tabs { max-width: none; margin-bottom: 12px; }
+  .editor-tracks { margin-top: 16px; }
+  .settings-panel :is(.source-tab,.delete-track,.inline-field button,.connection-item button,.advanced summary) { min-height: 44px; }
+  .settings-panel .delete-track { min-width: 44px; }
+  .settings-panel .select-track strong, .settings-panel .field-label { font-size: 14px; }
+  .settings-panel .field-note, .select-track small { font-size: 12px; }
+  .connection-settings, .settings-panel .advanced { margin-top: 20px; }
+  #setlist-dialog[open] {
+    display: flex; flex-direction: column; width: min(100%,620px); max-width: 100%;
+    max-height: min(94dvh,var(--dialog-height,94dvh)); bottom: var(--dialog-bottom,0px); margin: auto auto 0; padding: 0;
+    border-radius: 20px 20px 0 0; overflow: hidden;
+  }
+  .setlist-heading { flex-shrink: 0; padding: 8px 16px; border-bottom: 1px solid var(--line); }
+  .setlist-heading h2 { font-size: 19px; }
+  .setlist-heading button { min-height: 44px; }
+  #setlist-fields:not([hidden]) { display: flex; flex-direction: column; min-height: 0; }
+  .setlist-content { overflow-y: auto; overscroll-behavior: contain; padding: 0 16px 10px; min-height: 0; }
+  #setlist-text { max-height: 27dvh; min-height: 84px; resize: none; }
+  #setlist-fields.reviewing #edit-setlist-input { display: inline-flex; margin-top: 10px; min-height: 44px; }
+  #setlist-fields.reviewing #edit-setlist-input[aria-expanded="false"] + #setlist-entry { display: none; }
+  #setlist-source .btn { min-height: 44px; }
+  #setlist-dialog .setlist-actions { flex-shrink: 0; position: static; padding: 10px 16px max(10px,env(safe-area-inset-bottom)); }
+  .setlist-actions .btn { min-height: 48px; font-size: 15px; }
+  .setlist-actions:has(#setlist-create[hidden]) #setlist-analyze { flex: 1; }
+  .setlist-option button, .setlist-option a, .setlist-links a { min-height: 44px; font-size: 14px; }
+  .setlist-option a, .setlist-links a { display: inline-flex; align-items: center; padding-inline: 3px; }
+  #supplied-references summary { padding-block: 12px; }
+  #setlist-progress { margin: 16px 16px max(20px,env(safe-area-inset-bottom)); }
+  .dialog-actions .btn { min-height: 44px; }
+}
+
+#setlist-dialog .setlist-register { display: flex; gap: 9px; align-items: center; min-height: 44px; cursor: pointer; margin: 2px 0; font-size: 13px; }
+.setlist-register input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); }
+@media (max-width: 760px), (pointer: coarse) and (max-height: 500px) {
+  .doc-title { display: grid; gap: 0; }
+  .doc-title input { padding-block: 4px; }
+  .doc-title #page-label { display: block; font-size: 11px; }
+}

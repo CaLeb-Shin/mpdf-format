@@ -15,10 +15,12 @@
     <header class="practice-header">
       <a class="brand" href="/" data-route="" aria-label="MPDF"><b class="product-name">MPDF</b> <small class="app-name"><img src="/assets/seetogether-brand.png" width="19" height="19" alt="">SEETogether</small></a>
       <div class="document-heading"><h1 id="title" data-ja="楽譜を、その音楽といっしょに。" data-en="Your score, with its music." data-ko="악보와 음악을 함께.">Your score, with its music.</h1><p id="meta" data-ja="ファイルを開いて始めましょう。" data-en="Open a file to begin." data-ko="파일을 열고 연습을 시작하세요.">Open a file to begin.</p></div>
-      <div class="practice-actions">
+      <button id="reader-menu" type="button" class="btn ghost small" aria-controls="reader-actions" aria-expanded="false" data-ja="メニュー" data-en="Menu" data-ko="메뉴">Menu</button>
+      <div class="practice-actions" id="reader-actions">
         <button class="btn ghost small" id="openfile" data-ja="ファイルを開く" data-en="Open file" data-ko="파일 열기">Open file</button>
         <button class="btn ghost small hidden" id="sharebtn" data-ja="リンクをコピー" data-en="Copy link" data-ko="링크 복사">Copy link</button>
         <button class="btn ghost small hidden" id="share-file" data-ja="SEETogetherで開く" data-en="Open in SEETogether" data-ko="SEETogether로 열기">Open in SEETogether</button>
+        <button class="btn primary small hidden" id="edit-score" data-ja="原本を編集" data-en="Edit original" data-ko="원본 수정">Edit original</button>
         <button class="btn ghost small hidden" id="dl" data-ja="オリジナルを保存" data-en="Save original" data-ko="원본 저장">Save original</button>
         <a class="btn ghost small create-link" href="/make/" data-ja="MPDFを作る" data-en="Make an MPDF" data-ko="MPDF 만들기">Make an MPDF</a>
         <button class="lang" id="langbtn" type="button" aria-label="Switch language"></button>

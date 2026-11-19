@@ -6,7 +6,7 @@ import {findPositions} from './score-titles.js'
 import {pickScorePosition} from './score-position-dialog.js'
 import {isScorePDF, mountScoreDrop} from './score-drop.js'
 
-export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L}) {
+export function mountSetlist({openFile, currentScore, applyScore, account, safeTitle, L}) {
   const el = id => document.getElementById(id)
   const dialog = el('setlist-dialog'), input = el('setlist-text'), rows = el('setlist-songs')
   const message = el('setlist-message'), submit = el('setlist-create')
@@ -15,6 +15,22 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
   const supplied = el('supplied-references'), suppliedRows = supplied.querySelector('ol')
   const fields = el('setlist-fields'), progress = el('setlist-progress'), meter = progress.querySelector('progress')
   let draft, controller, operation, loadedFile, selectedFile, sourceDocument, creating = false
+  const reviewToggle=el('edit-setlist-input')
+  reviewToggle.onclick=()=>reviewToggle.setAttribute('aria-expanded',String(reviewToggle.getAttribute('aria-expanded')!=='true'))
+  const register = el('setlist-register')
+  function offerSignIn() {
+    if (register.checked && !account.user) document.querySelector('#account-host .account-trigger').click()
+  }
+  register.onchange = offerSignIn
+  function fitKeyboard() {
+    const viewport=window.visualViewport
+    if (!dialog.open || !viewport) return
+    const inset=viewport.scale===1?Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop):0
+    dialog.style.setProperty('--dialog-height', Math.floor(viewport.height*0.94)+'px')
+    dialog.style.setProperty('--dialog-bottom', Math.round(inset)+'px')
+  }
+  window.visualViewport?.addEventListener('resize', fitKeyboard)
+  window.visualViewport?.addEventListener('scroll', fitKeyboard)
   function displayAttachment() {
     const name = selectedFile?.name || currentScore()?.name
     el('setlist-current').textContent = name || ''
@@ -41,8 +57,12 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     sourceDocument = pdf
     displayAttachment()
     el('setlist-drop-error').hidden = true
+    register.checked=!!account.user || !!currentScore()?.registered
+    register.disabled=!!currentScore()?.registered
     dialog.showModal()
-    input.focus()
+    fitKeyboard()
+    if (matchMedia('(pointer: coarse)').matches) el('setlist-close').focus({preventScroll:true})
+    else input.focus()
   }
   function stage(text, page, total) {
     el('setlist-stage').textContent = text
@@ -56,6 +76,8 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
   const show = text => { message.textContent = text }
   function clearReview() {
     controller?.abort()
+    fields.classList.remove('reviewing')
+    reviewToggle.setAttribute('aria-expanded','false')
     draft = null
     rows.replaceChildren()
     suppliedRows.replaceChildren()
@@ -180,6 +202,8 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
     const pending = draft.songs.map(renderSong).filter(row => !row.song.video)
     supplied.hidden = !suppliedRows.children.length
     if (!pending.length) { await create(); return }
+    fields.classList.add('reviewing')
+    fields.querySelector('.setlist-content').scrollTop=0
     show(L('링크가 없는 곡은 아래 영상 제목을 눌러 선택하세요.','Choose a video title below for each missing link.','リンクのない曲は、下の動画タイトルを押して選んでください。'))
     controller = new AbortController()
     const {signal} = controller, requests = new Map()
@@ -190,6 +214,11 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
   }
   async function create() {
     if (creating || !draft?.songs.every(song => song.video)) return
+    if (register.checked && !account.user) {
+      show(L('앱에서 사용할 제작자 계정으로 로그인한 뒤 만들기를 누르세요.','Sign in with your app account, then choose Create MPDF.','アプリのアカウントでログインした後、MPDFを作成してください。'))
+      offerSignIn()
+      return
+    }
     creating = true
     operation = new AbortController()
     const {signal} = operation
@@ -216,8 +245,8 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
         const file = await makeSetlistFile(name,songs,safeTitle(name))
         signal.throwIfAborted()
         el('setlist-close').disabled = true
-        stage(L('공유용 MPDF 저장 중…','Saving the sharing MPDF…','共有用MPDFを保存中…'))
-        await openFile(file, {exportShared:true})
+        stage(L('편집용 원본과 공유본 저장 중…','Saving editable and sharing copies…','編集用原本と共有用コピーを保存中…'))
+        await openFile(file, {createdSetlist:true,registerCreator:register.checked})
       } else {
         stage(L('악보 PDF 여는 중…','Opening the score PDF…','楽譜PDFを読み込み中…'))
         if (sourceFile && loadedFile !== sourceFile) {
@@ -247,8 +276,8 @@ export function mountSetlist({openFile, currentScore, applyScore, safeTitle, L})
         }
         signal.throwIfAborted()
         el('setlist-close').disabled = true
-        stage(L('레퍼런스를 연결하고 공유용 MPDF 저장 중…','Connecting references and saving the MPDF…','参考動画を接続してMPDFを保存中…'))
-        await applyScore(score.pdf,title,songs,positions)
+        stage(L('레퍼런스를 연결하고 편집용 원본과 공유본 저장 중…','Connecting references and saving both copies…','参考動画を接続して原本と共有用コピーを保存中…'))
+        await applyScore(score.pdf,title,songs,positions,register.checked)
       }
       dialog.close()
     } catch (e) {

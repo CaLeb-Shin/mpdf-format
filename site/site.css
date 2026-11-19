@@ -79,3 +79,8 @@
   .reading-page .nav nav > a { display: inline-flex; }
 }
 .score-dragging { outline: 3px dashed var(--accent); outline-offset: -3px; }
+.touch-label { display: none; }
+@media (pointer: coarse), (max-width: 600px) {
+  .pointer-label { display: none; }
+  .touch-label { display: inline; }
+}

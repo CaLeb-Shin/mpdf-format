@@ -366,7 +366,12 @@ export function createSeetoAccount({ lang = document.documentElement.lang } = {}
       status.classList.toggle('account-error', !!error)
     }
     function render(value) {
-      trigger.textContent = value ? `${text.signedIn} · ${value.displayName || text.accountName}` : text.signIn
+      const label = value ? `${text.signedIn} · ${value.displayName || text.accountName}` : text.signIn
+      const full = document.createElement('span')
+      full.textContent = label
+      trigger.replaceChildren(full)
+      trigger.dataset.shortLabel = text.signedIn
+      trigger.setAttribute('aria-label', label)
       trigger.title = value ? value.displayName || text.accountName : text.title
       identity.hidden = !value
       identity.textContent = value ? [value.displayName || text.accountName, value.email].filter(Boolean).join(' · ') : ''

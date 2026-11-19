@@ -3,7 +3,7 @@ import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38
 import { readMpdf, fmtTime, TRACK_COLORS, mimeOf } from './mpdf-browser.js'
 import { getLang, mountLangButton } from './i18n.js'
 import { mountAds } from './ads.js'
-import { loadFile } from './file-session.js'
+import { loadFile, storeFile, originalForLink } from './file-session.js'
 import { PlaybackEngine, publicationOffset } from './playback-engine.js'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs'
@@ -97,6 +97,8 @@ async function resetDocument() {
   state.urls.clear()
   Object.assign(state, { bytes: null, filename: '', manifest: null, publication: null, files: {}, tracks: [], choices: [], current: null, page: 1, pageCount: 0, ready: false, hash: null, localMarkers: [], placing: null, pitch: 0, seeking: false, scrubPosition: null })
   clearLoop(); cancelPlacement(); player.classList.add('hidden'); $('#yt').classList.add('hidden'); $('#toolbar').classList.add('hidden'); $('#dl').classList.add('hidden'); $('#share-file').classList.add('hidden')
+  state.editableFile=null
+  $('#edit-score').classList.add('hidden')
   pages.replaceChildren(); notice(); message()
   if (previous) await previous.destroy().catch(() => {})
   else if (previousLoading) await previousLoading.destroy().catch(() => {})
@@ -130,6 +132,14 @@ async function openFile(file, fetched = false) {
     updateMeta()
     document.title = `${$('#title').textContent} · MPDF`
     if (state.manifest) {
+      const original = !state.manifest.web?.sharedReadOnly && !state.publication?.sharedReadOnly
+      if (original) state.editableFile=file
+      else if (fetched && idMatch) {
+        const localOriginal=await originalForLink(idMatch[1]).catch(()=>null)
+        if (generation !== state.openGeneration) return
+        state.editableFile=localOriginal
+      }
+      $('#edit-score').classList.toggle('hidden', !state.editableFile)
       const button = $('#share-file')
       const canShare = !!shareableScore(new Uint8Array(), 'setlist')
       button.dataset.en = canShare ? 'Open in SEETogether' : 'Save for SEETogether'
@@ -138,7 +148,13 @@ async function openFile(file, fetched = false) {
       button.textContent = button.dataset[getLang()] || button.dataset.en
       button.classList.remove('hidden')
     }
-    $('#dl').classList.remove('hidden'); $('#toolbar').classList.remove('hidden')
+    const shared=state.manifest?.web?.sharedReadOnly || state.publication?.sharedReadOnly
+    const download=$('#dl')
+    Object.assign(download.dataset, shared
+      ? {ko:'공유본 저장',en:'Save sharing copy',ja:'共有用コピーを保存'}
+      : {ko:'원본 저장',en:'Save original',ja:'原本を保存'})
+    download.textContent=download.dataset[getLang()] ?? download.dataset.en
+    download.classList.remove('hidden'); $('#toolbar').classList.remove('hidden')
     $('#follow').checked = state.manifest?.options?.followPage !== false
     $('#follow').disabled = !state.manifest
     $('#show-player').disabled = !state.choices.length
@@ -178,6 +194,22 @@ async function openFile(file, fetched = false) {
 }
 function updateMeta() {
   $('#meta').textContent = say(`${state.pageCount}쪽 · ${state.tracks.length ? `${state.tracks.length}개 음원` : '일반 PDF'}`, `${state.pageCount} pages · ${state.tracks.length ? `${state.tracks.length} audio tracks` : 'plain PDF'}`, `${state.pageCount}ページ · ${state.tracks.length ? `音源${state.tracks.length}件` : '通常のPDF'}`)
+}
+$('#reader-menu').onclick = event => {
+  const menu=event.currentTarget
+  menu.setAttribute('aria-expanded', String(menu.getAttribute('aria-expanded')!=='true'))
+}
+new ResizeObserver(() => {
+  pages.style.setProperty('--player-height', player.getBoundingClientRect().height+'px')
+}).observe(player)
+$('#edit-score').onclick = async () => {
+  if (!state.editableFile) return
+  try {
+    const id = await storeFile(state.editableFile)
+    location.href='/make/?'+new URLSearchParams({session:id,lang:getLang()})
+  } catch {
+    notice(say('원본을 저장한 뒤 제작 화면에서 열어 주세요.','Save the original and open it in the maker.','原本を保存して作成画面で開いてください。'),true)
+  }
 }
 $('#share-file').onclick = async () => {
   if (!state.bytes) return

@@ -19,3 +19,8 @@
 .account-status.account-error { color: #a94729; }
 .account-detail { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
 @media (max-width: 560px) { .account-trigger { max-width: 150px; font-size: 12px !important; padding: 8px 10px; } .account-dialog { padding: 20px; } }
+@media (max-width: 560px) {
+  .maker-head .account-trigger { justify-content: center; min-width: 44px; max-width: none; }
+  .maker-head .account-trigger > span { display: none; }
+  .maker-head .account-trigger::after { content: attr(data-short-label); }
+}

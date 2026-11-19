@@ -66,3 +66,13 @@
 html[lang="ja"] :is(.studio-intro h1, .studio-intro p, .workflow p, .recipient p) { word-break: normal; }
 #home-preparing, #home-drop-error { display: block; padding-top: 8px; font-size: 13px; }
 #home-drop-error { color: #913b36; }
+@media (max-width: 520px) {
+  .composer { padding: 15px; }
+  .composer-actions { display: grid; grid-template-columns: minmax(0,1fr); gap: 8px; }
+  .attachment { justify-content: space-between; }
+  .attachment label, .attachment button, .open-received { min-height: 44px; }
+  .attachment label { flex: 1; font-size: 14px; }
+  .attachment button { min-width: 44px; }
+  .open-received { display: inline-flex; align-items: center; margin-top: 2px; }
+  .composer .primary { min-height: 48px; width: 100%; font-size: 16px; }
+}

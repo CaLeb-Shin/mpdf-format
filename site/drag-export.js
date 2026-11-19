@@ -18,7 +18,7 @@ export function mountDragExport(anchor) {
     // File-aware drop targets can receive the same bytes directly.
     try { data.items.add(file) } catch {}
   }
-  function save(bytes, name) {
+  function prepare(bytes, name) {
     clear()
     file = new File([bytes], name, {type:'application/pdf'})
     objectURL = URL.createObjectURL(file)
@@ -26,7 +26,10 @@ export function mountDragExport(anchor) {
     anchor.download = name
     anchor.querySelector('strong').textContent = name
     anchor.hidden = false
+  }
+  function save(bytes, name) {
+    prepare(bytes, name)
     anchor.click()
   }
-  return {save,clear}
+  return {prepare,save,clear}
 }

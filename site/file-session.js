@@ -11,10 +11,9 @@ function database() {
   })
 }
 
-async function save(record) {
+async function save(record, id = crypto.randomUUID(), expiresAt = Date.now() + TTL) {
   const db = await database()
   try {
-    const id = crypto.randomUUID()
     const created = Date.now()
     await new Promise((resolve, reject) => {
       const tx = db.transaction('files', 'readwrite')
@@ -24,10 +23,12 @@ async function save(record) {
         const row = cursor.result
         if (!row) return
         const old = row.value
-        if (created - old.created > TTL || (old.id !== id && record.name && old.name === record.name)) row.delete()
+        const expired = created >= (old.expiresAt ?? old.created + TTL)
+        const replacedPreview = !old.kind && !record.kind && record.name && old.name === record.name
+        if (old.id !== id && (expired || replacedPreview)) row.delete()
         row.continue()
       }
-      store.put({...record, id, created})
+      store.put({...record, id, created, expiresAt})
       tx.oncomplete = resolve
       tx.onabort = () => reject(tx.error)
     })
@@ -35,8 +36,8 @@ async function save(record) {
   } finally { db.close() }
 }
 
-async function read(id, draft) {
-  if (!/^[a-f0-9-]{36}$/i.test(id || '')) return null
+async function read(id, kind) {
+  if (kind !== 'original' && !/^[a-f0-9-]{36}$/i.test(id || '')) return null
   const db = await database()
   try {
     return await new Promise((resolve, reject) => {
@@ -47,10 +48,10 @@ async function read(id, draft) {
       request.onsuccess = () => {
         const row = request.result
         if (!row) return
-        if (Date.now() - row.created > TTL) { store.delete(id); return }
-        if ((row.kind === 'setlist') !== draft) return
+        if (Date.now() >= (row.expiresAt ?? row.created + TTL)) { store.delete(id); return }
+        if (row.kind !== kind) return
         record = row
-        if (draft) store.delete(id)
+        if (kind === 'setlist') store.delete(id)
       }
       tx.oncomplete = () => resolve(record)
       tx.onabort = () => reject(tx.error)
@@ -60,8 +61,18 @@ async function read(id, draft) {
 
 export function storeFile(file) { return save({file, name:file.name}) }
 export async function loadFile(id) {
-  const row = await read(id, false)
+  const row = await read(id)
   return row && new File([row.file], row.name, {type:'application/pdf'})
 }
 export function storeSetlist(text, score) { return save({kind:'setlist', text, score}) }
-export function takeSetlist(id) { return read(id, true) }
+export function takeSetlist(id) { return read(id, 'setlist') }
+
+// Only the shareable PDF is uploaded. This browser keeps the author's saved original.
+export function rememberOriginal(id, file, expiresAt) {
+  if (!/^[A-Za-z0-9]{8,16}$/.test(id) || !Number.isFinite(Date.parse(expiresAt))) throw new Error('Invalid share link')
+  return save({kind:'original',file}, 'original:'+id, Date.parse(expiresAt))
+}
+export async function originalForLink(id) {
+  if (!/^[A-Za-z0-9]{8,16}$/.test(id)) return null
+  return (await read('original:'+id, 'original'))?.file ?? null
+}

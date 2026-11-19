@@ -202,3 +202,28 @@
   .practice-pages:has(.practice-empty) { padding: 18px 14px 36px; }
   .practice-empty h2 { margin-bottom: 10px; }
 }
+
+#reader-menu { display: none; }
+@media (max-width: 760px), (pointer: coarse) and (max-height: 500px) {
+  .practice-header {
+    display: grid; min-height: 54px; grid-template-columns: auto minmax(0,1fr) auto; gap: 0 8px;
+    padding: 5px max(10px,env(safe-area-inset-right)) 5px max(10px,env(safe-area-inset-left));
+  }
+  .practice-header .document-heading { min-width: 0; }
+  .document-heading h1, .document-heading p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #reader-menu { display: inline-flex; min-height: 44px; }
+  #reader-actions { grid-column: 1/-1; width: 100%; display: flex; flex-wrap: wrap; gap: 5px; margin: 0; }
+  #reader-actions .btn, #reader-actions .lang { font-size: 13px; min-height: 44px; }
+  #reader-menu[aria-expanded="false"] + #reader-actions > :not(#share-file,#edit-score) { display: none; }
+  #reader-actions :is(#edit-score,#share-file):not(.hidden) { flex: 1; }
+  .practice-toolbar { flex-wrap: wrap; padding-inline: 8px; }
+  .page-navigation button, .practice-toolbar .text-action { min-height: 42px; }
+  .page-navigation input { font-size: 16px; }
+  .practice-pages:not(:has(.practice-empty)) { padding: 8px 5px calc(var(--player-height,0px) + max(20px,env(safe-area-inset-bottom))); }
+  .practice-player { max-width: calc(100vw - 16px); bottom: max(8px,env(safe-area-inset-bottom)) !important; }
+}
+@media (pointer: coarse) and (max-height: 500px) {
+  .practice-player:not(.collapsed) { overflow-y: auto; max-height: calc(100dvh - 16px); }
+  .practice-player:not(.collapsed) > * { flex-shrink: 0; }
+  .practice-player:has(.practice-video:not(.hidden)):not(.collapsed) .practice-transport { display: flex; }
+}
