@@ -50,23 +50,31 @@
         <p><span data-l="ko">악보를 끌어 놓거나 파일을 선택하세요. 악보가 없으면 ‘PDF 없이 곡 목록 만들기’를 선택하세요.</span><span data-l="en">Drop or choose your score PDF. For a text-only setlist, choose Make a song list without a PDF.</span><span data-l="ja">楽譜PDFをドロップするか選びます。楽譜がなければ「PDFなしで曲目表を作る」を選びます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
-        <div class="tour-note tour-paper">
-          <div class="tour-note-title"><span data-l="ko">합주 악보.pdf</span><span data-l="en">Rehearsal.pdf</span><span data-l="ja">合奏楽譜.pdf</span></div>
-          <img class="tour-score" src="/assets/seetogether-score.webp" width="1720" height="1020" alt="" loading="lazy">
-          <div class="tour-attachment">✓ <span data-l="ko">첨부된 악보</span><span data-l="en">Score attached</span><span data-l="ja">添付した楽譜</span></div>
+        <div class="tour-input-card tour-paper">
+          <strong class="tour-field-label"><span data-l="ko">악보 PDF</span><span data-l="en">Score PDF</span><span data-l="ja">楽譜PDF</span></strong>
+          <div class="tour-drop-zone">
+            <div class="tour-drop-prompt"><span data-l="ko">여기에 악보를 끌어 놓으세요</span><span data-l="en">Drop your score here</span><span data-l="ja">ここに楽譜をドロップ</span></div>
+            <div class="tour-source-file"><i class="tour-doc"></i><b><span data-l="ko">합주 연습.pdf</span><span data-l="en">Rehearsal.pdf</span><span data-l="ja">合奏練習.pdf</span></b><i class="tour-check">✓</i></div>
+          </div>
         </div>
       </div>
     </article>
     <article class="tour-scene" id="tour-step-2" data-duration="3000" aria-labelledby="tour-title-2">
       <div class="tour-caption">
-        <h3 id="tour-title-2"><span data-l="ko">콘티나 링크를 붙여 넣어요</span><span data-l="en">Paste your setlist or links</span><span data-l="ja">曲順やリンクを貼る</span></h3>
-        <p><span data-l="ko">곡을 순서대로 붙여 넣으세요. 유튜브 링크는 자동으로 연결되고, 곡명만 있어도 후보를 찾을 수 있어요.</span><span data-l="en">Paste the songs in order. YouTube links connect directly, and titles alone can be matched to recordings.</span><span data-l="ja">曲を演奏順に貼り付けます。YouTubeリンクはそのまま使え、曲名だけでも参考動画を探せます。</span></p>
+        <h3 id="tour-title-2"><span data-l="ko">콘티를 붙여 넣어요</span><span data-l="en">Paste your setlist</span><span data-l="ja">曲順を貼り付ける</span></h3>
+        <p><span data-l="ko">연주할 순서대로 곡명을 붙여 넣으세요. 유튜브 링크가 있으면 해당 곡 아래에 함께 넣어요.</span><span data-l="en">Paste your songs in playing order. If you have a YouTube link, include it under the song it goes with.</span><span data-l="ja">曲名を演奏順に貼り付けます。YouTubeリンクがあれば、その曲の下に一緒に貼ります。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
-        <div class="tour-search tour-paper">
-          <div class="tour-search-field"><i class="tour-lens"></i><span data-l="ko">주가 일하시네</span><span data-l="en">The Lord Is Working</span><span data-l="ja">主は働かれる</span></div>
-          <div class="tour-result"><i class="tour-video"></i><div><strong><span data-l="ko">주가 일하시네</span><span data-l="en">The Lord Is Working</span><span data-l="ja">主は働かれる</span></strong><small>YouTube</small></div><b class="tour-check">✓</b></div>
-          <div class="tour-url">youtu.be/cp7mZSBImlc</div>
+        <div class="tour-input-card tour-paper">
+          <div class="tour-attached">✓ <span data-l="ko">합주 연습.pdf</span><span data-l="en">Rehearsal.pdf</span><span data-l="ja">合奏練習.pdf</span></div>
+          <strong class="tour-field-label"><span data-l="ko">콘티 텍스트 또는 유튜브 링크</span><span data-l="en">Setlist or YouTube links</span><span data-l="ja">曲順またはYouTubeリンク</span></strong>
+          <div class="tour-paste-field">
+            <div class="tour-pasted">
+              <div>1. <span data-l="ko">저 높은 곳을 향하여</span><span data-l="en">Higher Ground</span><span data-l="ja">高きところへ</span></div>
+              <div>2. <span data-l="ko">주가 일하시네</span><span data-l="en">The Lord Is Working</span><span data-l="ja">主は働かれる</span></div>
+              <div class="tour-pasted-link">https://youtu.be/cp7mZSBImlc</div>
+            </div>
+          </div>
         </div>
       </div>
     </article>
@@ -78,8 +86,8 @@
       <div class="tour-art" aria-hidden="true">
         <div class="tour-studio tour-paper">
           <div class="tour-studio-bar"><strong>MPDF</strong><span>Studio</span></div>
-          <div class="tour-assemble"><b><span data-l="ko">합주 연습</span><span data-l="en">Rehearsal</span><span data-l="ja">合奏練習</span></b><img class="tour-made-logo tour-logo" alt="" src="/assets/seetogether-brand.png" width="22" height="22"><img class="tour-score" alt="" src="/assets/seetogether-score.webp" width="1720" height="1020" loading="lazy"></div>
-          <div class="tour-studio-actions"><span class="tour-attachment">＋ <span data-l="ko">악보.pdf</span><span data-l="en">Score.pdf</span><span data-l="ja">楽譜.pdf</span></span><strong class="tour-create"><span data-l="ko">MPDF 만들기</span><span data-l="en">Make MPDF</span><span data-l="ja">MPDFを作成</span></strong></div>
+          <div class="tour-assemble"><b><span data-l="ko">주가 일하시네</span><span data-l="en">The Lord Is Working</span><span data-l="ja">主は働かれる</span></b><img class="tour-made-logo tour-logo" alt="" src="/assets/seetogether-brand.png" width="22" height="22"><img class="tour-score" alt="" src="/assets/seetogether-score.webp" width="1720" height="1020" loading="lazy"></div>
+          <div class="tour-studio-actions"><strong class="tour-create"><span data-l="ko">MPDF 만들기</span><span data-l="en">Make MPDF</span><span data-l="ja">MPDFを作成</span></strong><span class="tour-made-file">✓ <span data-l="ko">합주 연습.mpdf</span><span data-l="en">Rehearsal.mpdf</span><span data-l="ja">合奏練習.mpdf</span></span></div>
         </div>
       </div>
     </article>
@@ -104,20 +112,29 @@
       <div class="tour-art" aria-hidden="true">
         <div class="tour-device tour-open">
           <div class="tour-device-top"></div>
-          <div class="tour-device-file"><i class="tour-doc"></i><strong><span data-l="ko">합주 연습.mpdf</span><span data-l="en">Rehearsal.mpdf</span><span data-l="ja">合奏練習.mpdf</span></strong></div>
-          <div class="tour-share-sheet"><div class="tour-handle"></div><span><span data-l="ko">공유</span><span data-l="en">Share</span><span data-l="ja">共有</span></span><div class="tour-app-target"><img class="tour-logo" alt="" src="/assets/seetogether-brand.png" width="48" height="48"><b>SEETogether</b><i class="tour-check">✓</i></div></div>
+          <div class="tour-open-stack">
+            <div class="tour-picker">
+              <div class="tour-device-file"><i class="tour-doc"></i><strong><span data-l="ko">합주 연습.mpdf</span><span data-l="en">Rehearsal.mpdf</span><span data-l="ja">合奏練習.mpdf</span></strong></div>
+              <div class="tour-share-sheet"><div class="tour-handle"></div><span><span data-l="ko">공유</span><span data-l="en">Share</span><span data-l="ja">共有</span></span><div class="tour-app-target"><img class="tour-logo" alt="" src="/assets/seetogether-brand.png" width="48" height="48"><b>SEETogether</b><i class="tour-check">✓</i></div></div>
+            </div>
+            <div class="tour-opened">
+              <div class="tour-reader-brand"><img class="tour-logo" alt="" src="/assets/seetogether-brand.png" width="20" height="20"><b>SEETogether</b></div>
+              <strong><span data-l="ko">합주 연습.mpdf</span><span data-l="en">Rehearsal.mpdf</span><span data-l="ja">合奏練習.mpdf</span></strong>
+              <img class="tour-score" alt="" src="/assets/seetogether-score.webp" width="1720" height="1020" loading="lazy">
+            </div>
+          </div>
         </div>
       </div>
     </article>
     <article class="tour-scene" id="tour-step-6" data-duration="3500" aria-labelledby="tour-title-6">
       <div class="tour-caption">
         <h3 id="tour-title-6"><span data-l="ko">악보를 보며 연습해요</span><span data-l="en">Practise with the score</span><span data-l="ja">楽譜を見ながら練習</span></h3>
-        <p><span data-l="ko">곡 옆 로고를 눌러 재생하고, 연습할 구간은 A–B로 반복하세요.</span><span data-l="en">Tap the logo beside the song to play it. Loop a passage with A–B.</span><span data-l="ja">曲名の横のロゴで再生。練習したい区間はA–Bで繰り返せます。</span></p>
+        <p><span data-l="ko">곡 제목 옆 로고를 누르면 레퍼런스가 재생돼요. 연습할 구간은 A–B로 반복하세요.</span><span data-l="en">Tap the logo beside the song title to hear the reference recording. Loop a passage with A–B.</span><span data-l="ja">曲名の横のロゴをタップすると参考音源が流れます。練習したい区間はA–Bで繰り返せます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-device tour-practice">
           <div class="tour-device-top"></div>
-          <div class="tour-device-score"><div class="tour-score-title"><strong><span data-l="ko">합주 연습</span><span data-l="en">Rehearsal</span><span data-l="ja">合奏練習</span></strong><img class="tour-logo" alt="" src="/assets/seetogether-brand.png" width="20" height="20"></div><img class="tour-score" alt="" src="/assets/seetogether-score.webp" width="1720" height="1020" loading="lazy"></div>
+          <div class="tour-device-score"><div class="tour-score-title"><strong><span data-l="ko">주가 일하시네</span><span data-l="en">The Lord Is Working</span><span data-l="ja">主は働かれる</span></strong><img class="tour-logo" alt="" src="/assets/seetogether-brand.png" width="20" height="20"></div><img class="tour-score" alt="" src="/assets/seetogether-score.webp" width="1720" height="1020" loading="lazy"></div>
           <div class="tour-player"><i class="tour-pause-bars"></i><div class="tour-range"><span>A</span><b></b><span>B</span></div><i>↻</i></div>
         </div>
       </div>
