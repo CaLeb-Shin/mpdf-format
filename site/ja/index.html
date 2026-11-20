@@ -6,7 +6,7 @@
 <p><span data-l="ko">악보 PDF를 먼저 넣고 콘티 목록을 붙여 넣으세요. 유튜브 레퍼런스 링크가 있으면 해당 곡명 아래에 함께 넣어 주세요.</span><span data-l="en">Add your score PDF, then paste your setlist. Include any YouTube reference links under the songs they go with.</span><span data-l="ja">楽譜PDFを入れてから、曲順を貼り付けます。YouTubeの参考動画があれば、その曲名の下にリンクを添えてください。</span></p>
 <form class="composer" id="home-setlist" action="/make/">
   <div class="source-step">
-    <label class="step-label" for="home-pdf"><span class="step-number" aria-hidden="true">1</span> <span data-l="ko">악보 PDF</span><span data-l="en">Score PDF</span><span data-l="ja">楽譜PDF</span></label>
+    <label class="step-label" data-step="1" aria-current="step" for="home-pdf"><span class="step-number" aria-hidden="true">1</span> <span data-l="ko">악보 PDF</span><span data-l="en">Score PDF</span><span data-l="ja">楽譜PDF</span></label>
     <div class="attachment">
       <input type="file" id="home-pdf" accept="application/pdf,.pdf,.mpdf">
       <label for="home-pdf"><span class="attachment-mark" aria-hidden="true"></span> <span class="attach-label"><span data-l="en"><span class="pointer-label">Drop or choose a score PDF</span><span class="touch-label">Attach score PDF</span></span><span data-l="ko"><span class="pointer-label">악보 PDF 끌어 놓기 · 파일 선택</span><span class="touch-label">악보 PDF 첨부</span></span><span data-l="ja"><span class="pointer-label">楽譜PDFをドロップ・選択</span><span class="touch-label">楽譜PDFを添付</span></span></span><strong id="home-filename" aria-live="polite" hidden></strong></label>
@@ -16,11 +16,11 @@
     <small id="home-drop-error" role="alert" hidden><span data-l="ko">악보 PDF 한 개를 선택해 주세요.</span><span data-l="en">Choose one score PDF.</span><span data-l="ja">楽譜PDFを1つ選んでください。</span></small>
   </div>
   <div class="text-step">
-    <label class="step-label" for="home-text"><span class="step-number" aria-hidden="true">2</span> <span data-l="en">Setlist and YouTube reference links</span><span data-l="ko">콘티 목록과 유튜브 레퍼런스 링크</span><span data-l="ja">曲順とYouTubeの参考動画リンク</span></label>
+    <label class="step-label" data-step="2" for="home-text"><span class="step-number" aria-hidden="true">2</span> <span data-l="en">Setlist and YouTube reference links</span><span data-l="ko">콘티 목록과 레퍼런스 링크</span><span data-l="ja">曲順とYouTubeの参考動画リンク</span></label>
     <textarea id="home-text" disabled rows="3" maxlength="50000" required aria-describedby="home-reference-hint" placeholder="1. Higher Ground&#10;2. The Lord Is Working&#10;https://youtu.be/cp7mZSBImlc" data-ko-placeholder="1. 저 높은 곳을 향하여&#10;2. 주가 일하시네&#10;https://youtu.be/cp7mZSBImlc" data-ja-placeholder="1. 高きところへ&#10;2. 主は働かれる&#10;https://youtu.be/cp7mZSBImlc"></textarea>
-    <small class="reference-hint" id="home-reference-hint"><span data-l="ko">링크가 없는 곡은 추천 영상을 자동으로 선택해요. 만들기 전에 다른 영상으로 바꿀 수 있어요.</span><span data-l="en">For songs without links, we preselect a suggested recording. You can change it before creating your MPDF.</span><span data-l="ja">リンクのない曲は、おすすめの動画が自動で選ばれます。MPDFを作る前に変更できます。</span></small>
+    <small class="reference-hint" id="home-reference-hint"><span data-l="ko">링크가 없는 곡은 추천 영상을 보여드려요. 원하는 영상을 선택하거나, 영상 없이 그대로 만들어도 돼요.</span><span data-l="en">For songs without links, we’ll show suggested recordings. Choose one you like, or leave the song without a video.</span><span data-l="ja">リンクのない曲にはおすすめの動画が表示されます。好きな動画を選ぶか、動画なしでそのまま作成できます。</span></small>
   </div>
-  <div class="composer-actions"><button class="btn primary" type="submit" disabled><span class="step-number" aria-hidden="true">3</span> <span data-l="en">Make MPDF</span><span data-l="ko">MPDF 만들기</span><span data-l="ja">MPDFを作成</span> <span aria-hidden="true">→</span></button></div>
+  <div class="composer-actions" data-step="3"><button class="btn primary" type="submit" disabled><span class="step-number" aria-hidden="true">3</span> <span data-l="en">Make MPDF</span><span data-l="ko">MPDF 만들기</span><span data-l="ja">MPDFを作成</span> <span aria-hidden="true">→</span></button></div>
   <small id="home-preparing" role="status" hidden><span data-l="ko">콘티를 제작기로 옮기는 중…</span><span data-l="en">Opening your setlist in the maker…</span><span data-l="ja">曲順を作成画面に引き継いでいます…</span></small>
   <div id="handoff-error" role="alert" hidden><span data-l="en">Your browser could not carry this draft over. Copy your text and continue in the maker.</span><span data-l="ko">입력 내용을 제작기로 옮길 수 없어요. 텍스트를 복사해 제작기에서 계속해 주세요.</span><span data-l="ja">入力内容を引き継げませんでした。テキストをコピーして作成画面に貼り付けてください。</span> <a href="/make/?start=setlist"><span data-l="en">Open maker</span><span data-l="ko">제작기 열기</span><span data-l="ja">作成画面へ</span> ↗</a></div>
 </form>
@@ -68,7 +68,7 @@
       <div class="tour-art" aria-hidden="true">
         <div class="tour-input-card tour-paper">
           <div class="tour-attached">✓ <span data-l="ko">합주 연습.pdf</span><span data-l="en">Rehearsal.pdf</span><span data-l="ja">合奏練習.pdf</span></div>
-          <strong class="tour-field-label"><span data-l="ko">콘티 목록과 유튜브 레퍼런스 링크</span><span data-l="en">Setlist and YouTube reference links</span><span data-l="ja">曲順とYouTubeの参考動画リンク</span></strong>
+          <strong class="tour-field-label"><span data-l="ko">콘티 목록과 레퍼런스 링크</span><span data-l="en">Setlist and YouTube reference links</span><span data-l="ja">曲順とYouTubeの参考動画リンク</span></strong>
           <div class="tour-paste-field">
             <div class="tour-pasted">
               <div>1. <span data-l="ko">저 높은 곳을 향하여</span><span data-l="en">Higher Ground</span><span data-l="ja">高きところへ</span></div>
@@ -82,7 +82,7 @@
     <article class="tour-scene" id="tour-step-3" data-duration="2800" aria-labelledby="tour-title-3">
       <div class="tour-caption">
         <h3 id="tour-title-3"><span data-l="ko">여기서 MPDF를 만들어요</span><span data-l="en">Make the MPDF here</span><span data-l="ja">ここでMPDFを作る</span></h3>
-        <p><span data-l="ko">‘MPDF 만들기’를 누르세요. 링크가 없는 곡은 자동으로 선택된 추천 영상을 확인하고 바꿀 수 있어요.</span><span data-l="en">Choose Make MPDF. For songs without links, review the suggested recording or choose another.</span><span data-l="ja">「MPDFを作成」を押します。リンクのない曲は、自動で選ばれた動画を確認して変更できます。</span></p>
+        <p><span data-l="ko">‘MPDF 만들기’를 누르세요. 추천 영상은 직접 고르세요. 곡에 맞는 영상이 없으면 그대로 진행해도 돼요.</span><span data-l="en">Choose Make MPDF. Pick any suggested recordings you want. You can also continue without a video.</span><span data-l="ja">「MPDFを作成」を押します。おすすめの動画から選べます。合う動画がなければ、そのまま進めます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-studio tour-paper">

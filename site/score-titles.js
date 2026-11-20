@@ -213,6 +213,7 @@ function freePosition(canvas, line, occupied) {
 }
 
 export async function findPositions(pdf, songs, existing, signal, progress) {
+  if (!songs.length) return []
   const pages = []
   for (let n=1; n<=pdf.numPages; n++) {
     signal.throwIfAborted()

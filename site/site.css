@@ -87,6 +87,13 @@
 
 .step-label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 650; }
 .reference-hint { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.step-label[data-step]:not([aria-current]) { color: var(--muted); }
+:is(#home-setlist, #setlist-dialog) .step-label[aria-current="step"] { color: var(--accent); font-weight: 750; }
+.step-label[aria-current="step"] .step-number { background: var(--accent); color: #fff; }
+:is(#home-setlist, #setlist-dialog) .step-label[aria-current="step"] + :is(.attachment, #setlist-source, textarea) {
+  border-color: var(--accent); border-style: solid; background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent);
+}
 .step-number {
   display: inline-grid; place-items: center; flex: none; width: 23px; height: 23px;
   border-radius: 50%; color: var(--accent); background: var(--accent-soft); font-size: 12px;

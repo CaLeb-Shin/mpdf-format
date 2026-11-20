@@ -1,4 +1,5 @@
 import {mountScoreTour} from './score-tour.js'
+import {highlightSetlistStep} from './setlist-steps.js'
 import {storeSetlist} from './file-session.js'
 import {isScorePDF, mountScoreDrop} from './score-drop.js'
 import {mountLangButton,getLang} from './i18n.js';
@@ -33,6 +34,7 @@ let transferring = false
 
 function refresh() {
   const hasSource = Boolean(score) || skip.checked
+  highlightSetlistStep(composer, hasSource, input.value)
   input.disabled = transferring || !hasSource
   submit.disabled = input.disabled || !input.value.trim()
   attachment.disabled = remove.disabled = skip.disabled = transferring

@@ -65,7 +65,7 @@ export async function makeSetlistFile(title, songs, filename) {
   const ctx = canvas.getContext('2d')
   ctx.scale(2, 2)
   const font = (weight, size) => { ctx.font = weight + ' ' + size + 'px system-ui, sans-serif' }
-  let y, firstOnPage
+  let y, firstOnPage, pageHasTrack
   function startPage() {
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, width, height)
@@ -81,6 +81,7 @@ export async function makeSetlistFile(title, songs, filename) {
     }
     y += 14
     firstOnPage = true
+    pageHasTrack = false
   }
   async function finishPage() {
     font(500, 12)
@@ -92,7 +93,6 @@ export async function makeSetlistFile(title, songs, filename) {
   }
   startPage()
   for (const [index, song] of songs.entries()) {
-    if (!parseYouTube(song.video)) throw new Error('Missing YouTube reference')
     font(650, 19)
     const name = linesOf(ctx, song.name, 390)
     font(400, 14)
@@ -103,9 +103,13 @@ export async function makeSetlistFile(title, songs, filename) {
       startPage()
     }
     const page = pdf.getPageCount() + 1, id = 't' + (index + 1)
-    manifest.tracks.push({id, title:song.name, src:'youtube:' + song.video})
-    if (firstOnPage) manifest.cues.push({page, track:id, at:0})
-    manifest.buttons.push({id:crypto.randomUUID(), page, track:id, x:0.89, y:(y + rowHeight / 2) / height})
+    if (song.video) {
+      if (!parseYouTube(song.video)) throw new Error('Invalid YouTube reference')
+      manifest.tracks.push({id, title:song.name, src:'youtube:' + song.video})
+      if (!pageHasTrack) manifest.cues.push({page, track:id, at:0})
+      manifest.buttons.push({id:crypto.randomUUID(), page, track:id, x:0.89, y:(y + rowHeight / 2) / height})
+      pageHasTrack = true
+    }
     firstOnPage = false
     ctx.fillStyle = '#d6ded6'
     ctx.fillRect(40, y, width - 80, 1)
@@ -122,6 +126,7 @@ export async function makeSetlistFile(title, songs, filename) {
     y += rowHeight
   }
   await finishPage()
-  const bytes = await createMpdf(await pdf.save(), manifest, {})
+  const score = await pdf.save()
+  const bytes = manifest.tracks.length ? await createMpdf(score, manifest, {}) : score
   return new File([bytes], filename + '.pdf', {type:'application/pdf'})
 }

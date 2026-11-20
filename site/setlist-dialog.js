@@ -5,6 +5,7 @@ import {getLang} from './i18n.js'
 import {findPositions} from './score-titles.js'
 import {pickScorePosition} from './score-position-dialog.js'
 import {isScorePDF, mountScoreDrop} from './score-drop.js'
+import {highlightSetlistStep} from './setlist-steps.js'
 
 export function mountSetlist({openFile, currentScore, applyScore, account, safeTitle, L}) {
   const el = id => document.getElementById(id)
@@ -33,6 +34,7 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
   window.visualViewport?.addEventListener('scroll', fitKeyboard)
   function updateEntry() {
     const hasSource = selectedFile || currentScore() || skip.checked
+    highlightSetlistStep(fields, hasSource, input.value)
     input.disabled = creating || !hasSource
     analyze.disabled = input.disabled || !input.value.trim()
     register.closest('label').hidden = analyze.disabled
@@ -116,8 +118,12 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
   function refresh() {
     if (!draft) { submit.disabled = true; return }
     const total = draft.songs.length, done = draft.songs.filter(song => song.video).length
-    submit.disabled = creating || done !== total
-    el('setlist-count').textContent = L(`${total}곡 중 ${done}곡 연결됨`,`${done} of ${total} references connected`,`${total}曲中${done}曲を接続済み`)
+    submit.disabled = creating || draft.songs.some(song => song.url && !song.video)
+    el('setlist-count').textContent = L(`전체 ${total}곡 · 영상 ${done}개`,`${total} songs · ${done} videos`,`全${total}曲 · 動画${done}件`)
+    el('setlist-create-label').textContent = done
+      ? L('MPDF 만들기','Create MPDF','MPDFを作成')
+      : L('영상 추가 없이 만들기','Create without adding videos','動画を追加せずに作成')
+    register.closest('label').hidden = !done && !currentScore()?.hasTracks
   }
   el('welcome-setlist').onclick = el('connect-setlist').onclick = openDialog
   el('setlist-close').onclick = () => { operation?.abort(); dialog.close() }
@@ -152,38 +158,43 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     field.value = song.url
     field.placeholder = 'https://youtu.be/…'
     field.setAttribute('aria-label', song.name + ' · YouTube URL')
+    const invalidLink = document.createElement('small')
+    invalidLink.id = 'setlist-url-error-' + index
+    invalidLink.textContent = L('유튜브 영상 링크를 넣거나 이 칸을 비워 주세요.','Enter a YouTube video link or leave this field blank.','YouTubeの動画リンクを入力するか、空欄にしてください。')
+    field.setAttribute('aria-errormessage', invalidLink.id)
     const choices = document.createElement('div')
     const feedback = document.createElement('small')
     feedback.setAttribute('role','status')
     const direct = anchor('https://www.youtube.com/results?search_query=' + encodeURIComponent(song.name),
       L('YouTube에서 검색 ↗','Search on YouTube ↗','YouTubeで検索 ↗'))
     const listen = anchor('', L('선택한 영상 열기 ↗','Open selected video ↗','選択した動画を開く ↗'))
-    let edited = false
-    function sync(changed = false) {
-      if (changed) edited = true
+    const clear = document.createElement('button')
+    clear.type = 'button'
+    clear.className = 'btn text small'
+    clear.textContent = L('영상 없이','Remove video','動画なし')
+    clear.onclick = () => { field.value = ''; sync(); field.focus() }
+    function sync() {
       song.url = field.value.trim()
       song.video = parseYouTube(song.url)
       listen.hidden = !song.video
+      clear.hidden = !song.url
       if (song.video) listen.href = 'https://www.youtube.com/watch?v=' + song.video
       field.setAttribute('aria-invalid', String(!!song.url && !song.video))
+      invalidLink.hidden = !song.url || !!song.video
       for (const button of choices.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.value === song.video))
       refresh()
-      if (changed) show(submit.disabled
-        ? L('남은 곡의 영상 제목을 눌러 선택하세요.','Select a video for the remaining songs.','残りの曲の動画を選んでください。')
-        : L('모든 곡이 연결됐어요. MPDF 만들기를 누르세요.','All references are connected. Click Create MPDF.','全曲の動画を選択しました。「MPDFを作成」を押してください。'))
     }
-    field.oninput = () => sync(true)
+    field.oninput = sync
     sync()
     const links = document.createElement('div')
     links.className = 'setlist-links'
-    links.append(listen, direct)
-    row.append(field, links, choices, feedback)
+    links.append(listen, direct, clear)
+    row.append(field, invalidLink, links, choices, feedback)
     target.append(row)
-    return {song, choices, feedback, choose(id, automatic = false) {
-      if (automatic && (edited || song.url)) return
+    return {song, choices, feedback, choose(id) {
       field.value = 'https://youtu.be/' + id
-      sync(!automatic)
-    }, index}
+      sync()
+    }}
   }
   async function fetchChoices(row, signal, requests) {
     const {song, choices, feedback} = row
@@ -211,10 +222,9 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
         option.append(pick, anchor('https://www.youtube.com/watch?v=' + video.id, L('듣기 ↗','Listen ↗','聴く ↗')))
         choices.append(option)
       }
-      feedback.textContent = videos.length ? '' : L('검색 결과가 없습니다. 영상 링크를 붙여 넣어 주세요.','No matches. Paste a video link.','候補がありません。動画リンクを入力してください。')
-      if (videos.length) row.choose(videos[0].id, true)
+      feedback.textContent = videos.length ? '' : L('추천 영상이 없어요. 링크를 직접 넣거나 영상 없이 진행하세요.','No suggestions. Paste a link or continue without a video.','候補がありません。リンクを貼るか、動画なしで進めます。')
     } catch {
-      if (!signal.aborted) feedback.textContent = L('후보를 불러오지 못했어요. YouTube에서 검색한 뒤 링크를 붙여 넣어 주세요.','Search is unavailable. Find a video on YouTube and paste its link.','候補を取得できません。YouTubeで検索してリンクを入力してください。')
+      if (!signal.aborted) feedback.textContent = L('추천 영상을 불러오지 못했어요. 링크를 직접 넣거나 영상 없이 진행하세요.','Suggestions are unavailable. Paste a link or continue without a video.','候補を取得できません。リンクを貼るか、動画なしで進めます。')
     }
   }
   analyze.onclick = async () => {
@@ -234,20 +244,18 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     if (!pending.length) { await create(); return }
     fields.classList.add('reviewing')
     fields.querySelector('.setlist-content').scrollTop=0
-    show(L('링크가 없는 곡의 추천 영상을 찾고 있어요.','Finding suggested recordings for songs without links.','リンクのない曲の参考動画を検索しています。'))
+    show(L('원하는 추천 영상을 고르세요. 선택하지 않은 곡도 콘티에 남아요. 연결된 음원이 하나도 없으면 악보 PDF로 저장돼요.','Choose any recordings you want. Songs without videos stay in the setlist. If the score has no tracks, it saves as a PDF.','好きな動画を選んでください。選ばなかった曲もセットリストに残ります。音源がひとつもない場合は楽譜PDFとして保存されます。'))
     controller = new AbortController()
     const {signal} = controller, requests = new Map()
     async function worker() {
       while (pending.length && !signal.aborted) await fetchChoices(pending.shift(), signal, requests)
     }
     await Promise.all(Array.from({length:Math.min(3, pending.length)}, worker))
-    if (!signal.aborted && !creating) show(submit.disabled
-      ? L('아직 연결되지 않은 곡은 영상을 고르거나 링크를 붙여 넣으세요.','For any remaining songs, choose a recording or paste a link.','未設定の曲は動画を選ぶか、リンクを貼り付けてください。')
-      : L('연결된 영상을 확인하고 MPDF를 만드세요. 다른 영상을 골라도 돼요.','Review the recordings and create your MPDF. You can choose a different video.','動画を確認してMPDFを作成してください。別の動画にも変更できます。'))
   }
   async function create() {
-    if (creating || !draft?.songs.every(song => song.video)) return
-    if (register.checked && !account.user) {
+    if (!draft || submit.disabled) return
+    const registerCreator = register.checked && !register.closest('label').hidden
+    if (registerCreator && !account.user) {
       show(L('앱에서 사용할 제작자 계정으로 로그인한 뒤 만들기를 누르세요.','Sign in with your app account, then choose Create MPDF.','アプリのアカウントでログインした後、MPDFを作成してください。'))
       offerSignIn()
       return
@@ -260,9 +268,10 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     input.disabled = upload.disabled = true
     rows.inert = true
     refresh()
-    stage(L('콘티 MPDF 만드는 중…','Creating your setlist MPDF…','セットリストMPDFを作成中…'))
+    stage(L('콘티 만드는 중…','Creating your setlist…','セットリストを作成中…'))
     try {
-      for (const song of songs.filter(s=>s.fromLink)) {
+      const linkedSongs = songs.filter(song => song.video)
+      for (const song of linkedSongs.filter(s=>s.fromLink)) {
         signal.throwIfAborted()
         stage(L('유튜브 영상 제목 확인 중','Reading video title','動画タイトルを確認中')+' · '+song.name)
         try {
@@ -278,8 +287,8 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
         const file = await makeSetlistFile(name,songs,safeTitle(name))
         signal.throwIfAborted()
         el('setlist-close').disabled = true
-        stage(L('편집용 원본과 공유본 저장 중…','Saving editable and sharing copies…','編集用原本と共有用コピーを保存中…'))
-        await openFile(file, {createdSetlist:true,registerCreator:register.checked})
+        stage(L('콘티 파일 저장 중…','Saving your setlist file…','セットリストを保存中…'))
+        await openFile(file, {createdSetlist:true,registerCreator})
       } else {
         stage(L('악보 PDF 여는 중…','Opening the score PDF…','楽譜PDFを読み込み中…'))
         if (sourceFile && loadedFile !== sourceFile) {
@@ -290,7 +299,7 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
         signal.throwIfAborted()
         const score = currentScore()
         if (!score?.editable) throw new Error(L('편집 가능한 원본 악보 PDF를 선택해 주세요.','Choose an editable original score PDF.','編集可能な元の楽譜PDFを選んでください。'))
-        const positions = await findPositions(score.pdf,songs,score.buttons,signal,(n,total,phase)=>{
+        const positions = await findPositions(score.pdf,linkedSongs,score.buttons,signal,(n,total,phase)=>{
           const labels = {
             text:L('악보에서 곡 제목 찾는 중','Locating score titles','楽譜の曲名を検索中'),
             headers:L('스캔 악보의 제목 읽는 중','Reading scanned titles','スキャンした曲名を認識中'),
@@ -304,13 +313,13 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
           signal.throwIfAborted()
           if (!places.length) {
             const previous = positions[i-1]?.at(-1)?.page || 0
-            places.push(await pickScorePosition(score.pdf,songs[i],Math.min(previous+1,score.pdf.numPages),signal))
+            places.push(await pickScorePosition(score.pdf,linkedSongs[i],Math.min(previous+1,score.pdf.numPages),signal))
           }
         }
         signal.throwIfAborted()
         el('setlist-close').disabled = true
-        stage(L('레퍼런스를 연결하고 편집용 원본과 공유본 저장 중…','Connecting references and saving both copies…','参考動画を接続して原本と共有用コピーを保存中…'))
-        await applyScore(score.pdf,title,songs,positions,register.checked)
+        stage(L('악보 파일 저장 중…','Saving your score…','楽譜を保存中…'))
+        await applyScore(score.pdf,title,linkedSongs,positions,registerCreator)
       }
       dialog.close()
     } catch (e) {

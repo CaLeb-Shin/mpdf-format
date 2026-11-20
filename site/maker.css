@@ -182,3 +182,4 @@
 #setlist-dialog .score-skip { display: inline-flex; margin: 0; font-weight: 400; }
 #setlist-entry:has(textarea:disabled) .step-label { color: var(--muted); }
 #setlist-text:disabled { opacity: .65; }
+.setlist-links { flex-wrap: wrap; }

@@ -99,7 +99,7 @@ async function updateOwnership(){const gen=state.generation,version=++state.owne
 account.onChange(()=>{if(state.publication){if(drag?.moved)state.dirty=true;drag=null;state.placement=null;state.locked=true;state.verifiedUID=null;controls();renderControls();updateOwnership();}});
 $('#welcome-pick').onclick=$('#choose-pdf').onclick=()=>$('#pdf-input').click();$('#pdf-input').onchange=e=>{const file=e.target.files[0];e.target.value='';open(file);};
 const startFromHome=mountSetlist({safeTitle,L,account,
-  currentScore:()=>state.pdf ? {pdf:state.pdf,name:state.originalName,registered:!!state.publication,buttons:state.manifest.buttons,editable:canEdit()&&!state.geometryLocked} : null,
+  currentScore:()=>state.pdf ? {pdf:state.pdf,name:state.originalName,registered:!!state.publication,hasTracks:state.manifest.tracks.length>0,buttons:state.manifest.buttons,editable:canEdit()&&!state.geometryLocked} : null,
   openFile:async (file,{createdSetlist=false,registerCreator=false}={})=>{
     if(state.busy)throw new Error(L('잠시 후 다시 시도해 주세요.','Try again shortly.','少し待ってください。'));
     state.busy=true;controls();
@@ -129,7 +129,7 @@ const startFromHome=mountSetlist({safeTitle,L,account,
         }
       }
       m.cues.sort((a,b)=>a.page-b.page);
-      if(!hadTracks){m.options.followPage=true;$('#follow-page').checked=true;}
+      if(!hadTracks && songs.length){m.options.followPage=true;$('#follow-page').checked=true;}
       await saveCreatedSetlist(registerCreator);
     }catch(e){state.manifest=before;state.track=priorTrack;state.dirty=priorDirty;$('#title').value=priorTitle;$('#follow-page').checked=before.options?.followPage!==false;throw e;}
     finally{state.busy=false;renderAll();}
@@ -197,6 +197,15 @@ function saveEditableDownload(bytes){
   download(bytes,name);
 }
 async function saveCreatedSetlist(registerCreator){
+  if(!state.manifest.tracks.length){
+    const bytes=await assemble('plain');
+    const name=safeTitle($('#title').value)+'.pdf';
+    dragExport.save(bytes,name);
+    state.dirty=false;
+    setMobilePanel('score');
+    status(L('영상 없이 악보 PDF를 저장했어요.','Your score PDF was saved without videos.','動画なしの楽譜PDFを保存しました。'));
+    return;
+  }
   $('#register-creator').checked=registerCreator||!!state.publication;
   const {original,sharing}=await assemble('setlist');
   const stem=safeTitle($('#title').value), ext=$('#extension').value;
