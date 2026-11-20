@@ -134,14 +134,14 @@ html[lang=ko] .tour-caption { word-break: keep-all; overflow-wrap: break-word; }
   .score-tour[data-enhanced] { --tour-motion: running; }
   .score-tour[data-idle] { --tour-motion: paused; }
 
-  .tour-scene[data-active] .tour-caption h3,
-  .tour-scene[data-active] .tour-art > :is(.tour-paper, .tour-device) {
+  .score-tour[data-in-view] .tour-scene[data-active] .tour-caption h3,
+  .score-tour[data-in-view] .tour-scene[data-active] .tour-art > :is(.tour-paper, .tour-device) {
     animation: tour-cut-in .46s cubic-bezier(.16,.9,.25,1) backwards;
     animation-play-state: var(--tour-motion);
   }
   .tour-caption h3 { --entry-x: -14px; }
   .tour-art .tour-paper, .tour-art .tour-device { --entry-x: 28px; --entry-tilt: 2deg; }
-  .tour-scene[data-active] .tour-art :is(.tour-drop-prompt, .tour-source-file, .tour-check, .tour-pasted, .tour-made-file, .tour-create, .tour-bubble, .tour-share-sheet, .tour-picker, .tour-opened, .tour-app-target .tour-logo, .tour-score-title .tour-logo, .tour-made-logo) {
+  .score-tour[data-in-view] .tour-scene[data-active] .tour-art :is(.tour-drop-prompt, .tour-source-file, .tour-check, .tour-pasted, .tour-made-file, .tour-create, .tour-bubble, .tour-share-sheet, .tour-picker, .tour-opened, .tour-app-target .tour-logo, .tour-score-title .tour-logo, .tour-made-logo) {
     animation: var(--entrance, tour-arrive) var(--duration, .4s) var(--delay, .18s) cubic-bezier(.18,.8,.24,1) both;
     animation-play-state: var(--tour-motion);
   }
@@ -162,17 +162,17 @@ html[lang=ko] .tour-caption { word-break: keep-all; overflow-wrap: break-word; }
   .tour-opened { --delay: 1.6s; }
 
   .tour-assemble, .tour-device-score { position: relative; overflow: hidden; }
-  .tour-scene[data-active] .tour-assemble::after {
+  .score-tour[data-in-view] .tour-scene[data-active] .tour-assemble::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(90deg, transparent 34%, #ad87e547 49%, #a17ece85 50%, transparent 51%);
     animation: tour-scan .55s .52s linear both; animation-play-state: var(--tour-motion);
   }
-  .tour-scene[data-active] .tour-device-score::after {
+  .score-tour[data-in-view] .tour-scene[data-active] .tour-device-score::after {
     content: ''; position: absolute; left: 13%; right: 14%; top: 47%; height: 17px;
     border-right: 3px solid #8058ac; background: #b799d43d; transform-origin: left;
   }
-  .tour-scene[data-active] .tour-range b::before { width: 100%; }
-  .tour-scene[data-active] .tour-range b::before, .tour-scene[data-active] .tour-device-score::after {
+  .score-tour[data-in-view] .tour-scene[data-active] .tour-range b::before { width: 100%; }
+  .score-tour[data-in-view] .tour-scene[data-active] .tour-range b::before, .score-tour[data-in-view] .tour-scene[data-active] .tour-device-score::after {
     animation: tour-loop .94s .74s linear 2 both; animation-play-state: var(--tour-motion);
   }
   @keyframes tour-cut-in {
@@ -212,5 +212,7 @@ html[lang=ko] .tour-caption { word-break: keep-all; overflow-wrap: break-word; }
 }
 @media (max-width: 359px) {
   .tour-art { padding-inline: 16px; }
+  .tour-input-card { padding: 12px; }
+  .tour-field-label { line-height: 1.4; }
   .tour-steps button { gap: 4px; font-size: 12px; }
 }

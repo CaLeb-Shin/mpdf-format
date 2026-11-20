@@ -158,7 +158,9 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     const direct = anchor('https://www.youtube.com/results?search_query=' + encodeURIComponent(song.name),
       L('YouTube에서 검색 ↗','Search on YouTube ↗','YouTubeで検索 ↗'))
     const listen = anchor('', L('선택한 영상 열기 ↗','Open selected video ↗','選択した動画を開く ↗'))
+    let edited = false
     function sync(changed = false) {
+      if (changed) edited = true
       song.url = field.value.trim()
       song.video = parseYouTube(song.url)
       listen.hidden = !song.video
@@ -177,9 +179,10 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     links.append(listen, direct)
     row.append(field, links, choices, feedback)
     target.append(row)
-    return {song, choices, feedback, choose(id) {
+    return {song, choices, feedback, choose(id, automatic = false) {
+      if (automatic && (edited || song.url)) return
       field.value = 'https://youtu.be/' + id
-      sync(true)
+      sync(!automatic)
     }, index}
   }
   async function fetchChoices(row, signal, requests) {
@@ -209,6 +212,7 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
         choices.append(option)
       }
       feedback.textContent = videos.length ? '' : L('검색 결과가 없습니다. 영상 링크를 붙여 넣어 주세요.','No matches. Paste a video link.','候補がありません。動画リンクを入力してください。')
+      if (videos.length) row.choose(videos[0].id, true)
     } catch {
       if (!signal.aborted) feedback.textContent = L('후보를 불러오지 못했어요. YouTube에서 검색한 뒤 링크를 붙여 넣어 주세요.','Search is unavailable. Find a video on YouTube and paste its link.','候補を取得できません。YouTubeで検索してリンクを入力してください。')
     }
@@ -230,13 +234,16 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     if (!pending.length) { await create(); return }
     fields.classList.add('reviewing')
     fields.querySelector('.setlist-content').scrollTop=0
-    show(L('링크가 없는 곡은 아래 영상 제목을 눌러 선택하세요.','Choose a video title below for each missing link.','リンクのない曲は、下の動画タイトルを押して選んでください。'))
+    show(L('링크가 없는 곡의 추천 영상을 찾고 있어요.','Finding suggested recordings for songs without links.','リンクのない曲の参考動画を検索しています。'))
     controller = new AbortController()
     const {signal} = controller, requests = new Map()
     async function worker() {
       while (pending.length && !signal.aborted) await fetchChoices(pending.shift(), signal, requests)
     }
     await Promise.all(Array.from({length:Math.min(3, pending.length)}, worker))
+    if (!signal.aborted && !creating) show(submit.disabled
+      ? L('아직 연결되지 않은 곡은 영상을 고르거나 링크를 붙여 넣으세요.','For any remaining songs, choose a recording or paste a link.','未設定の曲は動画を選ぶか、リンクを貼り付けてください。')
+      : L('연결된 영상을 확인하고 MPDF를 만드세요. 다른 영상을 골라도 돼요.','Review the recordings and create your MPDF. You can choose a different video.','動画を確認してMPDFを作成してください。別の動画にも変更できます。'))
   }
   async function create() {
     if (creating || !draft?.songs.every(song => song.video)) return

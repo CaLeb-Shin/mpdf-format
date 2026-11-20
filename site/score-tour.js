@@ -2,6 +2,7 @@
 export function mountScoreTour(tour) {
   if (!tour || !tour.animate) return
   const scenes = [...tour.querySelectorAll('.tour-scene')]
+  const stage = tour.querySelector('.tour-scenes')
   const navigation = tour.querySelector('.tour-steps')
   const steps = [...navigation.querySelectorAll('button')]
   const toggle = tour.querySelector('.tour-toggle')
@@ -70,14 +71,22 @@ export function mountScoreTour(tour) {
   navigation.hidden = false
   toggle.hidden = false
   show(0)
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.intersectionRatio >= 0.35
-      update()
-    }, {threshold: 0.35})
-    observer.observe(tour.querySelector('.tour-scenes'))
-  } else {
-    visible = true
-    update()
+
+  function checkViewport() {
+    const {top, bottom} = stage.getBoundingClientRect()
+    const entered = window.scrollY > 0 || (document.documentElement.scrollHeight <= innerHeight && location.hash === '#' + tour.id)
+    // Start when the guide reaches reading height. Keep playing until it leaves view.
+    const next = entered && top < innerHeight * (visible ? 1 : 0.55) && bottom > 0
+    if (visible === next) return
+    visible = next
+    tour.toggleAttribute('data-in-view', visible)
+    if (!visible && mode === 'auto') show(0)
+    else update()
   }
+  window.addEventListener('scroll', checkViewport, {passive: true})
+  window.addEventListener('resize', checkViewport)
+  window.addEventListener('pageshow', checkViewport)
+  window.addEventListener('hashchange', checkViewport)
+  if ('IntersectionObserver' in window) new IntersectionObserver(checkViewport, {threshold: [0, .5, 1]}).observe(stage)
+  checkViewport()
 }
