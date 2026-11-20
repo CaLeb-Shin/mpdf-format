@@ -64,9 +64,6 @@ html[lang=ko] .tour-caption { word-break: keep-all; overflow-wrap: break-word; }
   box-shadow: 3px 4px 0 -1px #fbf9fc, 3px 4px 0 #d3c8df, 0 13px 22px -12px #52396265;
 }
 .tour-note-title { font-size: 21px; font-weight: 700; padding-bottom: 6px; letter-spacing: -.04em; }
-.tour-line { display: flex; align-items: center; gap: 9px; min-height: 32px; border-bottom: 1px solid #e8e2ed; }
-.tour-line i { font: 12px var(--mono); color: var(--muted); }
-.tour-line b { font-size: 14px; }
 .tour-search, .tour-message { padding: 18px; }
 .tour-search-field { gap: 10px; background: #f6f3f8; border: 1px solid var(--line); border-radius: 20px; padding: 8px 13px; font-size: 13px; }
 .tour-lens { position: relative; width: 12px; height: 12px; border: 1.6px solid var(--tour-purple); border-radius: 50%; }
@@ -133,13 +130,11 @@ html[lang=ko] .tour-caption { word-break: keep-all; overflow-wrap: break-word; }
   .tour-caption h3 { --entry-x: -14px; }
   .tour-art .tour-paper, .tour-art .tour-device { --entry-x: 28px; --entry-tilt: 2deg; }
   .tour-art .tour-note { --entry-x: -28px; --entry-tilt: -5deg; }
-  .tour-scene[data-active] .tour-art :is(.tour-line b, .tour-result, .tour-check, .tour-url, .tour-attachment, .tour-create, .tour-bubble, .tour-share-sheet, .tour-app-target .tour-logo, .tour-score-title .tour-logo, .tour-made-logo) {
+  .tour-scene[data-active] .tour-art :is(.tour-search-field > span, .tour-result, .tour-check, .tour-url, .tour-attachment, .tour-create, .tour-bubble, .tour-share-sheet, .tour-app-target .tour-logo, .tour-score-title .tour-logo, .tour-made-logo) {
     animation: var(--entrance, tour-arrive) var(--duration, .4s) var(--delay, .18s) cubic-bezier(.18,.8,.24,1) both;
     animation-play-state: var(--tour-motion);
   }
-  .tour-line b { --entrance: tour-write; --duration: .34s; }
-  .tour-line:nth-child(3) b { --delay: .46s; }
-  .tour-line:nth-child(4) b { --delay: .74s; }
+  .tour-search-field > span { --entrance: tour-write; --duration: .34s; }
   .tour-check { --entrance: tour-stamp; --delay: .58s; }
   .tour-url { --delay: .8s; }
   .tour-attachment { --delay: .18s; }

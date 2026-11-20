@@ -175,3 +175,10 @@
   .doc-title input { padding-block: 4px; }
   .doc-title #page-label { display: block; font-size: 11px; }
 }
+
+#setlist-dialog .step-label { display: flex; margin: 12px 0 6px; color: var(--ink); }
+#setlist-source { margin: 6px 0 0; justify-content: flex-start; }
+#setlist-current { overflow-wrap: anywhere; }
+#setlist-dialog .score-skip { display: inline-flex; margin: 0; font-weight: 400; }
+#setlist-entry:has(textarea:disabled) .step-label { color: var(--muted); }
+#setlist-text:disabled { opacity: .65; }

@@ -26,4 +26,4 @@ export function mountScoreDrop(target, highlight, {select, invalid, enabled = ()
   })
 }
 
-export const isScorePDF = file => file && (file.type === 'application/pdf' || /\.m?pdf$/i.test(file.name))
+export const isScorePDF = file => file && file.size > 0 && (file.type === 'application/pdf' || /\.m?pdf$/i.test(file.name))

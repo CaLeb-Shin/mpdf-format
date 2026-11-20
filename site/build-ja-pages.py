@@ -48,7 +48,7 @@ for page in PAGES:
     s = s.replace('?lang=en', '?lang=ja').replace('&amp;lang=en', '&amp;lang=ja')
     s = re.sub(r'href="/(guide|terms|report|developers|guides/[a-z-]+)(\.html)?"', r'href="/ja/\1"', s)
     s = s.replace('<a class="brand" href="/">', '<a class="brand" href="/ja/">')
-    s = s.replace('href="/#home-text"', 'href="/ja/#home-text"')
+    s = s.replace('href="/#home-setlist"', 'href="/ja/#home-setlist"')
     # language links: English + Korean instead of the Korean-only link
     s = re.sub(r'<a class="keep" href="/ja/([^"]*)" hreflang="ko"( lang="ko")?>한국어</a>|<a class="keep" href="/ko/([^"]*)" hreflang="ko"( lang="ko")?>한국어</a>',
                lambda m: f'<a class="keep" href="/{m.group(1) or m.group(3)}" hreflang="en" lang="en">English</a><a class="keep" href="/ko/{m.group(1) or m.group(3)}" hreflang="ko" lang="ko">한국어</a>', s)

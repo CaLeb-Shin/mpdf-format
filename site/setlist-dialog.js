@@ -11,7 +11,7 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
   const dialog = el('setlist-dialog'), input = el('setlist-text'), rows = el('setlist-songs')
   const message = el('setlist-message'), submit = el('setlist-create')
   const analyze = el('setlist-analyze')
-  const upload = el('setlist-pdf')
+  const upload = el('setlist-pdf'), skip = el('setlist-skip')
   const supplied = el('supplied-references'), suppliedRows = supplied.querySelector('ol')
   const fields = el('setlist-fields'), progress = el('setlist-progress'), meter = progress.querySelector('progress')
   let draft, controller, operation, loadedFile, selectedFile, sourceDocument, creating = false
@@ -31,17 +31,37 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
   }
   window.visualViewport?.addEventListener('resize', fitKeyboard)
   window.visualViewport?.addEventListener('scroll', fitKeyboard)
+  function updateEntry() {
+    const hasSource = selectedFile || currentScore() || skip.checked
+    input.disabled = creating || !hasSource
+    analyze.disabled = input.disabled || !input.value.trim()
+    register.closest('label').hidden = analyze.disabled
+  }
   function displayAttachment() {
-    const name = selectedFile?.name || currentScore()?.name
+    const existing = currentScore()
+    const name = selectedFile?.name || existing?.name
+    el('setlist-remove').hidden = !selectedFile || Boolean(existing)
+    el('setlist-skip-option').hidden = Boolean(name)
+    updateEntry()
     el('setlist-current').textContent = name || ''
     el('setlist-attached').hidden = el('setlist-replace').hidden = !name
     el('setlist-add').hidden = !!name
   }
   function selectFile(file) {
     selectedFile = file
+    if (file) skip.checked = false
     upload.value = ''
     el('setlist-drop-error').hidden = true
     displayAttachment()
+  }
+  el('setlist-remove').onclick = () => {
+    selectFile(null)
+    clearReview()
+    el('setlist-choose').focus()
+  }
+  skip.onchange = () => {
+    el('setlist-drop-error').hidden = true
+    clearReview()
   }
   const invalid = () => { el('setlist-drop-error').hidden = false }
   mountScoreDrop(dialog, dialog, {select:selectFile, invalid, enabled:() => !creating && !fields.hidden})
@@ -53,7 +73,10 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
   function openDialog() {
     if (creating) return
     const pdf = currentScore()?.pdf
-    if (pdf !== sourceDocument) selectedFile = loadedFile = null
+    if (pdf !== sourceDocument) {
+      selectedFile = loadedFile = null
+      skip.checked = false
+    }
     sourceDocument = pdf
     displayAttachment()
     el('setlist-drop-error').hidden = true
@@ -62,6 +85,7 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     dialog.showModal()
     fitKeyboard()
     if (matchMedia('(pointer: coarse)').matches) el('setlist-close').focus({preventScroll:true})
+    else if (input.disabled) el('setlist-choose').focus()
     else input.focus()
   }
   function stage(text, page, total) {
@@ -86,6 +110,7 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     el('setlist-count').textContent = ''
     submit.hidden = true
     analyze.hidden = false
+    updateEntry()
     show('')
   }
   function refresh() {
@@ -189,6 +214,7 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     }
   }
   analyze.onclick = async () => {
+    if (analyze.disabled) return
     clearReview()
     try { draft = parseSetlist(input.value) }
     catch (error) {
@@ -288,7 +314,8 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
       operation = null
       fields.hidden = false
       progress.hidden = true
-      rows.inert = input.disabled = upload.disabled = el('setlist-close').disabled = false
+      rows.inert = upload.disabled = el('setlist-close').disabled = false
+      updateEntry()
       refresh()
       if (dialog.open) message.scrollIntoView({block:'nearest'})
     }
@@ -304,10 +331,11 @@ export function mountSetlist({openFile, currentScore, applyScore, account, safeT
     fields.hidden = false
     progress.hidden = true
     if (!saved) {
-      show(L('홈에서 입력한 콘티를 다시 붙여 넣어 주세요.','Paste your setlist again to continue.','曲順をもう一度貼り付けてください。'))
+      show(L('홈 입력을 불러오지 못했어요. 악보 선택부터 다시 시작해 주세요.','Could not load the home draft. Start by choosing a score option.','入力内容を読み込めませんでした。楽譜の選択からやり直してください。'))
       return
     }
     input.value = saved.text
+    skip.checked = !saved.score
     selectFile(saved.score)
     if (dialog.open) await analyze.onclick()
   }

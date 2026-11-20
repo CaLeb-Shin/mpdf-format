@@ -27,40 +27,52 @@ const submit = composer.querySelector('[type=submit]')
 const error = document.getElementById('handoff-error')
 const dropError = document.getElementById('home-drop-error')
 const preparing = document.getElementById('home-preparing')
+const skip = document.getElementById('home-skip')
 let score = attachment.files[0] || null
+let transferring = false
 
-function showAttachment() {
-  filename.textContent = score?.name || ''
+function refresh() {
+  const hasSource = Boolean(score) || skip.checked
+  input.disabled = transferring || !hasSource
+  submit.disabled = input.disabled || !input.value.trim()
+  attachment.disabled = remove.disabled = skip.disabled = transferring
+  preparing.hidden = !transferring
+  const name = score?.name || ''
+  if (filename.textContent !== name) filename.textContent = name
   filename.hidden = remove.hidden = !score
-  composer.querySelector('.attach-label').hidden = !!score
+  document.getElementById('home-skip-option').hidden = Boolean(score)
+  composer.querySelector('.attach-label').hidden = Boolean(score)
 }
 function setScore(file) {
   score = file
+  skip.checked = false
   attachment.value = ''
-  dropError.hidden = true
-  showAttachment()
+  dropError.hidden = error.hidden = true
+  refresh()
 }
 const invalid = () => { dropError.hidden = false }
 attachment.onchange = () => {
   if (isScorePDF(attachment.files[0])) setScore(attachment.files[0])
-  else if (attachment.files.length) invalid()
+  else if (attachment.files.length) { attachment.value = ''; invalid() }
 }
-mountScoreDrop(document, composer, {select:setScore, invalid, enabled:() => !submit.disabled})
+mountScoreDrop(document, composer.querySelector('.attachment'), {select:setScore, invalid, enabled:() => !transferring})
 remove.onclick = () => { setScore(null); attachment.focus() }
-window.addEventListener('pageshow', () => { submit.disabled = false; preparing.hidden = true; showAttachment() })
+skip.onchange = () => { dropError.hidden = error.hidden = true; refresh() }
+input.oninput = () => { error.hidden = true; refresh() }
+window.addEventListener('pageshow', () => { transferring = false; refresh() })
+refresh()
 composer.onsubmit = async event => {
   event.preventDefault()
-  if (submit.disabled) return
-  if (!input.value.trim()) { input.value = ''; input.reportValidity(); return }
+  if (transferring || (!score && !skip.checked) || !input.value.trim()) return
   error.hidden = true
-  preparing.hidden = false
-  submit.disabled = true
+  transferring = true
+  refresh()
   try {
     const draft = await storeSetlist(input.value.trim(), score)
     location.assign('/make/?' + new URLSearchParams({start:'setlist', draft, lang:getLang()}))
   } catch {
     error.hidden = false
-    preparing.hidden = true
-    submit.disabled = false
+    transferring = false
+    refresh()
   }
 }

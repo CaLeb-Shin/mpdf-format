@@ -2,17 +2,24 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>MPDF · SEETogether</title><meta name="description" content="콘티 텍스트나 유튜브 링크를 붙여 넣으면 재생 가능한 MPDF가 완성됩니다. 악보 PDF를 추가하거나 곡명만으로 시작하세요."><link rel="canonical" href="https://mpdf.pages.dev/ko/"><link rel="alternate" hreflang="ko" href="https://mpdf.pages.dev/ko/"><link rel="alternate" hreflang="ja" href="https://mpdf.pages.dev/ja/"><link rel="alternate" hreflang="en" href="https://mpdf.pages.dev/"><link rel="alternate" hreflang="x-default" href="https://mpdf.pages.dev/"><meta property="og:title" content="MPDF · SEETogether"><meta property="og:description" content="콘티와 유튜브 링크로 듣고 공유할 수 있는 MPDF를 만드세요."><meta property="og:image" content="https://mpdf.pages.dev/og-ko.png"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/assets/seetogether-brand.png"><link rel="stylesheet" href="/site.css"><link rel="stylesheet" href="/home.css"><link rel="stylesheet" href="/score-tour.css"></head><body class="home"><header class="wrap nav"><a class="brand" href="/" data-route="" aria-label="MPDF"><b class="product-name">MPDF</b> <small class="app-name"><img src="/assets/seetogether-brand.png" width="19" height="19" alt="">SEETogether</small></a><nav><a href="/make/"><span data-l="en">Make</span><span data-l="ko">만들기</span><span data-l="ja">作る</span></a><a href="/v/"><span data-l="en">Practice</span><span data-l="ko">열고 연습하기</span><span data-l="ja">練習する</span></a><a data-route="guide" href="/guide"><span data-l="en">Guide</span><span data-l="ko">사용 가이드</span><span data-l="ja">ガイド</span></a><button class="lang" id="langbtn" type="button" aria-label="Switch language"></button></nav></header><main class="wrap">
 <section class="studio-hero">
 <div class="studio-intro">
-<h1><span data-l="en">Paste your setlist.<br><em>Make an MPDF.</em></span><span data-l="ko">콘티나 링크를 붙여 넣으면,<br><em>MPDF가 완성돼요.</em></span><span data-l="ja">曲順やリンクを貼るだけで、<br><em>MPDFが完成。</em></span></h1>
-<p><span data-l="en">Use song titles or YouTube links to make a playable setlist. Add a score PDF to put a play button beside each song.</span><span data-l="ko">유튜브 링크는 바로 연결하고, 곡명만 있는 곡은 레퍼런스 후보를 찾아드려요. 악보 PDF도 넣으면 곡 제목 옆에 재생 버튼이 붙어요.</span><span data-l="ja">YouTubeリンクはそのまま、曲名だけなら候補から動画を選べます。楽譜PDFを添えると、曲名の横に再生ボタンが付きます。</span></p>
+<h1><span data-l="en">Add your setlist to a score.<br><em>Make an MPDF.</em></span><span data-l="ko">악보에 콘티를 더하면,<br><em>MPDF가 완성돼요.</em></span><span data-l="ja">楽譜に曲順を添えて、<br><em>MPDFが完成。</em></span></h1>
+<p><span data-l="ko">악보 PDF를 먼저 넣고 콘티나 유튜브 링크를 붙여 넣으세요. 곡명만 있는 곡은 레퍼런스 후보를 찾아드려요.</span><span data-l="en">Start with your score PDF, then paste your setlist or YouTube links. For song titles alone, choose from suggested recordings.</span><span data-l="ja">楽譜PDFを入れてから、曲順やYouTubeリンクを貼り付けます。曲名だけでも参考動画の候補を選べます。</span></p>
 <form class="composer" id="home-setlist" action="/make/">
-  <label for="home-text"><span data-l="en">Setlist or YouTube links</span><span data-l="ko">콘티 텍스트 또는 유튜브 링크</span><span data-l="ja">曲名リストまたはYouTubeリンク</span></label>
-  <textarea id="home-text" rows="3" maxlength="50000" required placeholder="1. Amazing Grace&#10;2. How Great Thou Art" data-ko-placeholder="1. 저 높은 곳을 향하여&#10;2. 주가 일하시네" data-ja-placeholder="1. アメイジング・グレイス&#10;2. 主をたたえよ"></textarea>
-  <div class="composer-actions"><div class="attachment">
-    <input type="file" id="home-pdf" accept="application/pdf,.pdf">
-    <label for="home-pdf"><span aria-hidden="true">＋</span> <span class="attach-label"><span data-l="en"><span class="pointer-label">Drop or choose a score PDF</span><span class="touch-label">Attach score PDF</span></span><span data-l="ko"><span class="pointer-label">악보 PDF 끌어 놓기 · 파일 선택</span><span class="touch-label">악보 PDF 첨부</span></span><span data-l="ja"><span class="pointer-label">楽譜PDFをドロップ・選択</span><span class="touch-label">楽譜PDFを添付</span></span></span><strong id="home-filename" hidden></strong></label>
-    <button type="button" id="remove-pdf" hidden aria-label="Remove score" data-ko-aria="악보 첨부 취소" data-ja-aria="添付を解除">×</button>
-  </div><button class="btn primary" type="submit"><span data-l="en">Make MPDF</span><span data-l="ko">MPDF 만들기</span><span data-l="ja">MPDFを作成</span> <span aria-hidden="true">→</span></button></div>
-  <small id="home-drop-error" role="alert" hidden><span data-l="ko">악보 PDF 한 개를 선택해 주세요.</span><span data-l="en">Choose one score PDF.</span><span data-l="ja">楽譜PDFを1つ選んでください。</span></small>
+  <div class="source-step">
+    <label class="step-label" for="home-pdf"><span class="step-number" aria-hidden="true">1</span> <span data-l="ko">악보 PDF</span><span data-l="en">Score PDF</span><span data-l="ja">楽譜PDF</span></label>
+    <div class="attachment">
+      <input type="file" id="home-pdf" accept="application/pdf,.pdf,.mpdf">
+      <label for="home-pdf"><span class="attachment-mark" aria-hidden="true"></span> <span class="attach-label"><span data-l="en"><span class="pointer-label">Drop or choose a score PDF</span><span class="touch-label">Attach score PDF</span></span><span data-l="ko"><span class="pointer-label">악보 PDF 끌어 놓기 · 파일 선택</span><span class="touch-label">악보 PDF 첨부</span></span><span data-l="ja"><span class="pointer-label">楽譜PDFをドロップ・選択</span><span class="touch-label">楽譜PDFを添付</span></span></span><strong id="home-filename" aria-live="polite" hidden></strong></label>
+      <button type="button" id="remove-pdf" hidden aria-label="Remove score" data-ko-aria="악보 첨부 취소" data-ja-aria="添付を解除">×</button>
+    </div>
+    <label class="score-skip" id="home-skip-option"><input id="home-skip" type="checkbox"> <span data-l="ko">PDF 없이 곡 목록 만들기</span><span data-l="en">Make a song list without a PDF</span><span data-l="ja">PDFなしで曲目表を作る</span></label>
+    <small id="home-drop-error" role="alert" hidden><span data-l="ko">악보 PDF 한 개를 선택해 주세요.</span><span data-l="en">Choose one score PDF.</span><span data-l="ja">楽譜PDFを1つ選んでください。</span></small>
+  </div>
+  <div class="text-step">
+    <label class="step-label" for="home-text"><span class="step-number" aria-hidden="true">2</span> <span data-l="en">Setlist or YouTube links</span><span data-l="ko">콘티 텍스트 또는 유튜브 링크</span><span data-l="ja">曲名リストまたはYouTubeリンク</span></label>
+    <textarea id="home-text" disabled rows="2" maxlength="50000" required placeholder="1. Amazing Grace&#10;2. How Great Thou Art" data-ko-placeholder="1. 저 높은 곳을 향하여&#10;2. 주가 일하시네" data-ja-placeholder="1. アメイジング・グレイス&#10;2. 主をたたえよ"></textarea>
+  </div>
+  <div class="composer-actions"><button class="btn primary" type="submit" disabled><span class="step-number" aria-hidden="true">3</span> <span data-l="en">Make MPDF</span><span data-l="ko">MPDF 만들기</span><span data-l="ja">MPDFを作成</span> <span aria-hidden="true">→</span></button></div>
   <small id="home-preparing" role="status" hidden><span data-l="ko">콘티를 제작기로 옮기는 중…</span><span data-l="en">Opening your setlist in the maker…</span><span data-l="ja">曲順を作成画面に引き継いでいます…</span></small>
   <div id="handoff-error" role="alert" hidden><span data-l="en">Your browser could not carry this draft over. Copy your text and continue in the maker.</span><span data-l="ko">입력 내용을 제작기로 옮길 수 없어요. 텍스트를 복사해 제작기에서 계속해 주세요.</span><span data-l="ja">入力内容を引き継げませんでした。テキストをコピーして作成画面に貼り付けてください。</span> <a href="/make/?start=setlist"><span data-l="en">Open maker</span><span data-l="ko">제작기 열기</span><span data-l="ja">作成画面へ</span> ↗</a></div>
 </form>
@@ -39,22 +46,21 @@
   <div class="tour-scenes">
     <article class="tour-scene" id="tour-step-1" data-duration="2500" aria-labelledby="tour-title-1">
       <div class="tour-caption">
-        <h3 id="tour-title-1"><span data-l="ko">콘티를 만들어요</span><span data-l="en">Write your setlist</span><span data-l="ja">曲順を決める</span></h3>
-        <p><span data-l="ko">연습할 순서대로 곡명을 한 줄씩 적으세요.</span><span data-l="en">Write one song per line in rehearsal order.</span><span data-l="ja">練習する順に、曲名を1行ずつ書きます。</span></p>
+        <h3 id="tour-title-1"><span data-l="ko">악보 PDF를 넣어요</span><span data-l="en">Start with your score PDF</span><span data-l="ja">楽譜PDFを選ぶ</span></h3>
+        <p><span data-l="ko">악보를 끌어 놓거나 파일을 선택하세요. 악보가 없으면 ‘PDF 없이 곡 목록 만들기’를 선택하세요.</span><span data-l="en">Drop or choose your score PDF. For a text-only setlist, choose Make a song list without a PDF.</span><span data-l="ja">楽譜PDFをドロップするか選びます。楽譜がなければ「PDFなしで曲目表を作る」を選びます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-note tour-paper">
-          <div class="tour-note-title"><span data-l="ko">합주 연습</span><span data-l="en">Rehearsal</span><span data-l="ja">合奏練習</span></div>
-          <div class="tour-line"><i>1.</i><b><span data-l="ko">저 높은 곳을 향하여</span><span data-l="en">Higher Ground</span><span data-l="ja">高き岩よ</span></b></div>
-          <div class="tour-line"><i>2.</i><b><span data-l="ko">주가 일하시네</span><span data-l="en">The Lord Is Working</span><span data-l="ja">主は働かれる</span></b></div>
-          <div class="tour-line"><i>3.</i><b><span data-l="ko">갈보리 산 위에</span><span data-l="en">The Old Rugged Cross</span><span data-l="ja">丘に立てる荒削りの</span></b></div>
+          <div class="tour-note-title"><span data-l="ko">합주 악보.pdf</span><span data-l="en">Rehearsal.pdf</span><span data-l="ja">合奏楽譜.pdf</span></div>
+          <img class="tour-score" src="/assets/seetogether-score.webp" width="1720" height="1020" alt="" loading="lazy">
+          <div class="tour-attachment">✓ <span data-l="ko">첨부된 악보</span><span data-l="en">Score attached</span><span data-l="ja">添付した楽譜</span></div>
         </div>
       </div>
     </article>
     <article class="tour-scene" id="tour-step-2" data-duration="3000" aria-labelledby="tour-title-2">
       <div class="tour-caption">
-        <h3 id="tour-title-2"><span data-l="ko">링크는 있으면 넣어요</span><span data-l="en">Add links if you have them</span><span data-l="ja">リンクはあれば追加</span></h3>
-        <p><span data-l="ko">유튜브 링크를 붙이세요. 곡명만 넣어도 추천 영상에서 고를 수 있어요.</span><span data-l="en">Paste a YouTube link, or pick a recording the maker finds by song title.</span><span data-l="ja">YouTubeリンクを貼るか、曲名から見つかった候補を選びます。</span></p>
+        <h3 id="tour-title-2"><span data-l="ko">콘티나 링크를 붙여 넣어요</span><span data-l="en">Paste your setlist or links</span><span data-l="ja">曲順やリンクを貼る</span></h3>
+        <p><span data-l="ko">곡을 순서대로 붙여 넣으세요. 유튜브 링크는 자동으로 연결되고, 곡명만 있어도 후보를 찾을 수 있어요.</span><span data-l="en">Paste the songs in order. YouTube links connect directly, and titles alone can be matched to recordings.</span><span data-l="ja">曲を演奏順に貼り付けます。YouTubeリンクはそのまま使え、曲名だけでも参考動画を探せます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-search tour-paper">
@@ -67,7 +73,7 @@
     <article class="tour-scene" id="tour-step-3" data-duration="2800" aria-labelledby="tour-title-3">
       <div class="tour-caption">
         <h3 id="tour-title-3"><span data-l="ko">여기서 MPDF를 만들어요</span><span data-l="en">Make the MPDF here</span><span data-l="ja">ここでMPDFを作る</span></h3>
-        <p><span data-l="ko">콘티를 붙여 넣고 악보 PDF가 있으면 첨부하세요. ‘MPDF 만들기’를 누르면 완성!</span><span data-l="en">Paste your setlist, add a score PDF if you have one, then choose Make MPDF.</span><span data-l="ja">曲順を貼り、楽譜PDFがあれば添付。「MPDFを作成」を押せば完成です。</span></p>
+        <p><span data-l="ko">‘MPDF 만들기’를 누르세요. 링크가 빠진 곡은 원하는 영상을 고르면 악보에 연결돼요.</span><span data-l="en">Choose Make MPDF. For songs without links, pick a suggested recording to connect it to the score.</span><span data-l="ja">「MPDFを作成」を押します。リンクのない曲は、候補から使いたい動画を選びます。</span></p>
       </div>
       <div class="tour-art" aria-hidden="true">
         <div class="tour-studio tour-paper">
@@ -118,8 +124,8 @@
     </article>
   </div>
   <ol class="tour-steps" hidden>
-    <li><button type="button" aria-controls="tour-step-1"><i>1</i><span data-l="ko">콘티</span><span data-l="en">Setlist</span><span data-l="ja">曲順</span></button></li>
-    <li><button type="button" aria-controls="tour-step-2"><i>2</i><span data-l="ko">레퍼런스</span><span data-l="en">References</span><span data-l="ja">参考動画</span></button></li>
+    <li><button type="button" aria-controls="tour-step-1"><i>1</i><span data-l="ko">악보 PDF</span><span data-l="en">Score PDF</span><span data-l="ja">楽譜PDF</span></button></li>
+    <li><button type="button" aria-controls="tour-step-2"><i>2</i><span data-l="ko">콘티·링크</span><span data-l="en">Setlist</span><span data-l="ja">曲順・リンク</span></button></li>
     <li><button type="button" aria-controls="tour-step-3"><i>3</i><span data-l="ko">만들기</span><span data-l="en">Make</span><span data-l="ja">作成</span></button></li>
     <li><button type="button" aria-controls="tour-step-4"><i>4</i><span data-l="ko">공유</span><span data-l="en">Share</span><span data-l="ja">共有</span></button></li>
     <li><button type="button" aria-controls="tour-step-5"><i>5</i><span data-l="ko">앱 열기</span><span data-l="en">Open app</span><span data-l="ja">アプリで開く</span></button></li>
